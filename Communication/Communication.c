@@ -7,9 +7,13 @@
 
 
 #include <avr/io.h>
+#include "LCD.h"
 
 int main(void)
 {
+	lcd_init();
+	
+	lcd_print("Ciao bella!", "lololol");
     while(1)
     {
         //TODO:: Please write your application code 

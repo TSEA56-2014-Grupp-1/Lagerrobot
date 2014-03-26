@@ -11,9 +11,9 @@
 
 void lcd_send_symbol(char);
 void lcd_send_command(char);
-bool lcd_is_busy();
+int lcd_is_busy();
 
-void lcd_print(char text[17]);
+void lcd_print(char text1[17], char text2[17]);
 void lcd_clear();
 
 void lcd_init();
