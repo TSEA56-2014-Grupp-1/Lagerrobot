@@ -13,7 +13,7 @@ void lcd_send_symbol(char);
 void lcd_send_command(char);
 int lcd_is_busy();
 
-void lcd_print(char text1[17], char text2[17]);
+void lcd_print(char text1[], char text2[]);
 void lcd_clear();
 
 void lcd_init();

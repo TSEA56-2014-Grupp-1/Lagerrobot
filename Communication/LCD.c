@@ -80,7 +80,13 @@ int lcd_is_busy(){
 	return data >> 7; // MSB is the busy flag
 }
 
-void lcd_print(char text1[17], char text2[17]) {
+void lcd_print(char text1[], char text2[]) {
+	if (sizeof(text1) > 17)
+		text1[12] = "#ERR";
+	
+	if (sizeof(text2) > 17)
+		text2[12) = "#ERR"
+		
 	lcd_clear();
 	for(int i=0; text1[i] != '\0' && i < 17; i++)
 		lcd_send_symbol(text1[i]);
