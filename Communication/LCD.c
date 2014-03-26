@@ -13,20 +13,21 @@
 
 
 void lcd_init() {
+	
 	//initialize reset in controller
-	PORTB &= 0 << 0;
+	PORTB &= ~(1 << 0);
 	PORTA = 0b00110000;
 	PORTB |= 1 << 2;
 	_delay_ms(4.1);
-	PORTB &= 0 << 2;
+	PORTB &= ~(1 << 2);
 	//PORTA = 0b00110000;
 	PORTB |= 1 << 2;
 	_delay_us(100);
-	PORTB &= 0 << 2;
+	PORTB &= ~(1 << 2);
 	//PORTA = 0b00110000;
 	PORTB |= 1 << 2;
 	_delay_us(100);
-	PORTB &= 0 << 2;
+	PORTB &= ~(1 << 2);
 	
 	lcd_send_command(0b00111000); // 8 bit, 2 lines
 	lcd_send_command(0b00001000); // display off
@@ -47,7 +48,7 @@ void lcd_send_symbol(char symbol) {
 	PORTA = symbol; 
 	PORTB |= 1 << 2; 
 	_delay_us(50); // lcd controller execution time
-	PORTB &= 0 << 2; 
+	PORTB &= ~(1 << 2); 
 	
 }
 
@@ -55,7 +56,7 @@ void lcd_send_command(char cmd) {
 	while (lcd_is_busy())
 		_delay_ms(1);
 		
-	PORTB &= 0 << 0; 
+	PORTB &= ~(1 << 0); 
 	PORTA = cmd; 
 	PORTB |= 1 << 2; 
 	if (cmd == 0b01 || cmd == 0b10) // if clear or return home instruction
@@ -63,18 +64,18 @@ void lcd_send_command(char cmd) {
 	else
 		_delay_us(50);
 		
-	PORTB &= 0 << 2;
+	PORTB &= ~(1 << 2);
 }
 
 int lcd_is_busy(){
 	DDRA = 0;
 	PORTB |= 1 << 1;
-	PORTB &= 0 << 0;
+	PORTB &= ~(1 << 0);
 	PORTB |= 1 << 2;
 	_delay_us(2);
 	char data = PINA;
-	PORTB &= 0 << 2;
-	PORTB &= 0 << 1;
+	PORTB &= ~(1 << 2);
+	PORTB &= ~(1 << 1);
 	DDRA = 0xff;
 	return data >> 7; // MSB is the busy flag
 }
