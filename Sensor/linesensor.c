@@ -5,10 +5,11 @@
  *  Author: Karl
  */ 
 
-#include "adc.h"
 #include <avr/io.h>
+#include "linesensor.h"
+
 uint8_t sensor_channel;
-uint8_t sensor_values[11] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+uint8_t sensor_values[11];
 
 void line_init(){
 	sensor_channel = 0;
@@ -23,13 +24,14 @@ void line_init(){
 
 void update_linesensor_values() {
 	sensor_values[sensor_channel] = ADCH;
-	PORTB = sensor_channel;
-	if (sensor_channel == 11) {
+	
+	if (sensor_channel == 10) {
 		sensor_channel = 0;
 	}
 	else {
 		sensor_channel = sensor_channel + 1;
 	}
+	PORTB = sensor_channel;
 			
 	ADCSRA |= (1 << ADSC);
 	

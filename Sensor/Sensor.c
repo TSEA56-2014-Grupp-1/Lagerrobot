@@ -29,10 +29,8 @@ ISR(ADC_vect) {
 
 int main(void)
 {
-	//line_init();
-	//sei();
-	DDRB = 0xff;
-	PORTB = 0b00101111;
+	line_init();
+	sei();
 	
     while(1)
     {
