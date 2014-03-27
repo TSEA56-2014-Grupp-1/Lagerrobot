@@ -30,6 +30,7 @@ ISR(ADC_vect) {
 int main(void)
 {
 	line_init();
+	
 	sei();
 	
     while(1)
