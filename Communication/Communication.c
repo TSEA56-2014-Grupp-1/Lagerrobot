@@ -23,7 +23,7 @@ int main(void)
 	//_delay_ms(200);
 	lcd_init();
 	
-	lcd_print("Testin' testin'", "Because why not?");
+	lcd_print("Are you done?", "I want to live!");
     while(1)
     {
         //TODO:: Please write your application code 

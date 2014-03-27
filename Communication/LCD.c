@@ -81,17 +81,11 @@ int lcd_is_busy(){
 }
 
 void lcd_print(char text1[], char text2[]) {
-	if (sizeof(text1) > 17)
-		text1[12] = "#ERR";
-	
-	if (sizeof(text2) > 17)
-		text2[12) = "#ERR"
-		
 	lcd_clear();
 	for(int i=0; text1[i] != '\0' && i < 17; i++)
 		lcd_send_symbol(text1[i]);
 		
-	lcd_send_command(0b11000000); // line 2
+	lcd_send_command(0b11000000); // line 2, DDRAM address 64
 	for(int i=0; text2[i] != '\0' && i < 17; i++)
 	lcd_send_symbol(text2[i]);
 }
