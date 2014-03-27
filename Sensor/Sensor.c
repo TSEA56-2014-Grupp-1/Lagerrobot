@@ -7,9 +7,33 @@
 
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
+#include "linesensor.h"
+
+ISR(ADC_vect) {
+	switch (ADMUX & 0b00011111) {
+		case 0 :
+			update_linesensor_values();
+		break;
+		case 1 :
+		
+		break;
+		case 2 : 
+		
+		break;
+		case 3 :
+		
+		break;
+	}
+}
 
 int main(void)
 {
+	//line_init();
+	//sei();
+	DDRB = 0xff;
+	PORTB = 0b00101111;
+	
     while(1)
     {
         //TODO:: Please write your application code 
