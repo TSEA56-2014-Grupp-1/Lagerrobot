@@ -6,15 +6,14 @@
  */ 
 
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include "linesensor.h"
 
-//uint8_t line_weight;
 uint8_t sensor_channel;
 uint8_t sensor_values[11];
-uint16_t line_weight;
-uint16_t temp_line_weight;
-uint8_t current_sensor;
-uint16_t tot_weight;
+uint8_t line_weight;
+
+
 void line_init(){
 	sensor_channel = 0;
 	ADCSRA = 0b10001111;
@@ -43,22 +42,23 @@ void update_linesensor_values() {
 }
 
 uint8_t calculate_line_weight()	{
-	//temp_line_weight = 0;
-	line_weight = 0;
-	tot_weight = 0;
+	cli();
+	uint32_t temp_line_weight;
+	uint16_t tot_weight;
+	uint16_t sensor_scale;
+	uint8_t current_sensor;
 	current_sensor = 0;
-// 	for (current_sensor = 0; current_sensor<=9;current_sensor++)	{
-// 		if(sensor_values[current_sensor] > sensor_values[current_sensor + 1])	{
-// 			temp_line_weight = current_sensor;
-// 		}
-// 	}
-	
-	while(current_sensor <= 10)	{
-		if (sensor_values[current_sensor]> sensor_values[current_sensor + 1])	{
-			temp_line_weight = current_sensor;
-		}
+	tot_weight = 0;
+	sensor_scale = 11;
+	temp_line_weight = 0;
+	while(current_sensor<=10)	{
+		tot_weight = tot_weight + sensor_values[current_sensor];
+		temp_line_weight = temp_line_weight + sensor_values[current_sensor] * sensor_scale;
 		current_sensor++;
+		if(current_sensor <= 10)
+			sensor_scale = sensor_scale + 256/11;
 	}
-	//temp_line_weight = temp_line_weight/tot_weight;
+	temp_line_weight = temp_line_weight / tot_weight;
+	sei();
 	return temp_line_weight;
 }
