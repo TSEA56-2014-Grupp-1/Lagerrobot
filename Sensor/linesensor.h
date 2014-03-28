@@ -11,6 +11,8 @@
 
 void line_init();
 void update_linsensor_values();
+void pickup_station_check();
+
 uint8_t calculate_line_weight();
 
 #endif /* LINESENSOR_H_ */
