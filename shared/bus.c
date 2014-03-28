@@ -3,7 +3,6 @@
 
 uint16_t bus_data;
 uint16_t bus_response_data;
-uint16_t test_var_for_bus;
 
 
 // Global for storing registered callback response functions. Default value is NULL
@@ -33,7 +32,7 @@ void bus_init(uint8_t address) {
  *	Try to acquire control over the bus
  */
 uint8_t bus_start(void) {
-	TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN);
+	TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN) | (1 << TWIE) | (1 << TWEA);
 
 	// Wait for TWINT to go high
 	while (!(TWCR & (1 << TWINT)));
@@ -48,8 +47,8 @@ uint8_t bus_start(void) {
 			TWCR |= (1 << TWINT) | (1 << TWSTO);
 		case 0xf8:
 		default:
-			// Catastrophic failure
-			return 1;
+			// Catastrophic failure, retry
+			return bus_start();
 	}
 }
 
@@ -57,7 +56,6 @@ uint8_t bus_start(void) {
  *	Let go of the control over the buss
  */
 void bus_stop(void) {
-	TWCR &= 0xff ^ (1 << TWSTA);
 	TWCR |= (1 << TWINT) | (1 << TWSTO) | (1 << TWEA);
 }
 
@@ -123,26 +121,16 @@ uint8_t bus_calculate_address_packet(uint8_t address, uint8_t direction) {
  *	This function disables interrupts at the start and re-enables then when done
  */
 uint8_t bus_send(uint8_t address, uint8_t byte1, uint8_t byte2) {
-	// XXX: Are interrupts always enabled when this function is called
-	cli();
-
-	if (bus_start() != 0) {
-		sei();
-		return 1;
-	}
-
 	switch (bus_write(bus_calculate_address_packet(address, 0))) {
 		case 0x18: // Successfully addressed target
 			break;
 		case 0x20: // Target does not respond
 			bus_stop();
-			sei();
 			return 2;
 		case 0x38: // Arbitration lost
 			return bus_send(address, byte1, byte2);
 		default: // Catastrophic failure
 			bus_stop();
-			sei();
 			return 3;
 	}
 
@@ -151,13 +139,11 @@ uint8_t bus_send(uint8_t address, uint8_t byte1, uint8_t byte2) {
 			break;
 		case 0x30: // Byte transmitted but NACK received
 			bus_stop();
-			sei();
 			return 4;
 		case 0x38: // Arbitration lost
 			return bus_send(address, byte1, byte2);
 		default: // Catastrophic failure
 			bus_stop();
-			sei();
 			return 5;
 	}
 
@@ -166,17 +152,13 @@ uint8_t bus_send(uint8_t address, uint8_t byte1, uint8_t byte2) {
 			break;
 		case 0x30: // Byte transmitted but NACK received
 			bus_stop();
-			sei();
 			return 6;
 		case 0x38: // Arbitration lost
 			return bus_send(address, byte1, byte2);
 		default: // Catastrophic failure
 			bus_stop();
-			sei();
 			return 7;
 	}
-
-	sei();
 
 	return 0;
 }
@@ -190,13 +172,6 @@ uint8_t bus_receive(uint8_t address, uint16_t* data) {
 	uint8_t byte1;
 	uint8_t byte2;
 
-	cli();
-
-	if (bus_start() != 0) {
-		sei();
-		return 1;
-	}
-
 	switch (bus_write(bus_calculate_address_packet(address, 1))) {
 		case 0x38: // Arbitration lost
 			return bus_receive(address, data);
@@ -205,26 +180,20 @@ uint8_t bus_receive(uint8_t address, uint16_t* data) {
 		case 0x48: // Request transmitted and NACK received
 		default: // Catastrophic failure
 			bus_stop();
-			sei();
 			return 2;
 	}
 
 	// Receive one byte, then tell sender we expect more bytes
 	if (bus_read_ack(&byte1) != 0x50) {
 		bus_stop();
-		sei();
 		return 3;
 	}
 
 	// Receive one byte, then tell sender that was the last byte
 	if (bus_read_nack(&byte2) != 0x58) {
 		bus_stop();
-		sei();
 		return 4;
 	}
-
-	bus_stop();
-	sei();
 
 	*data = ((uint16_t)byte1 << 8) | (uint16_t)byte2;
 
@@ -239,13 +208,28 @@ int16_t bus_translate_metadata(uint16_t data) {
 	return data & 0x07ff;
 }
 
-void bus_transmit(uint8_t address, uint8_t byte1, uint8_t byte2) {
-	bus_send(address, byte1, byte2);
+int8_t bus_transmit(uint8_t address, uint8_t byte1, uint8_t byte2) {
+	if (bus_start() != 0) {
+		return 1;
+	}
+
+	cli();
+	int8_t status_code = bus_send(address, byte1, byte2);
+	sei();
+
 	bus_stop();
+
+	return status_code;
 }
 
 int8_t bus_request(uint8_t address, uint8_t id, uint16_t metadata, uint16_t* received_data) {
 	int8_t send_status;
+
+	if (bus_start() != 0) {
+		return 1;
+	}
+
+	cli();
 
 	send_status = bus_send(
 		address,
@@ -253,13 +237,22 @@ int8_t bus_request(uint8_t address, uint8_t id, uint16_t metadata, uint16_t* rec
 		(uint8_t)metadata);
 
 	if (send_status != 0) {
+		sei();
 		return send_status;
+	}
+
+	if (bus_start() != 0) {
+		sei();
+		return 1;
 	}
 
 	send_status = bus_receive(address, received_data);
 	if (send_status != 0) {
+		sei();
 		return send_status << 4;
 	}
+
+	sei();
 
 	bus_stop();
 
