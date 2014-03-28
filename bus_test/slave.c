@@ -11,9 +11,13 @@
 
 #include "bus.h"
 
+uint16_t test(uint8_t id, uint16_t data) {
+	return data;
+}
+
 int main(void)
 {
 	bus_init(0b01100101);
-	sei();
+	bus_register_response(1, test);
 	while(1);
 }

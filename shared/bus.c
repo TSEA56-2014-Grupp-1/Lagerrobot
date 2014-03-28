@@ -7,7 +7,7 @@ uint16_t test_var_for_bus;
 
 
 // Global for storing registered callback response functions. Default value is NULL
-uint16_t (*response_callbacks[64])(uint16_t) = {0};
+uint16_t (*response_callbacks[64])(uint8_t, uint16_t) = {0};
 
 void bus_init(uint8_t address) {
 	// Modify bus frequency
@@ -66,7 +66,8 @@ void bus_stop(void) {
  */
 uint8_t bus_write(uint8_t data) {
 	TWDR = data;
-	TWCR |= (1 << TWINT) | (1 << TWEN);
+	TWCR &= 0xff ^ (1 << TWSTA) ^ (1 << TWSTO);
+	TWCR |= (1 << TWINT) | (1 << TWEN) | (1 << TWEA);
 
 	// Wait for TWINT to go high (package sent)
 	while (!(TWCR & (1 << TWINT)));
@@ -265,7 +266,7 @@ int8_t bus_request(uint8_t address, uint8_t id, uint16_t metadata, uint16_t* rec
 	return 0;
 }
 
-uint8_t bus_register_response(uint8_t id, uint16_t (*callback)(uint16_t)) {
+uint8_t bus_register_response(uint8_t id, uint16_t (*callback)(uint8_t, uint16_t)) {
 	if (response_callbacks[id] != 0) {
 		return 1;
 	}
@@ -280,7 +281,7 @@ uint8_t bus_register_response(uint8_t id, uint16_t (*callback)(uint16_t)) {
 }
 
 uint16_t bus_call_response(uint8_t id, uint16_t data) {
-	return (*response_callbacks[id])(data);
+	return (*response_callbacks[id])(id, data);
 }
 
 ISR(TWI_vect) {
@@ -319,7 +320,7 @@ ISR(TWI_vect) {
 		case 0xa8: // SLA+R received and ACK returned
 		case 0xb0: // Arbitration lost but SLA+R received and ACK returned
 			bus_response_data = bus_call_response(
-				bus_translate_id(bus_data), bus_data);
+				bus_translate_id(bus_data), bus_translate_metadata(bus_data));
 
 			TWDR = (uint8_t)(bus_response_data >> 8);
 			TWCR |= (1 << TWINT) | (1 << TWEA);
