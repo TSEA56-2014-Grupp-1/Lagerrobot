@@ -15,3 +15,5 @@ flashslave:
 
 flashmaster:
 	avrdude -p m1284p -P usb -c jtag2 -x jtagchain=1,0,4,0 -U flash:w:master.bin
+
+all: master slave
