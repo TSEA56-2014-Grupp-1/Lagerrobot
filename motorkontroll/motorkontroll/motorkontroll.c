@@ -13,43 +13,49 @@
 
 void drive_left_wheels(int speed)
 {
-	uint16_t round_speed = (uint16_t)(round(speed*2.49));
-	OCR1B = round_speed;
+	OCR1B = speed;
 }
 
 void drive_right_wheels(int speed)
 {
-	uint16_t round_speed = (uint16_t)(round(speed*2.49));
-	uint8_t round_speed_h = (round_speed << 8);
-	uint8_t round_speed_l = round_speed;
-	OCR1AH = round_speed_h;
-	OCR1AL = round_speed_l;
+	OCR1A = speed;
 }
 
 void drive_forward()
 {
-	PORTD0 = 1;
-	PORTD1 = 0;
+	PORTD = (1 << PORTD0);
+	PORTD = (0 << PORTD1);
 }
 
 void drive_backwards()
 {
-	PORTD0 = 0;
-	PORTD1 = 1;
+	PORTD = (0 << PORTD0);
+	PORTD = (1 << PORTD1);
 	
 }
 void spinn_right()
 {
-	PORTD0 = 1;
-	PORTD1 = 1;
+	PORTD = (1 << PORTD0);
+	PORTD = (1 << PORTD1);
 }
 
 void spinn_left()
 {
-	PORTD0 = 0;
-	PORTD1 = 0;
+	PORTD = (0 << PORTD0);
+	PORTD = (0 << PORTD1);
 }
-
+void stop_wheels()
+{
+	drive_left_wheels(0);
+	drive_right_wheels(0);
+}
+void wait_wheels(int milisec)
+{
+	for (int i = 1; i < milisec; i++)
+	{
+		_delay_ms(100);
+	}
+}
 int main(void)
 {
 	//OCR1A = 0x0000; // = PD5 = Rightside wheels
@@ -74,28 +80,23 @@ int main(void)
 	//set prescaler 64
 	TCCR1B |= (0 << CS12 | 1 << CS11 | 1 << CS10);
 
-		drive_left_wheels(25);
-		drive_right_wheels(25);
-		for (int i = 1; i < 10; i++0)
-		{
-			_delay_ms(200);
-		}
+		drive_left_wheels(50);
+		drive_right_wheels(50);
+		wait_wheels(10);
+		stop_wheels();
+		wait_wheels(10);
 
-		drive_left_wheels(100);
-		drive_right_wheels(100);
-		
-		for (int i = 1; i < 10; i++0)
-		{
-			_delay_ms(200);
-		}
-	
-		drive_left_wheels(0);
-		drive_right_wheels(0);	
-		
-	//OCR1BH = 0x00;
-	//OCR1BL = 0xF7;
-	//OCR1AH = 0x00;
-	//OCR1AL = 0xF7;
+		drive_backwards();
+		drive_left_wheels(249);
+		drive_right_wheels(249);
+		wait_wheels(10);
+		stop_wheels();
+		wait_wheels(10);
+		spinn_left();
+		drive_left_wheels(249);
+		drive_right_wheels(249);
+		wait_wheels(10);
+		stop_wheels();
 		
 	while(1)
     {
