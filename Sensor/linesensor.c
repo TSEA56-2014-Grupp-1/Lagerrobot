@@ -15,15 +15,18 @@ enum {floor, tape};
 typedef uint8_t station_type;
 enum station_type {Left, No, Right};
 
+typedef uint8_t line_type;
+enum line_type {line, interrupt, crossing};
 
 //Hemmagjorda datatyper
-surface_type line_break;
+line_type line_status;
 surface_type sensor_surface_types[11];	
 station_type pickup_station;
 
 //Heltal
 uint8_t sensor_channel;
 uint8_t sensor_values[11];
+uint8_t temp_sensor_values[11];
 uint8_t line_weight;
 
 uint8_t tape_reference = 100;
@@ -41,10 +44,14 @@ void line_init(){
 }
 
 void update_linesensor_values() {
-	sensor_values[sensor_channel] = ADCH;
+	temp_sensor_values[sensor_channel] = ADCH;
 	
 	if (sensor_channel == 10) {
 		sensor_channel = 0;
+		for(uint8_t i = 0; i<=10;i++)	{
+			sensor_values[i]=temp_sensor_values[i];
+		}
+		update_linesensor();
 	}
 	else {
 		sensor_channel = sensor_channel + 1;
@@ -98,28 +105,34 @@ void pickup_station_detection() {
 		current_sensor++;
 	}
 	
-	if((tape_width > 4 )&& (line_weight < 127))
+	if((tape_width > 4 )&& (line_weight < 127) && (line_status == 0))
 		pickup_station = Left;
-	else if ((tape_width > 4) && (line_weight > 127))
+	else if ((tape_width > 4) && (line_weight > 127) && (line_status == 0))
 		pickup_station = Right;
 	else
 		pickup_station = No;
 }
-void line_break_detection()	{	//better name for line_break?
+void line_break_detection()	{	
 	cli();
 	uint8_t current_sensor;
+	uint8_t total_tape;
+	total_tape = 0;
 	current_sensor = 0;
-	line_break = floor;
+	line_status = interrupt;
 	while(current_sensor <= 10)	{
-		if(sensor_surface_types[current_sensor] == tape)
-			line_break = tape;
+		if(sensor_surface_types[current_sensor] == tape)	{
+			line_status = line;
+			total_tape++;
+		}
 		current_sensor++;
 	}
+	if(total_tape == 11)
+		line_status = crossing;
 	sei();
 	};
 
 void update_linesensor()	{
-	update_linesensor_values();
+	//update_linesensor_values();
 	update_linesensor_surfaces();
 	calculate_line_weight();
 	pickup_station_detection();
