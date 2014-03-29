@@ -9,6 +9,14 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 
+//ska flyttas in i calibrate
+	uint8_t tape_sensor_references[11][10];
+	uint8_t floor_sensor_references[11][10];
+	uint16_t tape_average[11];
+	uint16_t floor_average[11];
+	uint16_t total_tape_average;
+	uint16_t total_floor_average;
+
 typedef uint8_t surface_type;
 enum {floor, tape};
 
@@ -28,6 +36,10 @@ uint8_t sensor_channel;
 uint8_t sensor_values[11];
 uint8_t temp_sensor_values[11];
 uint8_t line_weight;
+uint8_t sensor_scale[11];
+// for (uint8_t i = 0; i <= 10 ;i++)	{
+// 	sensor_scale[i] = 1;
+// }
 
 uint8_t tape_reference = 100;
 
@@ -42,16 +54,14 @@ void line_init(){
 	PORTB = sensor_channel;
 	ADCSRA |= (1 << ADSC);
 }
-
 void update_linesensor_values() {
 	temp_sensor_values[sensor_channel] = ADCH;
 	
 	if (sensor_channel == 10) {
 		sensor_channel = 0;
 		for(uint8_t i = 0; i<=10;i++)	{
-			sensor_values[i]=temp_sensor_values[i];
+			sensor_values[i]=temp_sensor_values[i];// * sensor_scale[i];
 		}
-		update_linesensor();
 	}
 	else {
 		sensor_channel = sensor_channel + 1;
@@ -130,11 +140,71 @@ void line_break_detection()	{
 		line_status = crossing;
 	sei();
 	};
-
 void update_linesensor()	{
 	//update_linesensor_values();
 	update_linesensor_surfaces();
 	calculate_line_weight();
 	pickup_station_detection();
 	line_break_detection();
+}
+
+void calibrate_linesensor()	{	//should set sensor_scale-values
+	//setup ADC for calibration-routine
+	ADCSRA = 0b10000111;
+	ADCSRA |= (1 << ADEN);
+	ADMUX = 0b00100000;
+	DDRB = 0b11111111;
+	cli();	
+	
+	//Code for puttig robot on tape
+	for(uint8_t j = 0; j <= 9; j++)	{	
+		for(uint8_t i = 0; i <= 10; i++)		{
+			PORTB = i;
+			ADCSRA |= 0b01000000;
+			while (ADCSRA &(1<<ADSC)){}
+			tape_sensor_references[i][j] = ADCH;
+		}	
+	}
+	
+	for(uint8_t i = 0; i<=10;i++)	{
+		for(uint8_t j = 0; j<=9;j++)	{
+			tape_average[i] = tape_sensor_references[i][j];
+			if(j==9)	{
+				tape_average[i] = tape_average[i]/10;
+			}
+		}
+	}
+
+	for(uint8_t i = 0; i<=10; i++)	{
+		total_tape_average = total_tape_average + tape_average[i];
+		if(i == 10)
+			total_tape_average = total_tape_average/11;
+	}
+	//code for putting robot on floor
+	for(uint8_t j = 0; j <= 9; j++)	{	
+		for(uint8_t i = 0; i <= 10; i++)		{
+			PORTB = i;
+			ADCSRA |= 0b01000000;
+			while(ADCSRA &(1<<ADSC)){}
+			floor_sensor_references[i][j] = ADCH;
+		}
+	}
+	for(uint8_t i = 0; i<=10;i++)	{
+		for(uint8_t j = 0; j<=9;j++)	{
+			floor_average[i] = floor_sensor_references[i][j];
+			if(j==9)	{
+				floor_average[i] = floor_average[i]/10;
+			}
+		}
+	}
+	for(uint8_t i = 0; i<=10; i++)	{
+		total_floor_average = total_floor_average + floor_average[i];
+		if(i == 10)
+			total_floor_average = total_floor_average/11;
+	}
+	//code for calculating sensor_scale-needs testing!
+	for(uint8_t i = 0; i<=10; i++)	{
+		sensor_scale[i] = (total_tape_average + total_floor_average) / (tape_average[i] + floor_average[i]);	
+	}
+	
 }

@@ -28,9 +28,9 @@ ISR(ADC_vect) {
 
 int main(void)
 {
-	line_init();
-	
-	sei();
+	//line_init();
+	calibrate_linesensor();
+	//sei();
 	
     while(1)
     {
