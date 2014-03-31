@@ -1,11 +1,30 @@
+/**
+ *	Base library for bus communication
+ *
+ *	@author Andreas Runfalk & Patrik Nyberg
+ */
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+/**
+ *	Temporary storage for received data
+ */
 uint16_t bus_data;
+
+/**
+ *	Temporary storage for response data
+ */
 uint16_t bus_response_data;
 
-// Global for storing registered callback response functions. Default value is NULL
+/**
+ *	Array of response callbacks used by bus_register_response() and bus_call_response()
+ */
 uint16_t (*response_callbacks[64])(uint8_t, uint16_t) = {0};
+
+/**
+ *	Array of receive callbacks used by bus_register_receive() and bus_call_receive()
+ */
 void (*receive_callbacks[64])(uint8_t, uint16_t) = {0};
 
 /**
@@ -80,6 +99,10 @@ void bus_stop() {
 
 /**
  *	Write a byte of data on the bus
+ *
+ *	@param data Data byte to write
+ *
+ *	@return Masked status code from TWSR
  */
 uint8_t bus_write(uint8_t data) {
 	uint8_t status_code;
@@ -99,7 +122,11 @@ uint8_t bus_write(uint8_t data) {
 }
 
 /**
- *	Read one byte from the bus and send ACK to indicate we expect more packets
+ *	Read one byte from the bus and send ACK to indicate more packets are expected.
+ *
+ *	@param &data Reference to uint8_t variable where data should be saved
+ *
+ *	@return Masked status code from TWSR
  */
 uint8_t bus_read_ack(uint8_t* data) {
 	uint8_t status_code;
@@ -120,7 +147,12 @@ uint8_t bus_read_ack(uint8_t* data) {
 }
 
 /**
- *	Read one byte from the bus and send NACK to indicate we expect no more packets
+ *	Read one byte from the bus and send NACK to indicate no more packets are
+ *	expected.
+ *
+ *	@param &data Reference to uint8_t variable where data should be saved
+ *
+ *	@return Masked status code from TWSR
  */
 uint8_t bus_read_nack(uint8_t* data) {
 	uint8_t status_code;
@@ -146,6 +178,8 @@ uint8_t bus_read_nack(uint8_t* data) {
  *
  *	@param address 7-bit address for target, the 7th bit is ignored
  *	@param direction 1-bit to set send or receive, only the 0th bit is used. 0 means send, 1 means receive
+ *
+ *	@return Merged 7-bit address and direction bit
  */
 uint8_t bus_calculate_address_packet(uint8_t address, uint8_t direction) {
 	if (direction) {
@@ -212,9 +246,19 @@ uint8_t bus_send(uint8_t address, uint8_t byte1, uint8_t byte2) {
 }
 
 /**
- *	Receive two bytes of data from the given address over the bus
+ *	Receive two bytes of data from the given address over the bus. Possible
+ *	status codes are:
  *
- *	This function disables interrupts at the start and re-enables then when done
+ *	- 0 if bytes were successfully received
+ *	- 1 if failure to start bus communication
+ *	- 2 if request was transmitted but was not acknowledged by destination
+ *	- 3 if first byte couldn't be received
+ *	- 4 if second byte couldn't be received
+ *
+ *	@param address Target address
+ *	@param &data Reference to uint16_t variable where data should be saved
+ *
+ *	@return Transfer status code
  */
 uint8_t bus_receive(uint8_t address, uint16_t* data) {
 	uint8_t byte1;
@@ -254,17 +298,37 @@ uint8_t bus_receive(uint8_t address, uint16_t* data) {
 	return 0;
 }
 
+/**
+ *	Extract 5-bit ID from a packet sent by bus_request() or bus_transmit()
+ *
+ *	@param data Raw 16-bit data from the bus
+ *
+ *	@return 8-bit representation 5-bit address left padded with zeros
+ */
 uint8_t bus_translate_id(uint16_t data) {
 	return (uint8_t)(data >> 11);
 }
 
+/**
+ *	Extract 11-bit metadata from a packet sent by bus_request or bus_transmit
+ *
+ *	@param data Raw 16-bit data from the bus
+ *
+ *	@return 16-bit representation of 11-bit metadata left padded with zeros
+ */
 uint16_t bus_translate_metadata(uint16_t data) {
 	return data & 0x07ff;
 }
 
 /**
- *	Transmits 11 bytes of data to the target address which passes it to the
+ *	Transmits 11 bits of data to the target address which passes it to the
  *	callback function with the given ID.
+ *
+ *	@param address Target address
+ *	@param id ID of receive callback on target
+ *	@param data 11-bits to transfer
+ *
+ *	@return See bus_send()
  */
 uint8_t bus_transmit(uint8_t address, uint8_t id, uint16_t data) {
 	uint8_t status_code = bus_send(
@@ -280,6 +344,15 @@ uint8_t bus_transmit(uint8_t address, uint8_t id, uint16_t data) {
  *	Transmits 11 bytes of metadata to the target address which is handled by the
  *	callback with the given ID. The callback returns two bytes of data. If the
  *	target does not have a callback with this ID two zero bytes are returned.
+ *
+ *	@param address Target address
+ *	@param id ID of response callback on target
+ *	@param metadata 11-bit metadata that is passed to the response callback
+ *	@param &received_data Reference to uint16_t variable where response data should be saved
+ *
+ *	@return
+ *		Top 4 bits contains status code by bus_receive() and lower 4 bits contain
+ *		status code returned by bus_send()
  */
 int8_t bus_request(uint8_t address, uint8_t id, uint16_t metadata, uint16_t* received_data) {
 	int8_t send_status;
@@ -300,17 +373,40 @@ int8_t bus_request(uint8_t address, uint8_t id, uint16_t metadata, uint16_t* rec
 	return 0;
 }
 
+/**
+ *	Checks if there is a registered response callback for this ID
+ *
+ *	@param id Callback ID to test for
+ *
+ *	@return 1 if callback exists 0 otherwise
+ */
 uint8_t bus_has_response(uint8_t id) {
 	return response_callbacks[id] != 0;
 }
 
+/**
+ *	Checks if there is a registered receive callback for this ID
+ *
+ *	@param id Callback ID to test for
+ *
+ *	@return 1 if callback exists 0 otherwise
+ */
 uint8_t bus_has_receive(uint8_t id) {
 	return receive_callbacks[id] != 0;
 }
 
 /**
  *	Register a handler to reply to bus_requests. The ID is shared with
- *	bus_register_receive. Max ID is 63.
+ *	bus_register_receive(). Max ID is 63.
+ *
+ *	- 0 if successful
+ *	- 1 if ID is already bound by either bus_register_response() or bus_register_receive()
+ *	- 2 if ID is greater than 63
+ *
+ *	@param id ID to listen to
+ *	@param callback Callback function
+ *
+ *	@return Status code
  */
 uint8_t bus_register_response(uint8_t id, uint16_t (*callback)(uint8_t, uint16_t)) {
 	if (bus_has_response(id) || bus_has_receive(id)) {
@@ -327,8 +423,17 @@ uint8_t bus_register_response(uint8_t id, uint16_t (*callback)(uint8_t, uint16_t
 }
 
 /**
- *	Register a handler to reply to bus_requests. The ID is shared with
- *	bus_register_response. Max ID is 63.
+ *	Register a handler to handle bus_tranmit(). The ID is shared with
+ *	bus_register_response. Max ID is 63. Possible status codes are:
+ *
+ *	- 0 if successful
+ *	- 1 if ID is already bound by either bus_register_response() or bus_register_receive()
+ *	- 2 if ID is greater than 63
+ *
+ *	@param id ID to listen to
+ *	@param callback Callback function
+ *
+ *	@return Status code
  */
 uint8_t bus_register_receive(uint8_t id, void (*callback)(uint8_t, uint16_t)) {
 	if (bus_has_response(id) || bus_has_receive(id)) {
@@ -344,6 +449,14 @@ uint8_t bus_register_receive(uint8_t id, void (*callback)(uint8_t, uint16_t)) {
 	return 0;
 }
 
+/**
+ *	Calls the response callback with the given ID and provides it the given data
+ *
+ *	@param id 5-bit callback ID registered by bus_register_response()
+ *	@param data 11-bit data to provide callback
+ *
+ *	@return 0 if there is no response with given ID, else callback return data
+ */
 uint16_t bus_call_response(uint8_t id, uint16_t data) {
 	if (!bus_has_response(id)) {
 		return 0;
@@ -351,6 +464,12 @@ uint16_t bus_call_response(uint8_t id, uint16_t data) {
 	return (*response_callbacks[id])(id, data);
 }
 
+/**
+ *	Calls the receive callback with the given ID and provides it the given data
+ *
+ *	@param id 5-bit callback ID registered by bus_register_response()
+ *	@param data 11-bit data to provide callback
+ */
 void bus_call_receive(uint8_t id, uint16_t data) {
 	if (!bus_has_receive(id)) {
 		return;
@@ -358,6 +477,9 @@ void bus_call_receive(uint8_t id, uint16_t data) {
 	(*receive_callbacks[id])(id, data);
 }
 
+/**
+ *	Handle interrupts from other masters
+ */
 ISR(TWI_vect) {
 	switch (TWSR & 0xf8) {
 		// Slave receive
