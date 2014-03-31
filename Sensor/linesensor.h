@@ -17,5 +17,7 @@ void pickup_station_detection();
 void line_break_detection();
 void calculate_line_weight();
 void calibrate_linesensor();
+void calibrate_tape();
+void calibrate_floor();
 
 #endif /* LINESENSOR_H_ */

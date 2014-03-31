@@ -13,7 +13,7 @@
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
 		case 0 :
-			update_linesensor_values();
+			update_linesensor();
 		case 1 :
 		
 		break;
@@ -28,9 +28,9 @@ ISR(ADC_vect) {
 
 int main(void)
 {
-	//line_init();
-	calibrate_linesensor();
-	//sei();
+	//calibrate_linesensor();
+	line_init();
+	sei();
 	
     while(1)
     {
