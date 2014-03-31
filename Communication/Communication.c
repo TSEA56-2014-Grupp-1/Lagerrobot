@@ -4,11 +4,12 @@
  * Created: 2014-03-26 09:49:31
  *  Author: Karl
  */ 
-#define ROTATE_INTERVAL 10
+#define ROTATE_INTERVAL 100
 
 #include <avr/io.h>
+#include <string.h>
 #include "LCD.h"
-#include "bus.h"
+#include "../shared/bus.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
@@ -43,6 +44,14 @@ ISR(TIMER1_OVF_vect) {
 		++lcd_rotation_counter;
 }
 
+void clear_message(uint8_t unit) {
+	for (int i = 0; i<16; ++i){
+		if (i < 13)
+			message_map_line1[unit][i] = 0x20;
+		message_map_line2[unit][i] = 0x20;
+	}
+}
+
 void init(){
 	DDRA = 0xff;
 	DDRB = 0xff;
@@ -61,11 +70,19 @@ int main(void)
 	init();
 	lcd_init();
 	bus_init(0b0000101);
+
+	display(COMM, "Hello!", "World!");	
 	
+	uint16_t sysdata = ((uint16_t) 'H' << 8) | (uint16_t) 'A';
+	int8_t result;
+	result = bus_request(0b0000011, 1, 0x0123, &sysdata);
 	
+	clear_message(SENS);
 	
-	sei();
-	display(COMM, "Hello!", "World!");
+	message_map_line1[SENS][0] = (uint8_t) (sysdata >> 8);
+	message_map_line1[SENS][1] = (uint8_t) sysdata;
+	
+	PORTD = result;
     while(1)
     {
 		

@@ -191,8 +191,8 @@ uint8_t bus_receive(uint8_t address, uint16_t* data) {
 
 	// Receive one byte, then tell sender that was the last byte
 	if (bus_read_nack(&byte2) != 0x58) {
-		bus_stop();
-		return 4;
+		//bus_stop();
+		//return 4;
 	}
 
 	*data = ((uint16_t)byte1 << 8) | (uint16_t)byte2;
