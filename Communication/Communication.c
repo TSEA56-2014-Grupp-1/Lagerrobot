@@ -16,7 +16,7 @@
 uint8_t lcd_rotation_counter = 0;
 uint8_t lcd_current_sender = 0;
 
-char message_map_line1[4][13] = {
+char message_map_line1[4][16] = {
 	"Kommunikation",
 	"Sensor",
 	"Arm",
@@ -42,6 +42,32 @@ ISR(TIMER1_OVF_vect) {
 	}
 	else
 		++lcd_rotation_counter;
+}
+
+void symbols_are_ready(uint8_t id, uint16_t data) {
+	uint16_t symbol_pair;
+	switch (data) {
+		case 's':
+			for (int i = 0; i < 8; ++i) {
+				//loop over the symbol pairs
+				bus_request(0b0000011, 1, i, &symbol_pair);
+				message_map_line1[SENS][2*i] = symbol_pair >> 8;
+				message_map_line1[SENS][2*i+1] = symbol_pair;
+				
+				bus_request(0b0000011, 1, i | 0b00010000, &symbol_pair);
+				message_map_line2[SENS][2*i] = symbol_pair >> 8;
+				message_map_line2[SENS][2*i+1] = symbol_pair;
+				
+			}
+		break;
+		case 'c':
+		
+		break;
+		case 'a':
+		
+		break;
+	}
+	
 }
 
 void clear_message(uint8_t unit) {
@@ -70,7 +96,10 @@ int main(void)
 	init();
 	lcd_init();
 	bus_init(0b0000101);
-
+	
+	bus_register_response(2, symbols_are_ready);
+	_delay_ms(100);
+	
 	display(COMM, "Hello!", "World!");	
 	
 	uint16_t sysdata = ((uint16_t) 'H' << 8) | (uint16_t) 'A';
