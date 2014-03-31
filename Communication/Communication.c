@@ -97,21 +97,11 @@ int main(void)
 	lcd_init();
 	bus_init(0b0000101);
 	
-	bus_register_response(2, symbols_are_ready);
+	bus_register_receive(2, symbols_are_ready);
 	_delay_ms(100);
 	
 	display(COMM, "Hello!", "World!");	
 	
-	uint16_t sysdata = ((uint16_t) 'H' << 8) | (uint16_t) 'A';
-	int8_t result;
-	result = bus_request(0b0000011, 1, 0x0123, &sysdata);
-	
-	clear_message(SENS);
-	
-	message_map_line1[SENS][0] = (uint8_t) (sysdata >> 8);
-	message_map_line1[SENS][1] = (uint8_t) sysdata;
-	
-	PORTD = result;
     while(1)
     {
 		
