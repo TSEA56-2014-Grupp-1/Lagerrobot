@@ -91,6 +91,7 @@ uint8_t bus_read_ack(uint8_t* data) {
  *	Read one byte from the bus and send NACK to indicate we expect no more packets
  */
 uint8_t bus_read_nack(uint8_t* data) {
+	TWCR &= 0xff ^ (1 << TWEA);
 	TWCR |= (1 << TWINT) | (1 << TWEN);
 
 	// Wait for TWINT to go high
