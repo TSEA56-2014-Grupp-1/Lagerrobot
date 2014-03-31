@@ -10,31 +10,45 @@
 void steering_algorithm ()
 {
 
-	if(prev_error < 0)
+	if(prev_error > 0)
 	{
-		speed_right = 1300;
-		speed_left = 1300 - (uint8_t)control;
+		
+		if (control > 1000)
+		{
+			speed_left = 0;
+		}
+		else {
+			speed_left = 1000 - control;
+		}
+		speed_right = 1000;
+		
 		drive_left_wheels(speed_left);
 		drive_right_wheels(speed_right);
 	}
 	
-	else if (prev_error > 0)
+	else if (prev_error < 0)
 	{
-		speed_left = 1300;
-		speed_right = 1300 - (uint8_t)control;
+		if (control > 1000)
+		{
+			speed_right = 0;
+		}
+		else {
+			speed_right = 1000 - control;
+		}
+		speed_left = 1000;
+		
 		drive_right_wheels(speed_right);
 		drive_left_wheels(speed_left);
 	}
 	
 	else if (prev_error == 0)
 	{
-		drive_right_wheels(1300);
-		drive_left_wheels(1300);
+		drive_right_wheels(200);
+		drive_left_wheels(200);
 	}
 	
 	else
 	stop_wheels();
-	
 	
 }
 
@@ -50,7 +64,7 @@ void pd_update(double curr_error, double dt)
 	
 	// scaling
 	p_term = (proportional_gain * curr_error);
-	d_term = (derivative_gain   * diff);
+	d_term = (derivative_gain  * diff);
 	
 	// summation of terms
 	control = abs(p_term) + d_term;
@@ -62,6 +76,6 @@ void pd_update(double curr_error, double dt)
 void regulator_init()
 {
 	prev_error = 0;
-	proportional_gain = 10;
-	derivative_gain = 6;
+	proportional_gain = 50;
+	derivative_gain = 0;
 }

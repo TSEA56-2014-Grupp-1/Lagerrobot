@@ -5,6 +5,10 @@
  *  Author: Lucas
  */ 
 
+#ifndef ENGINE_CONTROL_H_
+#define ENGINE_CONTROL_H_
+
+
 #include "steering_commands.h"
 #include "automatic_steering.h"
 
@@ -16,10 +20,14 @@
 #include <stdlib.h>
 
 uint16_t line_weight;
-double prev_error;
+int prev_error;
 double proportional_gain;
 double derivative_gain;
 double control;
-double curr_error;
+//double curr_error;
 uint16_t speed_left;
 uint16_t speed_right;
+
+void engine_init();
+
+#endif

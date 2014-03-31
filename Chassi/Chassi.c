@@ -8,36 +8,30 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include "Chassi.h"
+#include "automatic_steering.h"
+#include "engine_control.h"
+#include "automatic_steering.h"
+#include "../shared/bus.h"
 
-// Decisions
-const uint8_t AT_STATION = 1;
-const uint8_t WRONG_STATION_MEM = 2;
-const uint8_t WRONG_STATION_RFID = 3;
-const uint8_t OBJECT_IS_PUT_DOWN = 4;
-const uint8_t LOOK_FOR_OBJECT = 5;
+uint16_t request_line_data()
+{
+	uint16_t data;
+	bus_request(4, 4, 0, &data);
+	return data;
+}
 
-// Global variables
-uint8_t carrying_rfid = 0;
-uint64_t Time_since_start = 0;
-// Functions 
-uint8_t is_station(uint16_t line_data) {}
-void follow_line(uint8_t line_data) {}
-void stop_wheels() {}
-void send_decision_to_pc(uint8_t decision){} // send data to pc
-void send_rfid_to_pc(uint8_t rfid, uint8_t time_for_station){} // send data to pc
-uint8_t is_right_station_mem(){} 
-uint8_t save_time_and_rfid(uint8_t carrying_rfid) {}
-uint16_t request_line_data(){} // send command to Sensor
-uint32_t request_rfid_data(){} // send command to Sensor
-void put_down_object() {} // send command to Arm
-void pick_up_object() {} // send command to Arm
-uint8_t benefit_turn_around(){}
-void turn_around() {}
-	
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	//Size on line_data? specify! XXX
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
+	double curr_error = line_data - 127;
+	//double curr_error = 1;
+	pd_update(curr_error,0.0167);
+	steering_algorithm();
+}
+	
+	/*
 	if (!is_station(line_data))	// Continue following line
 	{
 		follow_line((uint8_t)line_data);
@@ -84,6 +78,9 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	reti();
 }
 
+
+
+
 ISR(interrupt_arm) // XX Name for interrupt vector??
 {
 	TIMSK0 |= (1 << OCIE0A); // Enable timer-interrupt again
@@ -94,9 +91,33 @@ ISR(interrupt_arm) // XX Name for interrupt vector??
 		turn_around();
 	}
 }
+*/
 
 int main(void)
 {
+	bus_init(1);
+	_delay_ms(100);
+	
+	engine_init();
+	regulator_init();
+
+	//enable timer interrupts for ocie0a
+	sei();
+	TIMSK0 |= (1 << OCIE0A);
+	TIFR0 |= (1 << OCF0A);
+	
+	// interrupt frequency 30hz
+	OCR0A = 0xff; 
+	
+	// set to mode 2 (CTC) => clear TCNT0 on compare match
+	TCCR0A |= (1 << WGM01 | 0 << WGM00); 
+	TCCR0B |= (0 << WGM02);
+	
+	//prescale
+	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
+	
+	
+	
     while(1)
     {
         //TODO:: Please write your application code 

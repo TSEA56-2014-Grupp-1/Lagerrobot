@@ -5,6 +5,10 @@
  *  Author: Lucas
  */ 
 
+#ifndef STEERING_COMMANDS_H_
+#define STEERING_COMMANDS_H_
+
+#define F_CPU 16000000UL
 #include <avr/io.h>
 #include <util/delay.h>
 
@@ -18,3 +22,5 @@ void stop_wheels();
 void wait_wheels(int tenth_secs);
 void turn_right(int speed);
 void turn_left(int speed);
+
+#endif

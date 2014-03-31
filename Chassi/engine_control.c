@@ -5,6 +5,8 @@
  *  Author: Erik
  */ 
 
+#include "engine_control.h"
+
 void engine_init()
 {
 	//OCR1A = 0x0000; // = PD5 = Rightside wheels
@@ -25,27 +27,6 @@ void engine_init()
 	//set com1a com1b Clear OCnA/OCnB on Compare Match, set OCnA/OCnB at BOTTOM (non-inverting mode)
 	TCCR1A |= (1 << COM1A1 | 0<<COM1A0 | 1<< COM1B1 | 0 << COM1B0);
 		
-	//set prescaler 64
-	//TCCR1B |= (0 << CS12 | 1 << CS11 | 1 << CS10);
 	//set prescaler 8
 	TCCR1B |= (0 << CS12 | 1 << CS11 | 0 << CS10);
-}
-
-int main(void)
-{
-
-	engine_init();
-	regulator_init();
-
-	drive_left_wheels(1900);
-	drive_right_wheels(1900);
-
-		
-	while(1)
-    {
-// 		get_sensorgraj();
-// 		pd_update(curr_error, update_rate);
-//      steering_algorithm();
-// 	    
-    }
 }
