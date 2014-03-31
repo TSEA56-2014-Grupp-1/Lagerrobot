@@ -42,7 +42,7 @@
       <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-          <JtagDbgClock>706630</JtagDbgClock>
+          <JtagDbgClock>1140000</JtagDbgClock>
           <JtagInChain>true</JtagInChain>
           <JtagDevicesBefore>1</JtagDevicesBefore>
           <JtagDevicesAfter>1</JtagDevicesAfter>
@@ -121,6 +121,14 @@
     <Compile Include="..\shared\bus.h">
       <SubType>compile</SubType>
       <Link>bus.h</Link>
+    </Compile>
+    <Compile Include="..\shared\LCD_interface.c">
+      <SubType>compile</SubType>
+      <Link>LCD_interface.c</Link>
+    </Compile>
+    <Compile Include="..\shared\LCD_interface.h">
+      <SubType>compile</SubType>
+      <Link>LCD_interface.h</Link>
     </Compile>
     <Compile Include="lcd_test.c">
       <SubType>compile</SubType>

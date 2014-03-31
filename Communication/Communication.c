@@ -46,28 +46,33 @@ ISR(TIMER1_OVF_vect) {
 
 void symbols_are_ready(uint8_t id, uint16_t data) {
 	uint16_t symbol_pair;
-	switch (data) {
-		case 's':
-			for (int i = 0; i < 8; ++i) {
-				//loop over the symbol pairs
-				bus_request(0b0000011, 1, i, &symbol_pair);
-				message_map_line1[SENS][2*i] = symbol_pair >> 8;
-				message_map_line1[SENS][2*i+1] = symbol_pair;
-				
-				bus_request(0b0000011, 1, i | 0b00010000, &symbol_pair);
-				message_map_line2[SENS][2*i] = symbol_pair >> 8;
-				message_map_line2[SENS][2*i+1] = symbol_pair;
-				
-			}
+	uint8_t module;
+	switch(data) {
+		case BUS_ADDRESS_ARM:
+		module = ARM;
 		break;
-		case 'c':
-		
+		case BUS_ADDRESS_CHASSIS:
+		module = CHAS;
 		break;
-		case 'a':
-		
+		case BUS_ADDRESS_SENSOR:
+		module = SENS;
 		break;
+		default:
+		module = 0;
 	}
 	
+	for (int i = 0; i < 8; ++i) {
+		//loop over the symbol pairs
+		bus_request(data, 1, i, &symbol_pair);
+		message_map_line1[module][2*i] = symbol_pair >> 8;
+		message_map_line1[module][2*i+1] = symbol_pair;
+		
+		//fifth bit contains line data
+		bus_request(data, 1, i | 0b00010000, &symbol_pair);
+		message_map_line2[module][2*i] = symbol_pair >> 8;
+		message_map_line2[module][2*i+1] = symbol_pair;
+				
+	}
 }
 
 void clear_message(uint8_t unit) {
