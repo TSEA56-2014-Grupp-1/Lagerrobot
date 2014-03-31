@@ -20,4 +20,6 @@ void calibrate_linesensor();
 void calibrate_tape();
 void calibrate_floor();
 
+uint16_t return_line_weight(uint8_t id, uint16_t metadata);
+
 #endif /* LINESENSOR_H_ */

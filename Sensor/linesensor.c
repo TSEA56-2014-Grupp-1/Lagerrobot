@@ -9,7 +9,6 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 
-
 // #define F_CPU 20000000UL;
 // #include <util/delay.h>
 //ska flyttas in i calibrate
@@ -47,6 +46,10 @@ double sensor_scale[11];
 uint8_t tape_reference = 100;
 
 
+uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
+	return (uint16_t)line_weight;
+}
+
 void line_init(){
 	sensor_channel = 0;
 	ADCSRA = 0b10001111;
@@ -68,8 +71,8 @@ void update_linesensor_values() {
 // 			}
 // 			else
 // 			{
-// 				sensor_values[i] = sensor_scale - temp_sensor_values[i];
-// 			}
+// 				sensor_values[i] = temp_sensor_values;//sensor_values[i] = sensor_scale - temp_sensor_values[i];
+//  			}
 		}
 	}
 	else {
@@ -175,11 +178,11 @@ void calibrate_linesensor()	{	//should set sensor_scale-values and tape_referenc
 		if(tape_average[i] < total_tape_average)
 			sensor_scale_temp_tape = total_tape_average - tape_average[i];
 		else
-			sensor_scale_temp_tape = tape_average[i] - total_tape_average;
+			sensor_scale_temp_tape = 0;//tape_average[i] - total_tape_average;
 		if(floor_average[i] < total_floor_average)
 			sensor_scale_temp_floor = total_floor_average - floor_average[i];
 		else
-			sensor_scale_temp_floor = floor_average[i] - total_floor_average;
+			sensor_scale_temp_floor = 0;//floor_average[i] - total_floor_average;
 			
 		sensor_scale[i] = (sensor_scale_temp_floor + sensor_scale_temp_tape)/2;	
 	}
