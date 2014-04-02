@@ -7,6 +7,7 @@
 
 #include "bluetooth.h"
 #include "Communication.h"
+#include "packets.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
