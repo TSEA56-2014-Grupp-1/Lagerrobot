@@ -5,18 +5,17 @@
  *  Author: Philip
  */ 
 
-//constants
-const uint8_t start_angle = 156;
-const uint16_t end_angle = 780;
-const double  step = (end_angle - start_angle) / 180;
+#include "sidescanner.h"
+#include <avr/io.h>
+
 
 void sidescanner_init()
 {
-	DDRB = 0b01100000;	//Set port direction
+	DDRB = 0b11000000;	//Set port direction
 
 	// set top value
-	ICR1H = 0x18; //Top value high (18 with prescaler 64)
-	ICR1L = 0x69; // Top value low (6249 or 0x1869 with prescaler 64)
+	ICR3H = 0x18; //Top value high (18 with prescaler 64)
+	ICR3L = 0x69; // Top value low (6249 or 0x1869 with prescaler 64)
 
 	// set WGM3:0 --> choose mode 14, fast pwm
 	TCCR3A |= (1<< WGM11 | 0 << WGM10);
@@ -30,12 +29,39 @@ void sidescanner_init()
 }
 
 
-void scanner_left_position(int angle)
+void scanner_left_position(int angle)	//takes an angle between 0 and 180 degrees.
 {
-	OCR3A = start_angle + step*angle;
+	OCR3A = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
 }
 
 void scanner_right_position(int angle)
 {
-	OCR3B = start_angle + step*angle;
+	OCR3B = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
+}
+
+void scan_left_side()
+{
+	for (int i=0; i<180; i++)
+	{
+		wait_scanner_servo(50); //how fast the servo scans
+		scanner_left_position(i);
+	}
+}
+
+void scan_right_side()
+{
+	for (int i=0; i<180; i++)
+	{
+		wait_scanner_servo(50); 
+		scanner_right_position(i);
+	}
+}
+
+//wait function
+void wait_scanner_servo(int milli_sec)
+{
+	for (int i = 0; i < milli_sec; i++)
+	{
+		_delay_ms(1);
+	}
 }
