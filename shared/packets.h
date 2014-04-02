@@ -1,6 +1,7 @@
 #ifndef PACKETS_H_
 #define PACKETS_H_
 
+#define MAX_NUM_OF_PACKETS		16
 /*	packets					|	packet_id | packet contents (byte numbers)			*/			
 #define PKT_STOP				0	//		none
 #define PKT_ARM_COMMAND			1	//		command type(1), data(2-3)
@@ -13,7 +14,7 @@
 #define PKT_RFID_DATA			8	//		tag bytes(1-12)
 #define	PKT_CHASSIS_DECISION	9	//		<not defined yet>
 #define PKT_ARM_DECISION		10	//		<not defined yet>
-#define PKT_PC_REQUEST			11	//		id of packet pc wants(1)
+#define PKT_PACKET_REQUEST		11	//		id of packet pc wants(1)
 #define PKT_SPOOFED_REQUEST		12	//		bus request packets(1-3)
 #define PKT_SPOOFED_RESPONSE	13	//		bus response packets(1-2)
 #define PKT_SPOOFED_TRANSMIT	14	//		bus transmit packets(1-3)
@@ -24,9 +25,9 @@
 #define CMD_ARM_RELEASE			2	//		none
 #define CMD_ARM_PREDEFINED_POS	3	//		predefine id(1)
 
-#define CMD_CHASSI_SPEED		0	//		speed(1)
-#define CMD_CHASSI_STEER		1	//		steering power(1)
-#define	CMD_CHASSI_START		2	//		none
+#define CMD_CHASSIS_SPEED		0	//		speed(1)
+#define CMD_CHASSIS_STEER		1	//		steering power(1)
+#define	CMD_CHASSIS_START		2	//		none
 
 
 #endif /* PACKETS_H_*/
