@@ -4,7 +4,8 @@
  * Created: 2014-03-25 17:29:08
  *  Author: Karl Linderhed
  */ 
-#define F_CPU 18.432E6
+
+#include "Communication.h"
 
 #include <util/delay.h>
 #include <avr/io.h>

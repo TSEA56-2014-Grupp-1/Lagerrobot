@@ -5,9 +5,11 @@
  *  Author: Karl
  */ 
 
-
-#include <avr/io.h>
+#include "Communication.h"
 #include "LCD.h"
+#include "bluetooth.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 
 void init(){
@@ -22,6 +24,8 @@ int main(void)
 	init();
 	//_delay_ms(200);
 	lcd_init();
+	bt_init();
+	sei();
 	
 	lcd_print("Are you done?", "I want to live!");
     while(1)

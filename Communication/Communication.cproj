@@ -114,7 +114,16 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="bluetooth.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="bluetooth.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Communication.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Communication.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="LCD.c">
