@@ -13,11 +13,10 @@
 #include "../shared/bus.h"
 #include "sidescanner.h"
 
-uint8_t n;
 
 
 ISR(ADC_vect) {
-	switch (ADMUX & 0b00011111) {
+	switch (ADMUX && 0b00011111) {
 		case 0 :
 			update_linesensor();
 		case 1 :
@@ -37,20 +36,15 @@ int main(void)
 	bus_init(4);
 	bus_register_response(4, return_line_weight);
 	//sidescanner
-	sidescanner_init();
-	scanner_left_position(0);
-	wait_scanner_servo(1000);
+	//sidescanner_init();
 	
 	//calibrate_linesensor();
-	//line_init();
-	sidescanner_init();
+	line_init();
 	sei();
 	
     while(1)
     {
-		scanner_left_position(n);
-		scanner_right_position(n);
-		n = n +10;
+		//sweep_left();
         //TODO:: Please write your application code 
     }
 }

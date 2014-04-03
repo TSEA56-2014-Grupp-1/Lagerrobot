@@ -53,10 +53,8 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 void line_init(){
 	sensor_channel = 0;
 	ADCSRA = 0b10001111;
-	DDRD = 0b11111111;
 	DDRB = 0b11111111;
 	ADMUX = (1 << ADLAR);
-	
 	PORTB = sensor_channel;
 	ADCSRA |= (1 << ADSC);
 }

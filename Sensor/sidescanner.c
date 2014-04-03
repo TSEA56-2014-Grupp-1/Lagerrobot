@@ -9,18 +9,21 @@
 #include <avr/interrupt.h>
 #include "sidescanner.h"
 
-uint8_t distance;
-uint8_t zone_size;
-uint8_t angle;
+double distance;
+uint16_t zone_size = 20; 
+uint8_t angle =0;
 uint8_t max_angle = 180;
 uint8_t object_found;
 uint8_t step = 1;
 uint8_t distance_read_ok;
-
+uint8_t x_coord_left;
+uint8_t y_coord_left;
+uint8_t x_coord_right;
+uint8_t y_coord_right;
 
 void sidescanner_init()
 {
-	DDRB = 0b11000000;	//Set port direction
+	DDRB |= 0b11000000;	//Set port direction
 	
 	// set top value
 	ICR3H = 0x18; //Top value high (18 with prescaler 64)
@@ -35,6 +38,14 @@ void sidescanner_init()
 
 	//set prescaler 64
 	TCCR3B |= (0 << CS12 | 1 << CS11 | 1 << CS10);
+	
+	//Enable adc, Set ADIF flag, Set ADC Interreupt enable, set prescaler
+	ADCSRA = 0b10001111;
+	//Set left AD-left adjust, set AD-channel 1
+	ADMUX |= 0b00100001;	
+	//Start AD-conversion
+	ADCSRA |= (1 << ADSC);
+	
 }
 
 
@@ -58,11 +69,14 @@ uint8_t scanner_right_position(uint8_t angle)
 
 void update_distance()	{
 	distance = ADCH;
-	distance_read_ok = 1;
+	ADCSRA |= (1 << ADSC);
 }
 
+
 uint8_t sweep_left()	{
-	if(distance<=zone_size)	{
+	//zone_size in volt = 1/distance
+	if(distance>=zone_size)	
+	{
 		object_found = 1;
 		scanner_left_position(0);
 	}
@@ -89,5 +103,11 @@ void wait_scanner_servo(int milli_sec)
 	{
 		_delay_ms(1);
 	}
+}
+
+void calculate_coordinates()
+{
+	x_coord_left = ORIGO_TO_SCANNER_DISTANCE + distance*cos(angle);
+	y_coord_left = distance*sin(angle);
 }
 

@@ -17,6 +17,7 @@
 #define SENSOR_SCANNER_ANGLE_START 156
 #define SENSOR_SCANNER_ANGLE_END 780
 #define SENSOR_SCANNER_ANGLE_STEP (SENSOR_SCANNER_ANGLE_END - SENSOR_SCANNER_ANGLE_START) / 180
+#define ORIGO_TO_SCANNER_DISTANCE 30
 #define F_CPU 20000000UL
 #include <util/delay.h>
 
@@ -27,6 +28,7 @@ uint8_t sweep_left();
 uint8_t sweep_right();
 void wait_scanner_servo();
 void update_distance();
+void calculate_coordinates();
 
 
 
