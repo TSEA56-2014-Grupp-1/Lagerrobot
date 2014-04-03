@@ -7,7 +7,8 @@
 
 #include "Communication.h"
 #include "LCD.h"
-#include "bluetooth.h"
+#include "pc_link.h"
+#include "../shared/usart.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -24,12 +25,24 @@ int main(void)
 	init();
 	//_delay_ms(200);
 	lcd_init();
-	bt_init();
+	usart_init(0x0009);
 	sei();
 	
-	lcd_print("Are you done?", "I want to live!");
+	lcd_print("Testing BT", "    ...    ");
+	
+	lcd_clear();
     while(1)
     {
-        //TODO:: Please write your application code 
+		while (!usart_has_bytes());
+		if (process_packet() == 1) // timeout
+			lcd_print("packet read", "timed out");
+		/*
+		uint8_t data;
+		usart_read_byte(&data);
+		
+		if (data == 0x1B)
+			lcd_clear();
+		lcd_send_symbol(data);*/
+		
     }
 }
