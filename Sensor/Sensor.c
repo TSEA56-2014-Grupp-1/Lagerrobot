@@ -10,13 +10,17 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
+#include "sidescanner.h"
+
+uint8_t n;
+
 
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
 		case 0 :
 			update_linesensor();
 		case 1 :
-		
+			update_distance();
 		break;
 		case 2 : 
 		
@@ -31,13 +35,17 @@ int main(void)
 {
 	bus_init(4);
 	bus_register_response(4, return_line_weight);
-	
+	n = 0;
 	//calibrate_linesensor();
-	line_init();
+	//line_init();
+	sidescanner_init();
 	sei();
 	
     while(1)
     {
+		scanner_left_position(n);
+		scanner_right_position(n);
+		n = n +10;
         //TODO:: Please write your application code 
     }
 }

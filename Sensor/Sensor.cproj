@@ -47,7 +47,7 @@
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
-      <ToolNumber>J30200008936</ToolNumber>
+      <ToolNumber>J30200013317</ToolNumber>
       <ToolName>JTAGICE3</ToolName>
     </com_atmel_avrdbg_tool_jtagice3plus>
     <avrtoolinterface>JTAG</avrtoolinterface>
@@ -136,6 +136,12 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Sensor.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="sidescanner.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="sidescanner.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>
