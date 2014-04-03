@@ -9,6 +9,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "linesensor.h"
+#include "sidescanner.h"
 #include "../shared/bus.h"
 #include "sidescanner.h"
 
@@ -35,7 +36,11 @@ int main(void)
 {
 	bus_init(4);
 	bus_register_response(4, return_line_weight);
-	n = 0;
+	//sidescanner
+	sidescanner_init();
+	scanner_left_position(0);
+	wait_scanner_servo(1000);
+	
 	//calibrate_linesensor();
 	//line_init();
 	sidescanner_init();
