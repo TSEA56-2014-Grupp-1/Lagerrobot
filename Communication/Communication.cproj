@@ -42,7 +42,7 @@
       <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-          <JtagDbgClock>1000000</JtagDbgClock>
+          <JtagDbgClock>900510</JtagDbgClock>
           <JtagInChain>true</JtagInChain>
           <JtagDevicesBefore>2</JtagDevicesBefore>
           <JtagDevicesAfter>0</JtagDevicesAfter>
@@ -52,7 +52,7 @@
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
-      <ToolNumber>J30200013317</ToolNumber>
+      <ToolNumber>J30200008936</ToolNumber>
       <ToolName>JTAGICE3</ToolName>
     </com_atmel_avrdbg_tool_jtagice3plus>
     <avrtoolinterface>JTAG</avrtoolinterface>
@@ -114,6 +114,14 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\shared\bus.c">
+      <SubType>compile</SubType>
+      <Link>bus.c</Link>
+    </Compile>
+    <Compile Include="..\shared\bus.h">
+      <SubType>compile</SubType>
+      <Link>bus.h</Link>
+    </Compile>
     <Compile Include="..\shared\packets.h">
       <SubType>compile</SubType>
       <Link>packets.h</Link>
@@ -126,10 +134,10 @@
       <SubType>compile</SubType>
       <Link>usart.h</Link>
     </Compile>
-    <Compile Include="bluetooth.c">
+    <Compile Include="pc_link.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="bluetooth.h">
+    <Compile Include="pc_link.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Communication.c">

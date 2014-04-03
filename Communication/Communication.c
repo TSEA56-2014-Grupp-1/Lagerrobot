@@ -7,7 +7,7 @@
 
 #include "Communication.h"
 #include "LCD.h"
-#include "bluetooth.h"
+#include "pc_link.h"
 #include "../shared/usart.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -28,9 +28,20 @@ int main(void)
 	usart_init(0x0009);
 	sei();
 	
-	lcd_print("Are you done?", "I want to live!");
+	lcd_print("Testing BT", "    ...    ");
+	
+	
+	uint8_t packet_length = 0;
     while(1)
     {
-        //TODO:: Please write your application code 
+		while (!usart_has_bytes());
+		
+		if (usart_read_byte(&packet_length) == 1) // timeout
+			break;
+			
+		if (process_packet(packet_length) == 1) // timeout
+			break;
+		
+		
     }
 }
