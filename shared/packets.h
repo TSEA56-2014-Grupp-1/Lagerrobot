@@ -1,7 +1,6 @@
 #ifndef PACKETS_H_
 #define PACKETS_H_
 
-#define MAX_NUM_OF_PACKETS		16
 /*	packets					|	packet_id | packet contents (byte numbers)			*/			
 #define PKT_STOP				0	//		none
 #define PKT_ARM_COMMAND			1	//		command type(1), data(2-4)

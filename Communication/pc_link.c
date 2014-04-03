@@ -44,12 +44,10 @@ uint8_t process_packet() {
 			switch (parameter) {
 				case CMD_ARM_MOVE:
 					
-					
 					if (usart_read_byte(&joint) == 1 || 
 						usart_read_byte(&pos_l) == 1 ||
 						usart_read_byte(&pos_h) == 1)
-						return 1;
-						
+						return 1;		
 					// issue arm move command on bus here
 				break;
 				case CMD_ARM_GRIP:
@@ -70,7 +68,8 @@ uint8_t process_packet() {
 		break;
 		case PKT_CHASSIS_COMMAND:
 			if (usart_read_byte(&parameter) == 1)
-			return 1;
+				return 1;
+				
 			switch (parameter) {
 				case CMD_CHASSIS_SPEED:
 					

@@ -30,13 +30,19 @@ int main(void)
 	
 	lcd_print("Testing BT", "    ...    ");
 	
-	
+	lcd_clear();
     while(1)
     {
 		while (!usart_has_bytes());
 		if (process_packet() == 1) // timeout
-			break;
+			lcd_print("packet read", "timed out");
+		/*
+		uint8_t data;
+		usart_read_byte(&data);
 		
+		if (data == 0x1B)
+			lcd_clear();
+		lcd_send_symbol(data);*/
 		
     }
 }
