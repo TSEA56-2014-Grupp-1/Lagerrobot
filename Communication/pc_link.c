@@ -13,7 +13,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-uint8_t process_packet(uint8_t packet_length) {
+uint8_t process_packet() {
 	uint8_t packet_id;
 	uint8_t parameter;
 	
@@ -152,3 +152,11 @@ uint8_t process_packet(uint8_t packet_length) {
 }
 
 
+void send_packet(uint8_t packet_id, uint8_t parameters[]) {
+	usart_write_byte(packet_id);
+	
+	for (int i = 0; i < sizeof(parameters); ++i) {
+		usart_write_byte(parameters[i]);
+	}
+	
+}

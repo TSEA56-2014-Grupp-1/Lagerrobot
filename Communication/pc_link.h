@@ -11,7 +11,7 @@
 
 #include <avr/io.h>
 
-uint8_t process_packet(uint8_t packet_length);
+uint8_t process_packet();
 
 
 

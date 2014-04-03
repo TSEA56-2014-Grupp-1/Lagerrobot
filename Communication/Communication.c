@@ -31,15 +31,10 @@ int main(void)
 	lcd_print("Testing BT", "    ...    ");
 	
 	
-	uint8_t packet_length = 0;
     while(1)
     {
 		while (!usart_has_bytes());
-		
-		if (usart_read_byte(&packet_length) == 1) // timeout
-			break;
-			
-		if (process_packet(packet_length) == 1) // timeout
+		if (process_packet() == 1) // timeout
 			break;
 		
 		
