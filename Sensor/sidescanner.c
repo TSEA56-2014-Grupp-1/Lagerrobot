@@ -16,10 +16,8 @@ uint8_t max_angle = 180;
 uint8_t object_found;
 uint8_t step = 1;
 uint8_t distance_read_ok;
-uint8_t x_coord_left;
-uint8_t y_coord_left;
-uint8_t x_coord_right;
-uint8_t y_coord_right;
+uint8_t angle_coordinate;
+uint8_t distance_coordinate;
 
 void sidescanner_init()
 {
@@ -94,6 +92,21 @@ uint8_t sweep_left()	{
 }
 
 uint8_t sweep_right()	{
+		if(distance>=zone_size)
+		{
+			object_found = 1;
+			scanner_right_position(0);
+		}
+		else if(angle == max_angle)	{
+			return 1;
+		}
+		else
+		{
+			object_found = 0;
+			angle = angle + step;
+			scanner_right_position(angle);
+			wait_scanner_servo(50);
+		}
 	return 0;
 }
 
@@ -107,7 +120,11 @@ void wait_scanner_servo(int milli_sec)
 
 void calculate_coordinates()
 {
-	x_coord_left = ORIGO_TO_SCANNER_DISTANCE + distance*cos(angle);
-	y_coord_left = distance*sin(angle);
+	uint8_t x_coord;
+	uint8_t y_coord;
+	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(angle);
+	y_coord = distance*sin(angle);
+	angle_coordinate = tan(y_coord/x_coord);
+	distance_coordinate = sqrt((x_coord^2) + (y_coord^2));
 }
 

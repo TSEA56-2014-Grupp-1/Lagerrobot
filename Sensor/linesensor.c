@@ -54,6 +54,7 @@ void line_init(){
 	sensor_channel = 0;
 	ADCSRA = 0b10001111;
 	DDRB = 0b11111111;
+	DDRD = 0b11111111;
 	ADMUX = (1 << ADLAR);
 	PORTB = sensor_channel;
 	ADCSRA |= (1 << ADSC);

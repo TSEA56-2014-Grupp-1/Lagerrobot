@@ -14,9 +14,8 @@
 #include "sidescanner.h"
 
 
-
 ISR(ADC_vect) {
-	switch (ADMUX && 0b00011111) {
+	switch (ADMUX & 0b00011111) {
 		case 0 :
 			update_linesensor();
 		case 1 :
@@ -31,15 +30,16 @@ ISR(ADC_vect) {
 	}
 }
 
+
 int main(void)
 {
 	bus_init(4);
 	bus_register_response(4, return_line_weight);
 	//sidescanner
-	//sidescanner_init();
+	sidescanner_init();
 	
 	//calibrate_linesensor();
-	line_init();
+	//line_init();
 	sei();
 	
     while(1)
