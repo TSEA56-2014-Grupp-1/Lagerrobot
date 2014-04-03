@@ -8,6 +8,7 @@
 #include "Communication.h"
 #include "LCD.h"
 #include "bluetooth.h"
+#include "../shared/usart.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
@@ -24,7 +25,7 @@ int main(void)
 	init();
 	//_delay_ms(200);
 	lcd_init();
-	bt_init();
+	usart_init(0x0009);
 	sei();
 	
 	lcd_print("Are you done?", "I want to live!");

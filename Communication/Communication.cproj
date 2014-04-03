@@ -118,6 +118,14 @@
       <SubType>compile</SubType>
       <Link>packets.h</Link>
     </Compile>
+    <Compile Include="..\shared\usart.c">
+      <SubType>compile</SubType>
+      <Link>usart.c</Link>
+    </Compile>
+    <Compile Include="..\shared\usart.h">
+      <SubType>compile</SubType>
+      <Link>usart.h</Link>
+    </Compile>
     <Compile Include="bluetooth.c">
       <SubType>compile</SubType>
     </Compile>
