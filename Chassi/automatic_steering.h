@@ -7,11 +7,12 @@
 #ifndef AUTOMATIC_STEERING_H_
 #define AUTOMATIC_STEERING_H_
 
+#define STEERING_MAX_SPEED 1999L
 
 #include "engine_control.h"
 
 void steering_algorithm();
-void pd_update(double curr_error, double dt);
+void pd_update(int8_t curr_error, double dt);
 void regulator_init();
 
 #endif

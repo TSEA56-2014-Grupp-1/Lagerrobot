@@ -25,7 +25,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	//Size on line_data? specify! XXX
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
-	double curr_error = line_data - 127;
+	int8_t curr_error = line_data - 127;
 	//double curr_error = 1;
 	pd_update(curr_error,0.0167);
 	steering_algorithm();

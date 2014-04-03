@@ -10,53 +10,51 @@
 void steering_algorithm ()
 {
 
-	if(prev_error > 0)
+
+	if(STEERING_MAX_SPEED > control && control > 0)
 	{
-		
-		if (control > 1000)
-		{
-			speed_left = 0;
-		}
-		else {
-			speed_left = 1000 - control;
-		}
-		speed_right = 1000;
-		
-		drive_left_wheels(speed_left);
-		drive_right_wheels(speed_right);
+		speed_left = STEERING_MAX_SPEED - abs(control);
+		speed_right = STEERING_MAX_SPEED;
 	}
 	
-	else if (prev_error < 0)
-	{
-		if (control > 1000)
-		{
-			speed_right = 0;
-		}
-		else {
-			speed_right = 1000 - control;
-		}
-		speed_left = 1000;
+	else if (-STEERING_MAX_SPEED < control && control < 0) {
 		
-		drive_right_wheels(speed_right);
-		drive_left_wheels(speed_left);
+		speed_right = STEERING_MAX_SPEED - abs(control);
+		speed_left = STEERING_MAX_SPEED;
 	}
 	
-	else if (prev_error == 0)
+	else if (control < 0)
 	{
-		drive_right_wheels(200);
-		drive_left_wheels(200);
+		speed_right = 0;
+		speed_left = STEERING_MAX_SPEED;
 	}
 	
-	else
-	stop_wheels();
+	else if (control > 0) {
+		speed_right = STEERING_MAX_SPEED;
+		speed_left = 0;
+	}
+	
+	else if (control == 0)
+	{
+		speed_left = STEERING_MAX_SPEED;
+		speed_right = STEERING_MAX_SPEED;
+	}
+	
+	else {
+		stop_wheels();
+	}
+	
+	
+	drive_left_wheels(speed_left);
+	drive_right_wheels(speed_right);
 	
 }
 
 
-void pd_update(double curr_error, double dt)
+void pd_update(int8_t curr_error, double dt)
 {
 	double diff;
-	double p_term;
+	int16_t p_term;
 	double d_term;
 	
 	// differentiation
@@ -67,7 +65,7 @@ void pd_update(double curr_error, double dt)
 	d_term = (derivative_gain  * diff);
 	
 	// summation of terms
-	control = abs(p_term) + d_term;
+	control = p_term + floor(d_term);
 	
 	// save current error as previous error for next iteration
 	prev_error = curr_error;
@@ -76,6 +74,6 @@ void pd_update(double curr_error, double dt)
 void regulator_init()
 {
 	prev_error = 0;
-	proportional_gain = 50;
+	proportional_gain = 0;
 	derivative_gain = 0;
 }

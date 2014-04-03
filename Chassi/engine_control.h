@@ -21,9 +21,9 @@
 
 uint16_t line_weight;
 int prev_error;
-double proportional_gain;
-double derivative_gain;
-double control;
+int16_t proportional_gain;
+int16_t derivative_gain;
+int16_t control;
 //double curr_error;
 uint16_t speed_left;
 uint16_t speed_right;
