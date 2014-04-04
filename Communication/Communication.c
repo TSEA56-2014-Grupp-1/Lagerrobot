@@ -69,7 +69,7 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 		message_map_line1[module][2*i+1] = symbol_pair;
 		
 		//fifth bit contains line data
-		bus_request(data, 1, i | 0b00010000, &symbol_pair);
+		bus_request(data, 1, i | 0b00001000, &symbol_pair);
 		message_map_line2[module][2*i] = symbol_pair >> 8;
 		message_map_line2[module][2*i+1] = symbol_pair;
 				

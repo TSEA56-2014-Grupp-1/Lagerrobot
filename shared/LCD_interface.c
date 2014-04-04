@@ -7,6 +7,9 @@ void lcd_interface_init(){
 	bus_register_response(1, symbol_request);
 }
 
+/*void display_clear() {
+	for (int i = 0; i < 16; ++)
+}*/
 void display_text(char line1[], char line2[]) {
 	for (int i = 0; i < 16; ++i){
 		if (i < 13)
@@ -19,6 +22,7 @@ void display_text(char line1[], char line2[]) {
 }
 
 void display_numbers(uint16_t line1, uint16_t line2) {
+	
 	uint16_t digit;
 	for (int i = 5; i > 0; --i) {
 		digit = line1 / (10^i);
@@ -32,7 +36,7 @@ void display_numbers(uint16_t line1, uint16_t line2) {
 
 uint16_t symbol_request(uint8_t id, uint16_t data) {
 	//pick out correct symbols from data, bit 5 contains line number and the request will return a pair of symbols
-	return	((uint16_t) lcd_display_symbols[(data & 0b00010000) >> 4][(data & 0b00001111) << 1] << 8) |
-	((uint16_t) lcd_display_symbols[(data & 0b00010000) >> 4][((data & 0b00001111) << 1) + 1]);
+	return	((uint16_t) lcd_display_symbols[(data & 0b00001000) >> 3][(data << 1) & 0b00001111] << 8) |
+			((uint16_t) lcd_display_symbols[(data & 0b00001000) >> 3][((data << 1) & 0b00001111) + 1]);
 	
 }
