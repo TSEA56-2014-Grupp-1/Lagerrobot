@@ -18,16 +18,16 @@ uint8_t lcd_rotation_counter = 0;
 uint8_t lcd_current_sender = 0;
 
 char message_map_line1[4][16] = {
-	"Kommunikation",
-	"Sensor",
-	"Arm",
-	"Chassi"};
+	"",
+	"",
+	"",
+	""};
 	
 char message_map_line2[4][16] = {
-	"Kommunicerar",
-	"Censurerar",
-	"Armerar",
-	"Charkuterierar"};
+	"",
+	"",
+	"",
+	""};
 
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
