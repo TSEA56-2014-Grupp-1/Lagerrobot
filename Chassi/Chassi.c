@@ -12,6 +12,7 @@
 #include "engine_control.h"
 #include "automatic_steering.h"
 #include "../shared/bus.h"
+#include "../shared/LCD_interface.h"
 
 //---- Functions----
 uint16_t request_line_data()
@@ -23,7 +24,7 @@ uint16_t request_line_data()
 
 uint8_t is_station(uint8_t station_data)
 {
- if (station_data == 0 || 2)
+ if (station_data == 0 || station_data == 2 )
 return 1;
 else
 return 0;
@@ -33,15 +34,15 @@ return 0;
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	//Size on line_data? specify! XXX
+	
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
-	//double curr_error = 1;
+	
 	//pd_update(curr_error);
-//	steering_algorithm();
+	//steering_algorithm();
 
-
-	if (!is_station(station_data))	// Continue following line
+if (!is_station(station_data))	// Continue following line
 	{
 		pd_update(curr_error);
 		steering_algorithm();
@@ -49,34 +50,24 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	}
 	
 	stop_wheels();
-	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 	if (station_data == 0)
 	{
-		for(int i = 0; i < 10; ++i)
-		{
-			_delay_ms(200);
+		display_text("station", "left");
 	}
-		turn_left(1000);
-	}
-	
 	else if (station_data == 2)
 	{
-		for(int i = 0; i < 10; ++i)
-		{
-			_delay_ms(200);
-		}
-		turn_right(1000);
+		display_text("statIon", "right");
 	}
-	
-	for(int i = 0; i < 10; ++i)
+	else
 	{
-		_delay_ms(200);
+		display_text("unknown", "error");
 	}
-	stop_wheels();
+	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 }
 
-	
-	/*if(!is_right_station_mem()) // Continue following line
+
+	/*
+	if(!is_right_station_mem()) // Continue following line
 	{
 		send_decision_to_pc(WRONG_STATION_MEM) ;
 		follow_line(line_data);
@@ -137,9 +128,10 @@ int main(void)
 	_delay_ms(100);
 	engine_init();
 	regulator_init();
+	lcd_interface_init();
 
 	//enable timer interrupts for ocie0a
-	sei();
+	//sei();
 	TIMSK0 |= (1 << OCIE0A);
 	TIFR0 |= (1 << OCF0A);
 	
@@ -152,6 +144,7 @@ int main(void)
 	
 	//prescale
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
+	
 	
     while(1)
     {

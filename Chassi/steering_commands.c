@@ -20,26 +20,22 @@ void drive_right_wheels(int speed)
 void drive_forward()
 {
 
-	PORTD = (1 << PORTD0);
-	PORTD = (0 << PORTD1);
+	PORTD = (1 << PORTD0) | (0 << PORTD1);
 }
 
 void drive_backwards()
 {
-	PORTD = (0 << PORTD0);
-	PORTD = (1 << PORTD1);
+	PORTD = (0 << PORTD0) | (1 << PORTD1);
 }
 
 void spin_right()
 {
-	PORTD = (1 << PORTD0);
-	PORTD = (1 << PORTD1);
+	PORTD = (1 << PORTD0) | (1 << PORTD1);
 }
 
 void spin_left()
 {
-	PORTD = (0 << PORTD0);
-	PORTD = (0 << PORTD1);
+	PORTD = (0 << PORTD0) | (0 << PORTD1);
 }
 
 void stop_wheels()

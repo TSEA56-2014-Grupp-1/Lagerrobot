@@ -13,29 +13,46 @@ void steering_algorithm ()
 
 	if(STEERING_MAX_SPEED > control && control > 0)
 	{
+		drive_forward();
 		speed_left = STEERING_MAX_SPEED - abs(control);
 		speed_right = STEERING_MAX_SPEED;
 	}
 	
 	else if (-STEERING_MAX_SPEED < control && control < 0) {
 		
+		drive_forward();
 		speed_right = STEERING_MAX_SPEED - abs(control);
 		speed_left = STEERING_MAX_SPEED;
 	}
 	
-	else if (control < 0)
+	else if (control < -STEERING_MAX_SPEED && control > -2*STEERING_MAX_SPEED)
 	{
-		speed_right = 0;
+		spin_right();
+		
+		speed_right = abs(control) - STEERING_MAX_SPEED;
 		speed_left = STEERING_MAX_SPEED;
 	}
 	
-	else if (control > 0) {
+	else if (control > STEERING_MAX_SPEED && control < 2*STEERING_MAX_SPEED) {
+		spin_left();
 		speed_right = STEERING_MAX_SPEED;
-		speed_left = 0;
+		speed_left = abs(control) - STEERING_MAX_SPEED;
 	}
 	
+	else if (control > 0) {
+		spin_left();
+		speed_right = STEERING_MAX_SPEED;
+		speed_left = STEERING_MAX_SPEED;
+	}
+	
+	else if (control < 0) {
+		spin_right();
+		speed_right = STEERING_MAX_SPEED;
+		speed_left = STEERING_MAX_SPEED;
+	}
 	else if (control == 0)
 	{
+		drive_forward();
 		speed_left = STEERING_MAX_SPEED;
 		speed_right = STEERING_MAX_SPEED;
 	}
@@ -75,6 +92,6 @@ void pd_update(int8_t curr_error)
 void regulator_init()
 {
 	prev_error = 0;
-	proportional_gain = 170;
+	proportional_gain = 150;
 	derivative_gain = 10;
 }

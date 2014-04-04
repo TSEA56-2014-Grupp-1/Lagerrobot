@@ -14,7 +14,7 @@ void engine_init()
 	//PD0 = DIR1, PD1 = DIR2
 		
 	DDRD = 0b00110011;	//Set port direction
-	PORTD = 0b00000001; // Initiate drive forward
+	drive_forward(); // Initiate drive forward
 		
 	// set top value
 	ICR1H = 0x07; //Top value high (00 with prescaler 64)  ( 0x07 with prescaler 8)
