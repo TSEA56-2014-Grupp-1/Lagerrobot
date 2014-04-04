@@ -74,6 +74,10 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 		message_map_line2[module][2*i+1] = symbol_pair;
 				
 	}
+	
+	// jump to the module that sent last
+	lcd_current_sender = module;
+	TCNT1 = 0xffff;
 }
 
 void clear_message(uint8_t unit) {

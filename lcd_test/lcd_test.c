@@ -22,7 +22,9 @@ int main(void)
 	
 	
 	sei();
-	_delay_ms(200);
+	_delay_ms(700);
+	_delay_ms(700);
+	_delay_ms(700);
 	display_text("Jag ar en Arm", "Hihihihi");
 	//display_numbers(100, 1337);
 	
