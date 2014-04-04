@@ -10,6 +10,7 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
+#include "../shared/LCD_interface.h"
 
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
@@ -29,8 +30,9 @@ ISR(ADC_vect) {
 
 int main(void)
 {
-	bus_init(4);
+	bus_init(BUS_ADDRESS_SENSOR);
 	bus_register_response(4, return_line_weight);
+//	lcd_interface_init();
 	
 	//calibrate_linesensor();
 	line_init();

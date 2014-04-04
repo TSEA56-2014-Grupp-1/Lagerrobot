@@ -127,12 +127,19 @@ void pickup_station_detection() {
 		current_sensor++;
 	}
 	
-	if((tape_width > 4 )&& (line_weight < 127) && (line_status == 0))
+	if((tape_width > 4 )&& (line_weight < 127) && (line_status == 0))	{
 		pickup_station = Left;
-	else if ((tape_width > 4) && (line_weight > 127) && (line_status == 0))
+		display_text("Pickup_station:","Left");
+	}
+	else if ((tape_width > 4) && (line_weight > 127) && (line_status == 0))	{
 		pickup_station = Right;
+		display_text("Pickup_station:", "Right");
+	}
 	else
+	{
 		pickup_station = No;
+		display_text("pickupstation","not u are");
+	}
 }
 void line_break_detection()	{	
 	cli();
