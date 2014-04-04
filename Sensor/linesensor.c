@@ -47,7 +47,7 @@ uint8_t tape_reference = 100;
 
 
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
-	return (uint16_t)line_weight;
+	return (((uint16_t)pickup_station << 8) | line_weight);
 }
 
 void line_init(){
