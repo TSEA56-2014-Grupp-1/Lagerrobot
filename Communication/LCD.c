@@ -8,6 +8,8 @@
 #include "Communication.h"
 #include <util/delay.h>
 #include <avr/io.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 
 
@@ -120,7 +122,7 @@ void lcd_clear() {
 	lcd_send_command(1);
 }
 
-void display(uint8_t sender, char text1[13], char text2[16]){
+void lcd_display(uint8_t sender, char text1[13], char text2[16]){
 	char line1[16];
 	switch (sender) {
 		case COMM:
@@ -154,4 +156,18 @@ void display(uint8_t sender, char text1[13], char text2[16]){
 	line1[15] = text1[12];
 	
 	lcd_print(line1, text2);
+}
+
+void _display(uint8_t line_number, char* str, uint8_t num_vals, ...) {
+	va_list data;
+	
+	va_start(data, num_vals);
+	if (line_number == 0)
+		vsnprintf(message_map_line1[COMM], 17, str, data);
+	else if (line_number == 1)
+		vsnprintf(message_map_line2[COMM], 17, str, data);  
+	va_end(data);
+	
+	lcd_current_sender = COMM;
+	TCNT1 = 0xfff0;
 }

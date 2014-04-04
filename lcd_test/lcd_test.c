@@ -25,8 +25,8 @@ int main(void)
 	_delay_ms(700);
 	_delay_ms(700);
 	_delay_ms(700);
-	display_text("Jag ar en Arm", "Hihihihi");
-	//display_numbers(100, 1337);
+	
+	display(0, "Arm %d/%d/%4d", 3, 4, 2014);
 	
     while(1)
     {

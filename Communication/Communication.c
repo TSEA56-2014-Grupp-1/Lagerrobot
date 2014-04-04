@@ -15,25 +15,12 @@
 #include <avr/interrupt.h>
 
 uint8_t lcd_rotation_counter = 0;
-uint8_t lcd_current_sender = 0;
-
-char message_map_line1[4][16] = {
-	"",
-	"",
-	"",
-	""};
-	
-char message_map_line2[4][16] = {
-	"",
-	"",
-	"",
-	""};
 
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
 		lcd_rotation_counter = 0;
 		
-		display(lcd_current_sender,
+		lcd_display(lcd_current_sender,
 				message_map_line1[lcd_current_sender],
 				message_map_line2[lcd_current_sender]);
 		if (lcd_current_sender == 3)
@@ -98,6 +85,11 @@ void init(){
 	TCCR1A = 0x00; // normal mode
 	TCCR1B = 0b00000010; // normal mode, max prescaler; 
 	
+	lcd_current_sender = 0;
+	clear_message(COMM);
+	clear_message(SENS);
+	clear_message(CHAS);
+	clear_message(ARM);
 }
 
 
@@ -109,7 +101,12 @@ int main(void)
 	
 	bus_register_receive(2, symbols_are_ready);
 	
-	display(COMM, "Hello!", "World!");	
+	
+	lcd_display(COMM, "Ouroborobot", "Startup.");
+	_delay_ms(700);
+	lcd_display(COMM, "Ouroborobot", "Startup..");
+	_delay_ms(700);
+	lcd_display(COMM, "Ouroborobot", "Startup...");
 	
     while(1)
     {
