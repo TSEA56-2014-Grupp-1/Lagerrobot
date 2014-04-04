@@ -51,11 +51,12 @@ void steering_algorithm ()
 }
 
 
-void pd_update(int8_t curr_error, double dt)
+void pd_update(int8_t curr_error)
 {
 	double diff;
 	int16_t p_term;
 	double d_term;
+	double dt = 0.0167;
 	
 	// differentiation
 	diff = ((curr_error - prev_error) / dt);
@@ -74,6 +75,6 @@ void pd_update(int8_t curr_error, double dt)
 void regulator_init()
 {
 	prev_error = 0;
-	proportional_gain = 0;
-	derivative_gain = 0;
+	proportional_gain = 170;
+	derivative_gain = 10;
 }

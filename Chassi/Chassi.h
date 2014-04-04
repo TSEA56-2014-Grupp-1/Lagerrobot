@@ -9,6 +9,11 @@
 #ifndef CHASSI_H_
 #define CHASSI_H_
 
+#define F_CPU 16000000UL
+#include <math.h>
+#include <util/delay.h>
+#include <stdlib.h>
+
 // Decisions
 const uint8_t AT_STATION = 1;
 const uint8_t WRONG_STATION_MEM = 2;
@@ -21,8 +26,8 @@ uint8_t carrying_rfid = 0;
 uint64_t Time_since_start = 0;
 // Functions
 uint16_t request_line_data(); // send command to Sensor
+uint8_t is_station(uint8_t);
 /*
-uint8_t is_station(uint16_t line_data)
 void follow_line(uint8_t line_data)
 void stop_wheels()
 void send_decision_to_pc(uint8_t decision)// send data to pc

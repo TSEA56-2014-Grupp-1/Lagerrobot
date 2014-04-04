@@ -12,7 +12,7 @@
 #include "engine_control.h"
 
 void steering_algorithm();
-void pd_update(int8_t curr_error, double dt);
+void pd_update(int8_t curr_error);
 void regulator_init();
 
 #endif

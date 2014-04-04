@@ -5,7 +5,6 @@
  *  Author: johli887
  */ 
 
-
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "Chassi.h"
@@ -14,6 +13,7 @@
 #include "automatic_steering.h"
 #include "../shared/bus.h"
 
+//---- Functions----
 uint16_t request_line_data()
 {
 	uint16_t data;
@@ -21,29 +21,68 @@ uint16_t request_line_data()
 	return data;
 }
 
+uint8_t is_station(uint8_t station_data)
+{
+ if (station_data == 0 || 2)
+return 1;
+else
+return 0;
+}
+
+//---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	//Size on line_data? specify! XXX
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
-	int8_t curr_error = line_data - 127;
+	int8_t curr_error = (uint8_t)(line_data) - 127;
+	uint8_t station_data = (uint8_t)(line_data >> 8);
 	//double curr_error = 1;
-	pd_update(curr_error,0.0167);
-	steering_algorithm();
-}
-	
-	/*
-	if (!is_station(line_data))	// Continue following line
+	//pd_update(curr_error);
+//	steering_algorithm();
+
+
+	if (!is_station(station_data))	// Continue following line
 	{
-		follow_line((uint8_t)line_data);
-		reti();
+		pd_update(curr_error);
+		steering_algorithm();
+		return;
 	}
 	
-	if(!is_right_station_mem()) // Continue following line
+	stop_wheels();
+	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
+	if (station_data == 0)
+	{
+		for(int i = 0; i < 10; ++i)
+		{
+			_delay_ms(200);
+	}
+		turn_left(1000);
+	}
+	
+	else if (station_data == 2)
+	{
+		for(int i = 0; i < 10; ++i)
+		{
+			_delay_ms(200);
+		}
+		turn_right(1000);
+	}
+	
+	for(int i = 0; i < 10; ++i)
+	{
+		_delay_ms(200);
+	}
+	stop_wheels();
+}
+
+	
+	/*if(!is_right_station_mem()) // Continue following line
 	{
 		send_decision_to_pc(WRONG_STATION_MEM) ;
 		follow_line(line_data);
 		reti();
 	}
+	
 	stop_wheels(); //stop robot. Perhaps do this before if!(is_right_station_mem())
 	send_decision_to_pc(AT_STATION);
 	
@@ -55,7 +94,6 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		time_for_station = save_time_and_rfid(rfid_station);
 		send_decision_to_pc(OBJECT_IS_PUT_DOWN);
 		send_rfid_to_pc(rfid_station, time_for_station);
-		
 		follow_line(line_data);
 		reti();
 	}
@@ -97,7 +135,6 @@ int main(void)
 {
 	bus_init(1);
 	_delay_ms(100);
-	
 	engine_init();
 	regulator_init();
 
@@ -115,8 +152,6 @@ int main(void)
 	
 	//prescale
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
-	
-	
 	
     while(1)
     {
