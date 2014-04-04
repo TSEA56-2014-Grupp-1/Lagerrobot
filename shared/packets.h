@@ -27,6 +27,8 @@
 #define CMD_CHASSIS_SPEED		0	//		speed(1)
 #define CMD_CHASSIS_STEER		1	//		steering power(1)
 #define	CMD_CHASSIS_START		2	//		none
+#define CMD_CHASSIS_PARAMETERS	3	//		Kp value(1), Kd value(2)
+
 
 /*	 calibration commands	cmd_id			parameters			*/
 #define CAL_LINE				1	//		tape or no tape(1)
