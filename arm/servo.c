@@ -1,357 +1,200 @@
-#include <avr/io.h>
-#include "arm.h"
 #include "servo.h"
+#include "../shared/usart.h"
 
-#include <util/delay.h>
+#include <avr/io.h>
 #include <avr/interrupt.h>
-#include <stdlib.h>
+#include <util/delay.h>
+#include <stdarg.h>
 
 uint8_t recieve_interrupt_buffer[256];
 uint8_t receive_buffer_read_pointer;
 uint8_t receive_buffer_write_pointer;
 
-void servo_init()
-{
-	UBRR0H = 0x00;
-	UBRR0L = 0x00;
-	DDRD = 0x1 << DDD2;
+void servo_init(void) {
+	usart_init(SERVO_DEFAULT_BAUD_RATE);
+
+	// Enable control of tri-state buffer
+	DDRD |= 1 << DDD2;
+
+	servo_enable_write();
 }
 
-servo_command servo_make_command(
-	uint8_t servo_id, uint8_t address_id, uint8_t data_length, uint8_t data[])
-{
-	uint8_t i;
-	servo_command *command = malloc(
-		sizeof(servo_command) + data_length * sizeof(uint8_t));
+void servo_enable_write(void) {
+	// XXX: Disable USART interrupts?
 
-	command->id = servo_id;
-	command->address = address_id;
-
-	// XXX: Use memcpy?
-	for (i = 0; i < data_length; i++) {
-		command->data[i] = data[i];
-	}
-
-	return *command;
-}
-
-servo_response servo_make_response(
-	uint8_t id, uint8_t error, uint8_t data_length, uint8_t data[])
-{
-	uint8_t i;
-	servo_response *response = malloc(
-		sizeof(servo_response) + sizeof(uint8_t) * data_length);
-
-	response->id = id;
-	response->error = error;
-	response->data_length = data_length;
-
-	// XXX: Use memcpy?
-	for (i = 0; i < data_length; i++) {
-		response->data[i] = data[i];
-	}
-
-	return *response;
-}
-
-ISR(USART0_RX_vect)
-{
-	recieve_interrupt_buffer[receive_buffer_write_pointer++] = UDR0;
-}
-
-void servo_transfer_byte(uint8_t data)
-{
-	while (SERVO_CHECK_TRANSFER_READY); //wait until data can be loaded.
-	UDR0 = data; //data load to TxD buffer
-}
-
-
-void servo_enable_transmit()
-{
-	UCSR0B = ((0x0<<RXCIE0) | (0x0<<RXEN0) | (0x1<<TXEN0));
-	PORTD = (0x1<<PORTD2);
+	// Set tri-state buffer to read
+	PORTD |= 1 << PORTD2;
 
 	// Wait for tri-state buffer to switch directions
 	_delay_us(10);
 }
 
-void servo_enable_receive()
-{
-	// TODO: Verify this delay
-	_delay_ms(1);
+void servo_enable_read(void) {
+	while (!usart_tx_complete());
+	// XXX: Restore USART interrupts
 
-	UCSR0B = ((0x1<<RXCIE0) | (0x1<<RXEN0) | (0x0<<TXEN0));
-	PORTD = (0x0<<PORTD2);
+	// Set tri-state buffer to read
+	PORTD &= 0xff ^ (1 << PORTD2);
+
+	// Wait for tri-state buffer to switch directions
+	_delay_us(10);
 }
 
-/*uint8_t recieve_packet(uint8_t recieve_packet_length, uint8_t transfer_buffer[128])
-{
-	uint8_t recieve_buffer[128];
-
-	#define RECEIVE_TIMEOUT_COUNT 30000UL
-	unsigned long ulCounter;
-	uint8_t count, length, checksum;
-	uint8_t timeout;
-
-	timeout = 0;
-	for(count = 0; count < recieve_packet_length; count++)
-	{
-		ulCounter = 0;
-		while(receive_buffer_read_pointer == receive_buffer_write_pointer)
-		{
-			if(ulCounter++ > RECEIVE_TIMEOUT_COUNT)
-			{
-				timeout = 1;
-				break;
-			}
-		}
-		if(timeout) break;
-		recieve_buffer[count] =
-		recieve_interrupt_buffer[receive_buffer_read_pointer++];
-	}
-	length = count;
-	checksum = 0;
-
-	if(transfer_buffer[2] != BROADCASTING_ID)
-	{
-		if(timeout && recieve_packet_length != 255)
-		{
-			//TxDString("\r\n [Error:RxD Timeout]");
-			CLEAR_BUFFER;
-		}
-
-		if(length > 3) //checking is available.
-		{
-			if(recieve_buffer[0] != 0xff || recieve_buffer[1] != 0xff )
-			{
-				//TxDString("\r\n [Error:Wrong Header]");
-				CLEAR_BUFFER;
-				return 0;
-			}
-			if(recieve_buffer[2] != transfer_buffer[2] )
-			{
-				//TxDString("\r\n [Error:TxID != RxID]");
-				CLEAR_BUFFER;
-				return 0;
-			}
-			if(recieve_buffer[3] != length-4)
-			{
-				//TxDString("\r\n [Error:Wrong Length]");
-				CLEAR_BUFFER;
-				return 0;
-			}
-			for(count = 2; count < length; count++) checksum +=
-			recieve_buffer[count];
-			if(checksum != 0xff)
-			{
-				//TxDString("\r\n [Error:Wrong CheckSum]");
-				CLEAR_BUFFER;
-				return 0;
-			}
-		}
-	}
-	return (length, recieve_buffer);
-}*/
-
-
-/*uint8_t transfer_packet(uint8_t id, uint8_t instruction, uint8_t parameter_length)
-{
-	uint8_t count,checksum,packet_length;
-	uint8_t temp_transfer_buffer[128];
-
-	temp_transfer_buffer[0] = 0xff;
-	temp_transfer_buffer[1] = 0xff;
-	temp_transfer_buffer[2] = id;
-	temp_transfer_buffer[3] = parameter_length+2;//Length(Paramter,Instruction,Checksum)
-	temp_transfer_buffer[4] = instruction;
-
-	for(count = 0; count < parameter_length; count++) // inserts parameters into transferbuffer
-	{
-		temp_transfer_buffer[count+5] = parameter[count];
-	}
-
-	checksum = 0;
-	packet_length = parameter_length+4+2; // total lenght of send packet
-
-	for(count = 2; count < packet_length-1; count++) //sums packet except 0xff & checksum
-	{
-		checksum += temp_transfer_buffer[count];
-	}
-
-	temp_transfer_buffer[count] = ~checksum; // writing checksum with bit inversion
-
-	enable_transmit();
-
-	for(count = 0; count < packet_length; count++)
-	{
-		//sbi(UCSR0A,6);//SET_TXD0_FINISH;
-		transfer_byte(temp_transfer_buffer[count]);
-	}
-
-	while(!CHECK_TRANSFER_FINISH); //Wait until TXD Shift register empty
-
-	_delay_ms(1);
-	enable_recieve();
-
-	recieve_packet(DEFAULT_RETURN_PACKET_SIZE, temp_transfer_buffer);
-
-	return(packet_length, temp_transfer_buffer);
-
-}*/
-
-servo_response servo_receive_packet() {
-	//uint8_t recieve_buffer[128];
-
-	uint8_t timeout;
-	uint16_t timeout_counter = 0;
-
-	uint8_t temp_byte;
-
-	uint8_t address_id;
-	uint8_t packet_length = 0;
-	uint8_t error;
-	uint8_t* parameters;
+uint8_t servo_calculate_checksum(uint8_t first_index, uint8_t last_index, uint8_t parameters[]) {
+	uint8_t i;
 	uint8_t checksum = 0;
 
-	uint8_t index = 0;
-	while (1) {
-		while (receive_buffer_read_pointer == receive_buffer_write_pointer) {
-			if (timeout_counter++ >= SERVO_RECEIVE_TIMEOUT_COUNT) {
-				timeout = 1;
-				break;
-			}
-		}
-
-		// Check if any data was received before timeout
-		if (timeout == 1) {
-			break;
-		}
-
-		temp_byte = recieve_interrupt_buffer[receive_buffer_read_pointer++];
-
-		switch (index) {
-			case 0:
-			case 1:
-				// Start bytes, ignore
-				break;
-			case 2:
-				// Servo ID
-				address_id = temp_byte;
-				checksum += temp_byte;
-			case 3:
-				// Length
-				packet_length = temp_byte;
-				checksum += temp_byte;
-
-				// Allocate space for parameter array if we expect parameters
-				if (packet_length > 2) {
-					parameters = malloc(sizeof(uint8_t) * packet_length - 2);
-				}
-				break;
-			case 4:
-				// Error
-				error = temp_byte;
-				checksum += temp_byte;
-			default:
-				// If no packet length was set something went wrong
-				if (packet_length == 0) {
-					SERVO_CLEAR_BUFFER;
-					return;
-				}
-
-				if (index - 5 >= packet_length) {
-					// TODO: Verify checksum
-
-					return servo_make_response(
-						address_id, error, packet_length - 2, parameters);
-				} else {
-					parameters[index - 5] = temp_byte;
-				}
-		}
-
-		index++;
+	for (i = first_index; i <= last_index; i++) {
+		checksum += parameters[i];
 	}
 
-	SERVO_CLEAR_BUFFER;
+	return ~checksum;
 }
 
-servo_response servo_transfer_command(uint8_t instruction, servo_command cmd) {
-	uint8_t count;
-	uint8_t checksum;
+/**
+ *	Read response from a servo. Possible status codes are:
+ *
+ *	- 0 if successful
+ *	- 1 if read timed out
+ *	- 2 if checksum is wrong
+ *	- 3 if incorrect non 0xff start bytes
+ *	- 4 if wrong servo return status
+ *	- 5 if servo didn't understand the instruction
+ *	- 6 if servo max torque can't handle applied load
+ *	- 7 if checksum is incorrect
+ *	- 8 if sent instruction is out of range
+ *	- 9 if servo is overheated
+ *	- 10 if goal position is out of limit range
+ *	- 11 if input voltage is too low or too high
+ *	-
+ *
+ *	@return Status code
+ */
+uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
+	uint8_t i;
+	uint8_t data[256]; // XXX: This probably doesn't need to be this big
+	uint8_t data_length = 0;
+	servo_enable_read();
 
-	uint8_t transfer_length = cmd.data_length + 7;
-	uint8_t temp_transfer_buffer[transfer_length];
+	// Fetch bytes into an array of length data_length
+	for (i = 0; data_length == 0 || i < data_length; i++) {
+		if (usart_read_byte(&data[i]) != 0) {
+			// Read timed out
+			return 1;
+		}
 
-	temp_transfer_buffer[0] = 0xff;
-	temp_transfer_buffer[1] = 0xff;
-	temp_transfer_buffer[2] = cmd.id; // Servo ID
-	temp_transfer_buffer[3] = cmd.data_length + 3; // data_length + address + instruction + checksum
-	temp_transfer_buffer[4] = instruction; // Read, write, etc
-	temp_transfer_buffer[5] = cmd.address;
-
-	// Add data
-	for (count = 0; count < cmd.data_length; count++) {
-		temp_transfer_buffer[count + 6] = cmd.data[count];
+		// Mark how many bytes to expect and pray that this is not wrong
+		if (i == 3) {
+			data_length = data[i] + 3;
+		}
 	}
 
-	// Calculate checksum
-	for (count = 2; count < transfer_length - 1; count++) {
-		checksum += temp_transfer_buffer[count];
-	}
-	temp_transfer_buffer[transfer_length - 1] = ~checksum;
-
-	// Disable interrupts while sending bytes
-	cli();
-	servo_enable_transmit();
-
-	for (count = 0; count < transfer_length; count++) {
-		servo_transfer_byte(temp_transfer_buffer[count]);
+	// Calculate checksum and compare against received one
+	if (data[data_length - 1] != servo_calculate_checksum(2, data_length - 1, data)) {
+		return 2;
 	}
 
-	// Wait for transfer shift register to finish sending bytes
-	while(!SERVO_CHECK_TRANSFER_FINISH);
-
-	// Re-enable interrupts as soon as bytes should be received
-	servo_enable_receive();
-	sei();
-
-	if (cmd.address) {
-
+	// Verify that start bytes we're correct
+	if (data[0] != 0xff || data[1] != 0xff) {
+		return 3;
 	}
 
-	return servo_receive_packet();
+	// Verify that correct servo returned data
+	if (data[2] != id) {
+		return 4;
+	}
+
+	if (data[3]) {
+		if (data[3] & SERVO_ERROR_INSTRUCTION) {
+			return 5;
+		} else if (data[3] & SERVO_ERROR_OVERLOAD) {
+			return 6;
+		} else if (data[3] & SERVO_ERROR_CHECKSUM) {
+			return 7;
+		} else if (data[3] & SERVO_ERROR_RANGE) {
+			return 8;
+		} else if (data[3] & SERVO_ERROR_OVERHEAT) {
+			return 9;
+		} else if (data[3] & SERVO_ERROR_ANGLE_LIMIT) {
+			return 10;
+		} else if (data[3] & SERVO_ERROR_INPUT_VOLTAGE) {
+			return 11;
+		}
+	}
+
+	/*if (data_length > 5 && parameters != 0) {
+		for (i = 4; i < data_length; i++) {
+			parameters[i - 4] = data[i];
+		}
+	}*/
+
+	return 0;
 }
 
-void servo_buffer_move(uint8_t id, uint16_t goal_angle)
+uint8_t _servo_send(
+	uint8_t id, uint8_t instruction, uint8_t *parameters, uint8_t data_length, ...)
 {
-	uint16_t bit_angle;
-	uint8_t h_goal_pos, l_goal_pos;
+	uint8_t i;
+	va_list data;
+	uint8_t packet_length = data_length + 6;
+	uint8_t packet[packet_length];
 
-	if (id > 0 && id <= 8)
-	{
-		bit_angle = (uint16_t)(goal_angle*2.93);
-		l_goal_pos = (uint8_t)(bit_angle);
-		h_goal_pos = (uint8_t)(bit_angle >> 8);
+	packet[0] = 0xff;            // Start byte
+	packet[1] = 0xff;            // Start byte
+	packet[2] = id;              // Servo ID
+	packet[3] = data_length + 2; // Length of data + instruction + checksum
+	packet[4] = instruction;     // Instruction type (read, write, ping)
 
-		servo_transfer_command(
-			SERVO_INST_WRITE,
-			servo_make_command(
-				id,
-				SERVO_GOAL_POSITION_L,
-				2,
-				(uint8_t[]){l_goal_pos, h_goal_pos}));
-
+	va_start(data, data_length);
+	for (i = 0; i < data_length; i++) {
+		packet[i + 5] = (uint8_t)va_arg(data, int);
 	}
-	else
-	{
-		//ERROR: invalid servo-ID
+	va_end(data);
+
+	// Add checksum to last byte
+	packet[packet_length - 1] = servo_calculate_checksum(
+		2, packet_length - 2, packet);
+
+	servo_enable_write();
+	for (i = 0; i < packet_length; i++) {
+		usart_write_byte(packet[i]);
+		PORTB = packet[i];
 	}
 
+	// XXX: Move this to usart.c somehow?
+	// Indicate that all bytes are sent so servo_enable_read can wait for all
+	// bytes to be transmitted before changing tri-state buffer
+	UCSR0A |= (1 << TXC0);
+
+	// Check if we expect to receive data from the servo
+	if (
+		id != SERVO_BROADCASTING_ID ||
+		instruction == SERVO_INST_PING ||
+		instruction == SERVO_INST_WRITE ||
+		instruction == SERVO_INST_READ)
+	{
+		return servo_receive(id, parameters);
+	}
+
+	return 0;
 }
 
-void servo_buffer_commit()
-{
-	servo_transfer_command(
-		SERVO_INST_ACTION,
-		servo_make_command(SERVO_BROADCASTING_ID, 0, 0, (uint8_t[]){}));
+uint8_t servo_move(uint8_t id,  uint16_t angle) {
+	// 0xff 0xff 0x01 0x05 0x03 0x1e 0x00 0x02 0xd6
+	return servo_write(id, SERVO_GOAL_POSITION_L, (uint8_t)angle, (uint8_t)(angle >> 8));
+}
+
+int main(void) {
+	DDRB = 0xff;
+	PORTB = 0x00;
+	//GICR &= 0xff ^ (1 << INT0);
+
+	servo_init();
+
+	uint8_t i;
+	for (i = 0;; i++) {
+		//servo_move(1, 412 + 100 * (i % 3));
+		servo_move(1, 512);
+		//PORTB = servo_move(1, 412 + (i % 3) * 100);
+	}
 }

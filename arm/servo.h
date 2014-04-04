@@ -9,6 +9,8 @@
 #ifndef SERVO_H_
 #define SERVO_H_
 
+#include <avr/io.h>
+
 //--- Control Table Address ---
 //EEPROM AREA
 
@@ -82,42 +84,32 @@
 #define SERVO_DEFAULT_RETURN_PACKET_SIZE 6
 #define SERVO_BROADCASTING_ID 0xFE
 
+#define SERVO_ERROR_INSTRUCTION (1 << 6)
+#define SERVO_ERROR_OVERLOAD (1 << 5)
+#define SERVO_ERROR_CHECKSUM (1 << 4)
+#define SERVO_ERROR_RANGE (1 << 3)
+#define SERVO_ERROR_OVERHEAT (1 << 2)
+#define SERVO_ERROR_ANGLE_LIMIT (1 << 1)
+#define SERVO_ERROR_INPUT_VOLTAGE 1
+
 //Hardware Dependent Item
 #define SERVO_DEFAULT_BAUD_RATE 0x0 // 1000000bps at 16MHz
 
-//UART control
-#define SERVO_CHECK_TRANSFER_FINISH (TXC0)
-#define SERVO_CHECK_TRANSFER_READY (!( UCSR0A & (1<<UDRE0)))
-#define SERVO_CHECK_TRANSMIT_FINISH (RXC0)
-//Interrupt for RXD needed
+// Macros for different actions
+#define NUMARGS(...)  (sizeof((int[]){0, ##__VA_ARGS__}) / sizeof(int) - 1)
+#define servo_send(id, instruction, parameters, ...) \
+	_servo_send(id, instruction, parameters, NUMARGS(__VA_ARGS__), ##__VA_ARGS__)
 
-#define SERVO_CLEAR_BUFFER (receive_buffer_read_pointer = receive_buffer_write_pointer)
+#define servo_ping(id) servo_send(id, SERVO_INST_PING, (uint8_t *)(void *)0)
+#define servo_read(id, address, length, parameters) \
+	servo_send(id, SERVO_READ, parameters, address, length)
+#define servo_write(id, ...) \
+	servo_send(id, SERVO_INST_WRITE, 0, ##__VA_ARGS__)
+#define servo_reg_write(id, ...) \
+	servo_send(id, SERVO_INST_REQ_WRITE, 0, ##__VA_ARGS__)
+#define servo_action() servo_send(SERVO_BROADCASTING_ID, SERVO_INST_ACTION, 0)
 
-#define SERVO_RECEIVE_TIMEOUT_COUNT 30000UL
-
-typedef struct {
-	uint8_t id;
-	uint8_t address;
-	uint8_t data_length;
-	uint8_t data[];
-} servo_command;
-
-typedef struct {
-	uint8_t id;
-	uint8_t error;
-	uint8_t data_length;
-	uint8_t data[];
-} servo_response;
-
-void servo_init();
-void servo_transfer_byte(uint8_t data);
-void servo_enable_transmit();
-void servo_enable_receive();
-uint8_t recieve_packet(uint8_t recieve_packet_length, uint8_t transfer_buffer[128]);
-uint8_t transfer_packet(uint8_t id, uint8_t instruction, uint8_t parameter_length);
-
-servo_command servo_make_command(uint8_t servo_id, uint8_t address_id, uint8_t data_length, uint8_t data[]);
-servo_response servo_make_response(uint8_t servo_id, uint8_t address_id, uint8_t data_length, uint8_t data[]);
-servo_response servo_receive_packet();
+void servo_init(void);
+uint8_t _servo_write()
 
 #endif /* SERVO_H_ */
