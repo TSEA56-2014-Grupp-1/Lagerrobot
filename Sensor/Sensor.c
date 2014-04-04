@@ -32,7 +32,7 @@ int main(void)
 {
 	bus_init(BUS_ADDRESS_SENSOR);
 	bus_register_response(4, return_line_weight);
-//	lcd_interface_init();
+	lcd_interface_init();
 	
 	//calibrate_linesensor();
 	line_init();

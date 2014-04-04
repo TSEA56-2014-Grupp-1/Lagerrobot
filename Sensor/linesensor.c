@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "linesensor.h"
+#include "../shared/LCD_interface.h"
 
 // #define F_CPU 20000000UL;
 // #include <util/delay.h>
@@ -28,7 +29,11 @@ enum station_type {Left, No, Right};
 typedef uint8_t line_type;
 enum line_type {line, interrupt, crossing};
 
+typedef uint8_t composite_output_type;
+enum composite_output_type {station_Left, station_No, station_Right,No_tape};
+
 //Hemmagjorda datatyper
+composite_output_type chassi_output;
 line_type line_status;
 surface_type sensor_surface_types[11];	
 station_type pickup_station;
@@ -46,8 +51,26 @@ double sensor_scale[11];
 uint8_t tape_reference = 100;
 
 
+uint8_t not_on_tape()	{
+	uint8_t not_on_tape = 1;
+	for(uint8_t i = 0; i<=10;i++)	{
+		if(sensor_surface_types[i]==1)	{
+			not_on_tape = 0;
+		}
+	}
+	return not_on_tape;
+}
+
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
-	return (((uint16_t)pickup_station << 8) | line_weight);
+	if(pickup_station == Left)
+		chassi_output = station_Left;
+	else if(pickup_station == No)
+		chassi_output = station_No;
+	else if(pickup_station == Right)
+		chassi_output = station_Right;
+	if(not_on_tape())
+		chassi_output = No_tape;
+	return (((uint16_t)chassi_output << 8) | line_weight);
 }
 
 void line_init(){
@@ -127,18 +150,18 @@ void pickup_station_detection() {
 		current_sensor++;
 	}
 	
-	if((tape_width > 4 )&& (line_weight < 127) && (line_status == 0))	{
-		pickup_station = Left;
-		display_text("Pickup_station:","Left");
-	}
-	else if ((tape_width > 4) && (line_weight > 127) && (line_status == 0))	{
+	if((tape_width > 5 )&& (line_weight < 127) && (line_status == 0))	{
 		pickup_station = Right;
-		display_text("Pickup_station:", "Right");
+		//display_text("Pickup","Left");
+	}
+	else if ((tape_width > 5) && (line_weight > 127) && (line_status == 0))	{
+		pickup_station = Left;
+		//display_text("Pickup", "Right");
 	}
 	else
 	{
 		pickup_station = No;
-		display_text("pickupstation","not u are");
+		//display_text("pickup","not");
 	}
 }
 void line_break_detection()	{	
