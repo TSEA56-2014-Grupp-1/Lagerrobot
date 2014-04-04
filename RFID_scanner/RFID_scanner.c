@@ -8,46 +8,88 @@
 #include <avr/interrupt.h>
 #include "../shared/usart.h"
 #include "RFID_scanner.h"
-uint8_t RFID_ID[11];
+#include "../shared/bus.h"
+//#include "../shared/LCD_interface.h"
 
 
-void init_RFID_scanner()
+uint8_t station_RFID[12];
+uint8_t carrying_RFID[12];
+
+void RFID_scanner_init()
 {
-	sei(); // Enable interrupts
-	DDRD = 0b0000100; // Set PD1 as Output
+	DDRD = 0b0000100; // Set PD2 as Output
 }
+
+void station_to_LCD(uint8_t station){
+/*	if (station == 80)
+	display_text("station", "80");
+	else if (station == 81)
+	display_text("station", "81");
+	else if (station == 82)
+	display_text("station", "82");
+	else if (station == 83)
+	display_text("station", "83");
+	else if (station == 84)
+	display_text("station", "84");
+	else if (station == 85)
+	display_text("station", "85");
+	else 
+	display_text("station", "unknown")
+	*/
+}
+
 
 void read_RFID()
 {
-	PORTD = (1 << PORTD2);
+	PORTD = (0 << PORTD2); // Enable reading
 	uint8_t i = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		usart_read_byte(&RFID_ID[i]);
+		usart_read_byte(&station_RFID[i]);
 	}
-	PORTD = PORTD & (0 << PORTD2);
+	PORTD = PORTD & (1 << PORTD2); // Disable reading
 }
 
-uint8_t compare_RFID(uint8_t rfid_station[])
-{
 
+uint8_t compare_RFID_arrays(uint8_t station_RFID[12], const uint8_t current_compare_RFID[12])
+{
+	uint8_t i;
+	for (i = 0; i <=11; ++i)
+	{
+		if(current_compare_RFID[i] != current_compare_RFID[i])
+		return 0;
+	}
+	return 1;
 }
 
-uint8_t compare_RFID_to_station(uint8_t stored_id[])
+uint8_t identify_station_RFID()
 {
-	swith()
-	case():
-	
+	if (compare_RFID_arrays(station_RFID, RFID_B80))
+	return 80;
+	else if (compare_RFID_arrays(station_RFID, RFID_B81))
+	return 81;
+	else if (compare_RFID_arrays(station_RFID, RFID_B82))
+	return 82;
+	else if (compare_RFID_arrays(station_RFID, RFID_B83))
+	return 83;
+	else if (compare_RFID_arrays(station_RFID, RFID_B84))
+	return 84;
+	else if (compare_RFID_arrays(station_RFID, RFID_B85))
+	return 85;
+	else
+	return 0;
 };
 
 int main(void)
 {
-	init_RFID_scanner();
+	RFID_scanner_init();
 	usart_init(520);
-
+	bus_init(4); //Bus address sensor
+	//LCD_init()
+	sei();
 	read_RFID();
-	
-
+	uint8_t station = identify_station_RFID();
+	station_to_LCD(station);
     while(1)
     {
         //TODO:: Please write your application code 
