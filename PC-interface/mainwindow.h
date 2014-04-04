@@ -2,6 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QGraphicsItem>
+#include <QTimer>
+#include <QTime>
 
 namespace Ui {
 class MainWindow;
@@ -14,6 +19,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    void draw_next_point_steering(qreal);
+
 
 private slots:
     void keyPressEvent(QKeyEvent *key_pressed);
@@ -86,8 +93,22 @@ private slots:
 
     void on_pushButton_put_down_left_clicked();
 
+    void on_pushButton_calibrate_tape_clicked();
+
+    void on_pushButton_calibrate_floor_clicked();
+
 private:
     Ui::MainWindow *ui;
+
+    QGraphicsScene *scene_graph_1;
+    QGraphicsScene *scene_graph_2;
+
+    QPen *pen_steering;
+
+    qreal last_xpos_steering;
+    qreal last_ypos_steering;
+
+    QTime *time_steering = new QTime();
 };
 
 #endif // MAINWINDOW_H

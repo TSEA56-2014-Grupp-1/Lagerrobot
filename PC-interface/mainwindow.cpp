@@ -4,12 +4,27 @@
 #include <QKeySequence>
 #include <QKeyEvent>
 #include <iostream>
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    scene_graph_1 = new QGraphicsScene(this);
+    scene_graph_2 = new QGraphicsScene(this);
+    ui->graphicsView_graph_1->setScene(scene_graph_1);
+    ui->graphicsView_graph_2->setScene(scene_graph_2);
+
+    pen_steering = new QPen();
+    pen_steering->setColor(Qt::black);
+    pen_steering->setWidth(2);
+
+    last_xpos_steering = 0;
+    last_ypos_steering = 0;
+
+    QTime *time_steering = new QTime();
+    time_steering->start();
 }
 
 MainWindow::~MainWindow()
@@ -49,7 +64,6 @@ void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
 
 void MainWindow::on_pushButton_forward_pressed()
 {
-    std::cerr << "YEAH";
     //Go forward
 }
 
@@ -61,7 +75,6 @@ void MainWindow::on_pushButton_back_pressed()
 
 void MainWindow::on_pushButton_forward_released()
 {
-    std::cerr << "IT WORKS";
     //Stop going forward
 }
 
@@ -213,4 +226,24 @@ void MainWindow::on_pushButton_put_down_right_clicked()
 void MainWindow::on_pushButton_put_down_left_clicked()
 {
     //Leave object to the left
+}
+
+
+void MainWindow::on_pushButton_calibrate_tape_clicked()
+{
+    //Calibrate tape
+}
+
+void MainWindow::on_pushButton_calibrate_floor_clicked()
+{
+    //Calibrate floor
+}
+
+void MainWindow::draw_next_point_steering(qreal ypos) {
+    qreal time = time_steering->elapsed();
+    scene_graph_1->addLine(last_xpos_steering, last_ypos_steering, time, ypos, *pen_steering);
+    last_xpos_steering = time;
+    last_ypos_steering = ypos;
+    qDebug() << last_ypos_steering;
+    qDebug() << "Time: " << last_xpos_steering;
 }

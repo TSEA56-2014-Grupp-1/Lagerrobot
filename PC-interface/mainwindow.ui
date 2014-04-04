@@ -17,62 +17,72 @@
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>0</x>
       <y>0</y>
-      <width>349</width>
-      <height>255</height>
+      <width>369</width>
+      <height>271</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_chassi">
-     <item row="7" column="2">
-      <widget class="QLabel" name="label_2">
+     <item row="5" column="1">
+      <widget class="QPushButton" name="pushButton_calibrate_tape">
        <property name="text">
-        <string>Kp</string>
+        <string>Kalibrera tejp</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Chassi</string>
+     <item row="7" column="1">
+      <widget class="QLineEdit" name="lineEdit_Kd"/>
+     </item>
+     <item row="5" column="0">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
        </property>
-      </widget>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
      <item row="7" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Kd</string>
+        <string>Kd-&gt;</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="2">
-      <widget class="QLineEdit" name="lineEdit_Kp"/>
+     <item row="5" column="3">
+      <widget class="QPushButton" name="pushButton_calibrate_floor">
+       <property name="text">
+        <string>Kalibrera golv</string>
+       </property>
+      </widget>
      </item>
-     <item row="8" column="0">
-      <widget class="QLineEdit" name="lineEdit_Kd"/>
-     </item>
-     <item row="2" column="0">
+     <item row="1" column="1">
       <widget class="QPushButton" name="pushButton_left">
        <property name="text">
         <string>Vänster</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="2" column="2">
       <widget class="QPushButton" name="pushButton_back">
        <property name="text">
         <string>Bak</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
+     <item row="1" column="3">
       <widget class="QPushButton" name="pushButton_right">
        <property name="text">
         <string>Höger</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="0" column="2">
       <widget class="QPushButton" name="pushButton_forward">
        <property name="text">
         <string>Fram</string>
@@ -82,27 +92,37 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="0" colspan="3">
+     <item row="3" column="1" colspan="3">
       <widget class="QPushButton" name="pushButton_start_line">
        <property name="text">
         <string>Start linjeföljning</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="0" colspan="3">
+     <item row="4" column="1" colspan="3">
       <widget class="QPushButton" name="pushButton_stop_line">
        <property name="text">
         <string>Stoppa linjeföljning</string>
        </property>
       </widget>
      </item>
+     <item row="7" column="2">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Kp-&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="3">
+      <widget class="QLineEdit" name="lineEdit_Kp"/>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>400</x>
-      <y>310</y>
+      <x>770</x>
+      <y>280</y>
       <width>345</width>
       <height>291</height>
      </rect>
@@ -197,112 +217,112 @@
    <widget class="QWidget" name="gridLayoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>360</x>
+      <x>370</x>
       <y>0</y>
       <width>331</width>
       <height>251</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="1">
+     <item row="0" column="2">
       <widget class="QPushButton" name="pushButton_close_gripper">
        <property name="text">
         <string>Stäng</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
+     <item row="0" column="1">
       <widget class="QLabel" name="label_10">
        <property name="text">
         <string>Gripklo</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="2" column="1">
       <widget class="QLabel" name="label_12">
        <property name="text">
         <string>2:a led</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="1" column="1">
       <widget class="QLabel" name="label_11">
        <property name="text">
         <string>3:a led</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="3" column="1">
       <widget class="QLabel" name="label_13">
        <property name="text">
         <string>1:a led</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="4" column="1">
       <widget class="QLabel" name="label_14">
        <property name="text">
         <string>Basrotation</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="3" column="2">
       <widget class="QPushButton" name="pushButton_1_upp">
        <property name="text">
         <string>Upp</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
+     <item row="4" column="2">
       <widget class="QPushButton" name="pushButton_base_left">
        <property name="text">
         <string>Vänster</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
+     <item row="2" column="2">
       <widget class="QPushButton" name="pushButton_2_upp">
        <property name="text">
         <string>Upp</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="1" column="2">
       <widget class="QPushButton" name="pushButton_3_upp">
        <property name="text">
         <string>Upp</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+     <item row="0" column="3">
       <widget class="QPushButton" name="pushButton_open_gripper">
        <property name="text">
         <string>Öppna</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
+     <item row="1" column="3">
       <widget class="QPushButton" name="pushButton_3_down">
        <property name="text">
         <string>Ner</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
+     <item row="2" column="3">
       <widget class="QPushButton" name="pushButton_2_down">
        <property name="text">
         <string>Ner</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="2">
+     <item row="3" column="3">
       <widget class="QPushButton" name="pushButton_1_down">
        <property name="text">
         <string>Ner</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="2">
+     <item row="4" column="3">
       <widget class="QPushButton" name="pushButton_base_right">
        <property name="text">
         <string>Höger</string>
@@ -314,7 +334,7 @@
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>690</x>
+      <x>700</x>
       <y>10</y>
       <width>160</width>
       <height>221</height>
@@ -358,6 +378,26 @@
       <y>10</y>
       <width>256</width>
       <height>221</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="graphicsView_graph_1">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>290</y>
+      <width>741</width>
+      <height>171</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="graphicsView_graph_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>470</y>
+      <width>741</width>
+      <height>171</height>
      </rect>
     </property>
    </widget>
