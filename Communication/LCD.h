@@ -9,12 +9,6 @@
 #ifndef LCD_H_
 #define LCD_H_
 
-#define F_CPU 18.432E6
-#define COMM 0
-#define SENS 1
-#define ARM 2
-#define CHAS 3
-
 #include <avr/io.h>
 
 void lcd_send_symbol(char);

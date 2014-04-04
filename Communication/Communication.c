@@ -6,10 +6,11 @@
  */ 
 #define ROTATE_INTERVAL 100
 
-#include <avr/io.h>
-#include <string.h>
+#include "Communication.h"
 #include "LCD.h"
 #include "../shared/bus.h"
+#include <avr/io.h>
+#include <string.h>
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
@@ -103,7 +104,6 @@ int main(void)
 	bus_init(0b0000101);
 	
 	bus_register_receive(2, symbols_are_ready);
-	_delay_ms(100);
 	
 	display(COMM, "Hello!", "World!");	
 	

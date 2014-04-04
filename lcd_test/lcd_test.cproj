@@ -42,12 +42,12 @@
       <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-          <JtagDbgClock>1140000</JtagDbgClock>
+          <JtagDbgClock>1170000</JtagDbgClock>
           <JtagInChain>true</JtagInChain>
-          <JtagDevicesBefore>1</JtagDevicesBefore>
-          <JtagDevicesAfter>1</JtagDevicesAfter>
-          <JtagInstrBitsBefore>4</JtagInstrBitsBefore>
-          <JtagInstrBitsAfter>4</JtagInstrBitsAfter>
+          <JtagDevicesBefore>0</JtagDevicesBefore>
+          <JtagDevicesAfter>2</JtagDevicesAfter>
+          <JtagInstrBitsBefore>0</JtagInstrBitsBefore>
+          <JtagInstrBitsAfter>8</JtagInstrBitsAfter>
         </InterfaceProperties>
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>

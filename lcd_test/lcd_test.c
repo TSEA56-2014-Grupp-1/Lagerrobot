@@ -16,15 +16,15 @@
 
 int main(void)
 {
-	bus_init(BUS_ADDRESS_CHASSIS);
+	bus_init(BUS_ADDRESS_ARM);
 	
-	bus_register_response(1, symbol_request);
+	lcd_interface_init();
 	
 	
 	sei();
 	_delay_ms(200);
-	//display_text("Testar nr ", "Bus-display");
-	display_numbers(100, 1337);
+	display_text("Jag ar en Arm", "Hihihihi");
+	//display_numbers(100, 1337);
 	
     while(1)
     {

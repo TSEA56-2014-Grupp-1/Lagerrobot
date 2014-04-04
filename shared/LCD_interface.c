@@ -3,6 +3,10 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 
+void lcd_interface_init(){
+	bus_register_response(1, symbol_request);
+}
+
 void display_text(char line1[], char line2[]) {
 	for (int i = 0; i < 16; ++i){
 		if (i < 13)
