@@ -33,7 +33,14 @@ return 0;
 //---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
-	//Size on line_data? specify! XXX
+	if(PINA & 1) {
+		stop_wheels();
+		//continue when switch turned back?
+		//TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt cause switch set to manual steering
+		//Try this instead!
+		//TCCR0B = 0; // Disable timer-counter
+		return;
+	}
 	
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
@@ -135,7 +142,7 @@ int main(void)
 	TIMSK0 |= (1 << OCIE0A);
 	TIFR0 |= (1 << OCF0A);
 	
-	// interrupt frequency 30hz
+	// interrupt frequency 30hz --- or 60hz according to bus-reads??
 	OCR0A = 0xff; 
 	
 	// set to mode 2 (CTC) => clear TCNT0 on compare match
@@ -144,6 +151,9 @@ int main(void)
 	
 	//prescale
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
+	
+	//enable startswitch (manuell / autonomus)
+	
 	
 	
     while(1)
