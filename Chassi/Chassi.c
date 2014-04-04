@@ -59,15 +59,18 @@ if (!is_station(station_data))	// Continue following line
 	stop_wheels();
 	if (station_data == 0)
 	{
-		display_text("station", "left");
+		display(0, "station");
+		display(1, "left");
 	}
 	else if (station_data == 2)
 	{
-		display_text("statIon", "right");
+		display(0, "station");
+		display(1, "right");
 	}
 	else
 	{
-		display_text("unknown", "error");
+		display(0, "unknown");
+		display(1, "error");
 	}
 	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 }
