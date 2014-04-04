@@ -37,14 +37,8 @@ const uint8_t RFID_B84[] = {
 const uint8_t RFID_B85[] = {
 	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44 ,0x33, 0x44, 0x42, 0x42, 0x38, 0x0D
 };
-/*
-vector RFID_vector[5] ={
-	 RFID_B80, RFID_B81, *RFID_B82, *RFID_B83, *RFID_B84, *RFID_B85
-};
-*/
+
 void init_RFID_scanner();
 void read_RFID();
-
-
 
 #endif /* RFID-SCANNER_H_ */

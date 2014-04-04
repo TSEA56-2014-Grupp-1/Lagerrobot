@@ -28,27 +28,17 @@ void read_RFID()
 	PORTD = PORTD & (0 << PORTD2);
 }
 
-uint8_t compare_RFID()
+uint8_t compare_RFID(uint8_t rfid_station[])
 {
-	//uint8_t i;
-	uint8_t j;
-	uint8_t match;
-	//for (i = 0; i <= 5; ++i)
-//	{
-		match = 1;
-		j = 0;
-		
-		while (j <= 11 && match != 0)
-		{
-		if (RFID_B80[j] != RFID_ID[j])
-			match = 0;
-			++j;
-		}
-		if (match)
-		return *RFID_B80;
-	//}
-	return 0;
+
 }
+
+uint8_t compare_RFID_to_station(uint8_t stored_id[])
+{
+	swith()
+	case():
+	
+};
 
 int main(void)
 {
