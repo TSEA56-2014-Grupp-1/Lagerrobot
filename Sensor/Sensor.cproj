@@ -129,6 +129,12 @@
       <SubType>compile</SubType>
       <Link>bus.h</Link>
     </Compile>
+    <Compile Include="distance_sensors.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="distance_sensors.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="linesensor.c">
       <SubType>compile</SubType>
     </Compile>
