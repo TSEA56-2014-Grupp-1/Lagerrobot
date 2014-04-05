@@ -24,7 +24,7 @@ int main(void)
 	sei();
 	
 	display(0, "%d/%2d/%4d", 3, 4, 2014);
-	display(1, "  %.1f ", 1.78d);
+	display(1, "hest %.2f", 22.533);
     while(1)
     {
         //TODO:: Please write your application code 

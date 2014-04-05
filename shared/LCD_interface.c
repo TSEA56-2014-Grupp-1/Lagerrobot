@@ -15,10 +15,10 @@ void display_clear() {
 	}
 }
 
-void _display(uint8_t line_number, const char* str, uint8_t num_vals, ...) {
+void display(uint8_t line_number, const char* str, ...) {
 	
 	va_list data;
-	va_start(data, num_vals);
+	va_start(data, str);
 	vsnprintf(lcd_display_symbols[line_number], 17, str, data);
 	va_end(data);
 	
