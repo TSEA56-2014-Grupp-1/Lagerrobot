@@ -107,6 +107,7 @@ int main(void)
 	lcd_display(COMM, "Ouroborobot", "Startup..");
 	_delay_ms(700);
 	lcd_display(COMM, "Ouroborobot", "Startup...");
+
 	
     while(1)
     {
