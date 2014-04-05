@@ -12,6 +12,7 @@
 #include <avr/io.h>
 
 uint8_t process_packet();
+void send_packet(uint8_t packet_id, uint8_t num_parameters, ...);
 
 
 

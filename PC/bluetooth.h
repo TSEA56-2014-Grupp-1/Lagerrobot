@@ -21,6 +21,7 @@ public:
     QString open_port();
 
 
+
 private slots:
     void handle_ready_read();
     void handle_error(QSerialPort::SerialPortError);

@@ -10,8 +10,10 @@
 #include "../shared/bus.h"
 #include "../shared/packets.h"
 #include "../shared/usart.h"
+#include "LCD.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <stdarg.h>
 
 uint8_t process_packet() {
 	uint8_t packet_id;
@@ -39,16 +41,23 @@ uint8_t process_packet() {
 			// issue stop command here
 		break;
 		case PKT_ARM_COMMAND:
+			display(0, "arm command!");
 			if (usart_read_byte(&parameter) == 1)
 				return 1;
 			switch (parameter) {
 				case CMD_ARM_MOVE:
-					
+					display(1, "arm move!");
 					if (usart_read_byte(&joint) == 1 || 
 						usart_read_byte(&pos_l) == 1 ||
 						usart_read_byte(&pos_h) == 1)
 						return 1;		
 					// issue arm move command on bus here
+					display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
+					//send_packet(PKT_ARM_STATUS, 3, joint, pos_l, pos_h);
+					usart_write_byte(PKT_ARM_STATUS);
+					usart_write_byte(1);
+					usart_write_byte(pos_h);
+					usart_write_byte(pos_l);
 				break;
 				case CMD_ARM_GRIP:
 					// issue arm grip command on bus here
@@ -124,13 +133,16 @@ uint8_t process_packet() {
 				usart_read_byte(&metadata_h) == 1	||
 				usart_read_byte(&metadata_l) == 1)
 				return 1;
-			
+			display(0, "req %d", request_id);
 			bus_request(parameter, 
 						request_id, 
 						((uint16_t)metadata_h << 8) | (uint16_t) metadata_l, 
 						&response);
 						
-			// send PKT_SPOOFED_RESPONSE to computer with response
+			
+			//send_packet(PKT_SPOOFED_RESPONSE, (uint8_t[]){response >> 8, response});
+			
+			display(1, "%x", response);
 			
 		break;
 		case PKT_SPOOFED_TRANSMIT:	
@@ -151,11 +163,20 @@ uint8_t process_packet() {
 }
 
 
-void send_packet(uint8_t packet_id, uint8_t parameters[]) {
-	usart_write_byte(packet_id);
+void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t parameters[]) {
+	va_list parameters;
+	va_start(parameters, num_parameters);
+	uint8_t param_arr[num_parameters];
 	
-	for (int i = 0; i < sizeof(parameters); ++i) {
-		usart_write_byte(parameters[i]);
+	for (int i = 0; i < num_parameters; ++i) {
+		param_arr[i] = va_arg(parameters, int);
+	}
+	va_end(parameters);
+	
+	usart_write_byte(packet_id);
+	usart_write_byte(num_parameters);
+	for (int i = 0; i < num_parameters; ++i) {
+		usart_write_byte(param_arr[i]);
 	}
 	
 }

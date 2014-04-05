@@ -2,6 +2,7 @@
 #include <QApplication>
 #include <QSerialPortInfo>
 #include "bluetooth.h"
+#include "../shared/packets.h"
 #include <QList>
 #include <QDebug>
 
@@ -16,19 +17,19 @@ int main(int argc, char *argv[])
     qDebug() << list.at(1).portName();
     qDebug() << list.at(2).portName();
 
-    bluetooth *connection = new bluetooth(list.at(2).portName());
+    bluetooth *connection = new bluetooth(list.at(1).portName());
 
 
     QByteArray test;
     test.resize(5);
-    test[0] = 1;
-    test[1] = 0;
-    test[2] = 0x41;
-    test[3] = 0x42;
-    test[4] = 0x43;
+    test[0] = PKT_ARM_COMMAND;
+    test[1] = CMD_ARM_MOVE;
+    test[2] = 1;
+    test[3] = 0x34;
+    test[4] = 0x12;
 
     connection->open_port();
-    //connection->write(test);
+    connection->write(test);
 
     return a.exec();
 }

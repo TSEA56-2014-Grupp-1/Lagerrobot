@@ -7,7 +7,6 @@ QT_USE_NAMESPACE
 bluetooth::bluetooth(QString name)
 {
     serialport = new QSerialPort(name);
-    serialport->setBaudRate(115200);
     connect(serialport, SIGNAL(readyRead()), SLOT(handle_ready_read()));
     connect(serialport, SIGNAL(error(QSerialPort::SerialPortError)), SLOT(handle_error(QSerialPort::SerialPortError)));
 }
@@ -19,12 +18,26 @@ bluetooth::~bluetooth() {
 QString bluetooth::open_port() {
     if (serialport->open(QIODevice::ReadWrite)) {
         return "Bluetooth connected succesfully.";
+        serialport->setBaudRate(QSerialPort::Baud115200);
     }
+    else
+        return "Error opening bluetooth";
 }
 
-void bluetooth::handle_ready_read() {
 
-    qDebug() << serialport->readAll();
+void bluetooth::handle_ready_read() {
+    char packet_id;
+    serialport->read(&packet_id, 1);
+    char num_parameters;
+    serialport->read(&num_parameters, 1);
+    QByteArray parameters = serialport->read(num_parameters);
+
+    qDebug() << "Packet id: "  << packet_id;
+    qDebug() << "Number of params: " << num_parameters;
+
+    for (int i = 0; i < parameters.length(); ++i) {
+        qDebug() << parameters[i];
+    }
 
 }
 
@@ -53,3 +66,7 @@ void bluetooth::handle_error(QSerialPort::SerialPortError error) {
         qDebug() << "Unknown error.";
     }
 }
+
+
+
+

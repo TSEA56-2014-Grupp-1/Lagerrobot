@@ -16,8 +16,6 @@
 #include <string.h>
 #include <util/delay.h>
 
-uint8_t lcd_rotation_counter = 0;
-
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
 		lcd_rotation_counter = 0;
@@ -65,8 +63,7 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 	}
 	
 	// jump to the module that sent last
-	lcd_current_sender = module;
-	TCNT1 = 0xffff;
+	force_display_update(module);
 }
 
 void clear_message(uint8_t unit) {
@@ -88,6 +85,7 @@ void init(){
 	TCCR1B = 0b00000010; // normal mode, max prescaler; 
 	
 	lcd_current_sender = 0;
+	lcd_rotation_counter = 0;
 	clear_message(COMM);
 	clear_message(SENS);
 	clear_message(CHAS);
@@ -114,13 +112,29 @@ int main(void)
 	_delay_ms(700);
 	lcd_display(COMM, "Ouroborobot", "Startup...");
 
+// 	display(0, "Waiting for");
+// 	display(1, "bytes...");
+	while (!usart_has_bytes());
     while(1)
     {
-		while (!usart_has_bytes());
+		
+		/*uint8_t data[] = {0,0,0,0,0,0,0,0};
+		display(0, "Got something");
+		for (int i= 0; i<8; ++i){
+			if (usart_read_byte(&data[i]) == 1)
+				break;
+			display(0, "%x %x %x %x", data[0], data[1], data[2], data[3]);
+			display(1, "%x %x %x %x", data[4], data[5], data[6], data[7]);
+		}		*/
+		
+		
+	
+		
 		if (process_packet() == 1)  {// timeout 
-			display(0, "Packet read");
 			display(1, "timed out...");
 		}
+		
+		while (!usart_has_bytes());
 		/*
 		uint8_t data;
 		usart_read_byte(&data);

@@ -25,6 +25,7 @@ char message_map_line1[4][17];
 
 char message_map_line2[4][17];
 
+uint8_t lcd_rotation_counter;
 uint8_t lcd_current_sender;
 
 #endif /* COMMUNICATION_H_ */

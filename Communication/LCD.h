@@ -19,6 +19,8 @@ void lcd_send_symbol(char);
 void lcd_send_command(char);
 int lcd_is_busy();
 
+void force_display_update(uint8_t module);
+
 void lcd_print(char text1[], char text2[]);
 void lcd_clear();
 

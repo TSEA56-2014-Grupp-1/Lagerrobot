@@ -43,6 +43,18 @@ void lcd_init() {
 	
 }
 
+void force_display_update(uint8_t module) {
+	lcd_rotation_counter = 0;
+	lcd_current_sender = module;
+	
+	lcd_display(lcd_current_sender,
+		message_map_line1[lcd_current_sender],
+		message_map_line2[lcd_current_sender]);
+	if (lcd_current_sender == 3)
+		lcd_current_sender = 0;
+	else
+		++lcd_current_sender;
+}
 
 /**
  *	lcd_send_symbol, sends a symbol to the display.
@@ -164,11 +176,10 @@ void _display(uint8_t line_number, char* str, uint8_t num_vals, ...) {
 	
 	va_start(data, num_vals);
 	if (line_number == 0)
-		vsnprintf(message_map_line1[COMM], 17, str, data);
+	vsnprintf(message_map_line1[COMM], 17, str, data);
 	else if (line_number == 1)
-		vsnprintf(message_map_line2[COMM], 17, str, data);  
+	vsnprintf(message_map_line2[COMM], 17, str, data);
 	va_end(data);
 	
-	lcd_current_sender = COMM;
-	TCNT1 = 0xfff0;
+	force_display_update(COMM);
 }
