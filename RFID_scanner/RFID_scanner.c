@@ -2,14 +2,16 @@
  * GccApplication3.c
  *
  * Created: 2014-04-03 11:13:39
- *  Author: Erik
+ *  Author: Erik 
  */ 
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include "../shared/usart.h"
+
 #include "RFID_scanner.h"
+#include "../shared/usart.h"
 #include "../shared/bus.h"
-//#include "../shared/LCD_interface.h"
+#include "../shared/LCD_interface.h"
 
 
 uint8_t station_RFID[12];
@@ -21,21 +23,41 @@ void RFID_scanner_init()
 }
 
 void station_to_LCD(uint8_t station){
-/*	if (station == 80)
-	display_text("station", "80");
+	if (station == 80)
+	{
+	display(1,"station");
+	display(0, "80");
+	}
 	else if (station == 81)
-	display_text("station", "81");
+	{
+			display(1,"station");
+			display(0, "80");
+	}
 	else if (station == 82)
-	display_text("station", "82");
+	{
+			display(1,"station");
+			display(0, "80");
+	}
 	else if (station == 83)
-	display_text("station", "83");
+	{
+			display(1,"station");
+			display(0, "80");
+	}
 	else if (station == 84)
-	display_text("station", "84");
+	{
+			display(1,"station");
+			display(0, "80");
+	}
 	else if (station == 85)
-	display_text("station", "85");
+	{
+			display(1,"station");
+			display(0, "80");
+	}
 	else 
-	display_text("station", "unknown")
-	*/
+	{
+			display(1,"station");
+			display(0, "80");
+	}
 }
 
 
@@ -45,7 +67,7 @@ void read_RFID()
 	uint8_t i = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		usart_read_byte(&station_RFID[i]);
+		//usart_read_byte(&station_RFID[i]);
 	}
 	PORTD = PORTD & (1 << PORTD2); // Disable reading
 }
@@ -80,12 +102,13 @@ uint8_t identify_station_RFID()
 	return 0;
 };
 
+
 int main(void)
 {
 	RFID_scanner_init();
 	usart_init(520);
 	bus_init(4); //Bus address sensor
-	//LCD_init()
+	lcd_interface_init();
 	sei();
 	read_RFID();
 	uint8_t station = identify_station_RFID();
