@@ -7,6 +7,10 @@
 #include <QGraphicsItem>
 #include <QTimer>
 #include <QTime>
+#include <QtCore/qmath.h>
+#include <QShortcut>
+#include <QKeySequence>
+#include <QKeyEvent>
 
 namespace Ui {
 class MainWindow;
@@ -20,6 +24,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
     void draw_next_point_steering(qreal);
+
+    QTime *time = new QTime();
 
 
 private slots:
@@ -100,15 +106,32 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    QGraphicsScene *scene_graph_1;
-    QGraphicsScene *scene_graph_2;
+    QGraphicsScene *scene_graph_steering;
+    QGraphicsScene *scene_graph_sensors;
 
     QPen *pen_steering;
 
     qreal last_xpos_steering;
     qreal last_ypos_steering;
 
-    QTime *time_steering = new QTime();
+    void draw_x_axis(QGraphicsScene*);
+    void draw_y_axis_steering();
+    void draw_y_axis_sensors();
+
+
+    //XXX: Should not be const, should be upadte every time we get a new highest value
+    const int MAX_Y_STEERING = 200;
+    const int MAX_Y_SENSORS = 200;
+
+    //Constants for painting graphs
+    const int X_SCALE_STEERING = 10;
+    const int Y_SCALE_STEERING = 10;
+
+    const int X_SCALE_SENSORS = 10;
+    const int Y_SCALE_SENSORS = 10;
+
+    const int Y_INTERVAL_STEERING = 1000;
+    const int Y_INTERVAL_SENSOR = 50;
 };
 
 #endif // MAINWINDOW_H

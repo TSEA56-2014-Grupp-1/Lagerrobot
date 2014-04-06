@@ -1,20 +1,27 @@
+/*
+ *      Class functions for MainWindow class
+ *
+ *      @author Patrik Nyberg
+ *
+ */
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <QShortcut>
-#include <QKeySequence>
-#include <QKeyEvent>
-#include <iostream>
-#include <QDebug>
 
+/*
+ *      Constructor for main window
+ *
+ *      @param parent Parent for the window
+ */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    scene_graph_1 = new QGraphicsScene(this);
-    scene_graph_2 = new QGraphicsScene(this);
-    ui->graphicsView_graph_1->setScene(scene_graph_1);
-    ui->graphicsView_graph_2->setScene(scene_graph_2);
+    scene_graph_steering = new QGraphicsScene(this);
+    scene_graph_sensors = new QGraphicsScene(this);
+    ui->graphicsView_graph_1->setScene(scene_graph_steering);
+    ui->graphicsView_graph_2->setScene(scene_graph_sensors);
 
     pen_steering = new QPen();
     pen_steering->setColor(Qt::black);
@@ -22,16 +29,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     last_xpos_steering = 0;
     last_ypos_steering = 0;
-
-    QTime *time_steering = new QTime();
-    time_steering->start();
 }
 
+//XXX: TODO:
 MainWindow::~MainWindow()
 {
     delete ui;
 }
 
+
+/*
+ *      Linking w, a, s and d to forward, left, back and right buttons key_pressed_event
+ *
+ *      @param key_pressed Key that was currently pressed
+ */
 void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
     if (key_pressed->key() == Qt::Key_W) {
         on_pushButton_forward_pressed();
@@ -47,6 +58,11 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
     }
 }
 
+/*
+ *      Linking w, a, s and d to forward, left, back and right buttons key_released_event
+ *
+ *      @param key_pressed Key that was currently released
+ */
 void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
     if (key_released->key() == Qt::Key_W) {
         on_pushButton_forward_released();
@@ -239,11 +255,52 @@ void MainWindow::on_pushButton_calibrate_floor_clicked()
     //Calibrate floor
 }
 
+/*
+ *      Draws next point to steering graph, 1 pixel on y-axis is 10 ms
+ *
+ *      @param ypos Y-position of next data point
+ */
 void MainWindow::draw_next_point_steering(qreal ypos) {
-    qreal time = time_steering->elapsed();
-    scene_graph_1->addLine(last_xpos_steering, last_ypos_steering, time, ypos, *pen_steering);
-    last_xpos_steering = time;
-    last_ypos_steering = ypos;
-    qDebug() << last_ypos_steering;
-    qDebug() << "Time: " << last_xpos_steering;
+    qreal current_time = time->elapsed()/X_SCALE_STEERING;
+    scene_graph_steering->addLine(last_xpos_steering, -1*last_ypos_steering, current_time, -1*ypos/Y_SCALE_STEERING, *pen_steering);
+    last_xpos_steering = current_time;
+    last_ypos_steering = ypos/Y_SCALE_STEERING;
+    draw_x_axis(scene_graph_steering);
+    draw_y_axis_steering();
+}
+
+/*
+ *      Paints x-axis from 0 to current time adding numbers every second
+ *
+ *      @param graph Graph that the axis should be painted in
+ */
+void MainWindow::draw_x_axis(QGraphicsScene *graph) {
+    graph->addLine(0,0,time->elapsed()/X_SCALE_STEERING,0);
+
+    QGraphicsTextItem* current_number = new QGraphicsTextItem();
+
+    // XXX: There could be a beter soultion since this will rewrite all the numbers every time.
+    for (int i = 1000/X_SCALE_STEERING; i < qCeil(time->elapsed()/X_SCALE_STEERING) ; i = i + 1000/X_SCALE_STEERING) {
+        current_number = graph->addText(QString::number(i/(1000/X_SCALE_STEERING)));
+        current_number->setPos(i-7,-5);
+        graph->addLine(i,-2,i,2);
+    }
+}
+
+/*
+ *      Paints y-axis on the steering graph
+ */
+void MainWindow::draw_y_axis_steering() {
+    scene_graph_steering->addLine(0,-1*MAX_Y_STEERING,0,MAX_Y_STEERING);
+
+    QGraphicsTextItem* current_number = new QGraphicsTextItem();
+
+    for (int i = -1*qFloor(MAX_Y_STEERING); i < qCeil(MAX_Y_STEERING); i = i + Y_INTERVAL_STEERING/Y_SCALE_STEERING) {
+        if (i != 0) {
+            current_number = scene_graph_steering->addText(QString::number(i*Y_SCALE_STEERING));
+            current_number->setPos(-5,i-7);
+            scene_graph_steering->addLine(-2,i,2,i);
+        }
+    }
+
 }
