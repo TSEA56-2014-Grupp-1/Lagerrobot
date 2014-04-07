@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
         qDebug() << list.at(1).portName();
         qDebug() << list.at(2).portName();
 
-        bluetooth *connection = new bluetooth(list.at(1).portName());
+        bluetooth *connection = new bluetooth(list.at(1).portName(), &w);
 
     QByteArray test;
     test.resize(5);

@@ -5,6 +5,9 @@
 #include <QObject>
 #include <QByteArray>
 
+class MainWindow;
+
+
 class bluetooth : public QObject
 {
 
@@ -13,13 +16,14 @@ class bluetooth : public QObject
 private:
     QSerialPort *serialport;
     QByteArray current_packet;
+    MainWindow *window;
 public:
 
-    bluetooth(QString);
+    bluetooth(QString, MainWindow*);
     ~bluetooth();
 
     void write(QByteArray);
-    QString open_port();
+    void open_port();
 
 
 private slots:
