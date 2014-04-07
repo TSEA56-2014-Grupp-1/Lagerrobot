@@ -127,14 +127,14 @@ int lcd_is_busy(){
  * @param text1 The first line of text.
  * @param text2 The second line of text.
  */
-void lcd_print(char text1[], char text2[]) {
+void lcd_print(char text1[16], char text2[16]) {
 	lcd_clear();
-	for(int i=0; text1[i] != '\0' && i < 17; i++)
+	for(int i=0; text1[i] != '\0' && i < 16; i++)
 		lcd_send_symbol(text1[i]);
 		
 	lcd_send_command(0b11000000); // line 2, DDRAM address 64
-	for(int i=0; text2[i] != '\0' && i < 17; i++)
-	lcd_send_symbol(text2[i]);
+	for(int i=0; text2[i] != '\0' && i < 16; i++)
+		lcd_send_symbol(text2[i]);
 }
 
 /**
@@ -155,6 +155,7 @@ void lcd_clear() {
  */
 void lcd_display(uint8_t sender, char text1[13], char text2[16]){
 	char line1[16];
+	char line2[16];
 	switch (sender) {
 		case COMM:
 			line1[0] = 'K';
@@ -172,21 +173,15 @@ void lcd_display(uint8_t sender, char text1[13], char text2[16]){
 	
 	line1[1] = ':';
 	line1[2] = ' ';
-	line1[3] = text1[0];
-	line1[4] = text1[1];
-	line1[5] = text1[2];
-	line1[6] = text1[3];
-	line1[7] = text1[4];
-	line1[8] = text1[5];
-	line1[9] = text1[6];
-	line1[10] = text1[7];
-	line1[11] = text1[8];
-	line1[12] = text1[9];
-	line1[13] = text1[10];
-	line1[14] = text1[11];
-	line1[15] = text1[12];
 	
-	lcd_print(line1, text2);
+	for (int i = 0; i < 16; ++i) {
+		if (i > 2)
+			line1[i] = text1[i-3];
+		line2[i] = text2[i];
+	}
+	
+	
+	lcd_print(line1, line2);
 }
 
 /**

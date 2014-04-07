@@ -23,8 +23,8 @@ int main(void)
 	
 	sei();
 	_delay_ms(200);
-	display(0, "%d/%2d/%4d", 3, 4, 2014);
-	display(1, "hest %.2f", 22.533);
+	display(0, "ABCD");
+	display(1, "123A%.2f", 2.34);
     while(1)
     {
         //TODO:: Please write your application code 
