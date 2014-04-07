@@ -18,11 +18,14 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    bluetooth.cpp
+    bluetooth.cpp \
+    dialog_connect.cpp
 
 HEADERS  += mainwindow.h \
     bluetooth.h \
-    ../shared/packets.h
+    ../shared/packets.h \
+    dialog_connect.h
 
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    dialog_connect.ui

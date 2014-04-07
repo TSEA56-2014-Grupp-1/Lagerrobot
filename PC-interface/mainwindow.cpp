@@ -10,6 +10,8 @@
 
 #include <qDebug>
 #include <QtCore/qmath.h>
+#include <dialog_connect.h>
+#include "bluetooth.h"
 
 
 /*
@@ -82,6 +84,23 @@ void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
     else if (key_released->key() == Qt::Key_D) {
         on_pushButton_base_right_released();
     }
+}
+
+
+/*
+ *      Setting new port for program to communicate with robot
+ *
+ *      @param new_connection Bluetooth port to robot
+ */
+void MainWindow::new_connection(bluetooth *new_connection) {
+    port = new_connection;
+}
+
+void MainWindow::connect_to_port(QString name) {
+    bluetooth *connection = new bluetooth(name, this);
+    print_on_log(QObject::tr("Connecting to port: %1").arg(name));
+    new_connection(connection);
+    port->open_port();
 }
 
 void MainWindow::on_pushButton_forward_pressed()
@@ -320,4 +339,11 @@ void MainWindow::print_on_log(QString text) {
     text.prepend(QTime::currentTime().toString("hh:mm:ss").prepend("[").append("] "));
     ui->listWidget_log->addItem(text);
     ui->listWidget_log->scrollToBottom();
+}
+
+void MainWindow::on_connect_action_triggered()
+{
+    Dialog_connect* connect_window = new Dialog_connect(this);
+    connect_window->exec();
+    delete connect_window;
 }

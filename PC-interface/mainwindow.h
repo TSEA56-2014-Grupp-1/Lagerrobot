@@ -10,6 +10,8 @@
 #include <QKeySequence>
 #include <QKeyEvent>
 
+class bluetooth;
+
 namespace Ui {
 class MainWindow;
 }
@@ -26,6 +28,10 @@ public:
     QTime *time = new QTime();
 
     void print_on_log(QString);
+
+    void new_connection(bluetooth*);
+
+    void connect_to_port(QString);
 
 
 private slots:
@@ -103,6 +109,8 @@ private slots:
 
     void on_pushButton_calibrate_floor_clicked();
 
+    void on_connect_action_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -117,6 +125,8 @@ private:
     void draw_x_axis(QGraphicsScene*);
     void draw_y_axis_steering();
     void draw_y_axis_sensors();
+
+    bluetooth* port = NULL;
 
 
     //XXX: Should not be const, should be upadte every time we get a new highest value

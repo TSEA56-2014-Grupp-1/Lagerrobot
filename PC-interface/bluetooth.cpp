@@ -107,7 +107,7 @@ void bluetooth::handle_error(QSerialPort::SerialPortError error) {
     else if (serialport->error() == QSerialPort::OpenError) {
         window->print_on_log("Error while opening already openden device.");
     }
-    else if (serialport->error() == QSerialPort::TimeoutError) {
+     else if (serialport->error() == QSerialPort::TimeoutError) {
         window->print_on_log("Serialport timed out.");
     }
     else if (serialport->error() == QSerialPort::NoError) {

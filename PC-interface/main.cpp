@@ -31,25 +31,25 @@ int main(int argc, char *argv[])
 
     //draw_x_axis(scene_graph_1);
 
-    QList<QSerialPortInfo> list = QSerialPortInfo::availablePorts();
+//    QList<QSerialPortInfo> list = QSerialPortInfo::availablePorts();
 
-        qDebug() << list.at(1).portName();
-        qDebug() << list.at(2).portName();
+//        qDebug() << list.at(1).portName();
+//        qDebug() << list.at(2).portName();
 
-        bluetooth *connection = new bluetooth(list.at(1).portName(), &w);
+//        bluetooth *connection = new bluetooth(list.at(1).portName(), &w);
 
-    QByteArray test;
-    test.resize(5);
+//    QByteArray test;
+//    test.resize(5);
 
-     test[0] = PKT_SPOOFED_REQUEST;
-     //test[1] = 4;
-     test[1] = 1;
-     test[2] = 1;
-     test[3] = 0x00;
-     test[4] = 0x02;
+//     test[0] = PKT_SPOOFED_REQUEST;
+//     //test[1] = 4;
+//     test[1] = 1;
+//     test[2] = 1;
+//     test[3] = 0x00;
+//     test[4] = 0x02;
 
-     connection->open_port();
-     connection->write(test);
+//     connection->open_port();
+//     connection->write(test);
 
     return a.exec();
 }
