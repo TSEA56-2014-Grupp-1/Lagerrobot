@@ -37,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     last_ypos_steering = 0;
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
+
+    disable_buttons();
 }
 
 //XXX: TODO:
@@ -101,6 +103,7 @@ void MainWindow::connect_to_port(QString name) {
     print_on_log(QObject::tr("Connecting to port: %1").arg(name));
     new_connection(connection);
     port->open_port();
+    enable_buttons();
 }
 
 void MainWindow::on_pushButton_forward_pressed()
@@ -335,15 +338,77 @@ void MainWindow::draw_y_axis_steering() {
 
 }
 
+/*
+ *      Prints a string in the log window, will be timestamped
+ *
+ *      @param text Text to be displated on in the log window
+ */
 void MainWindow::print_on_log(QString text) {
     text.prepend(QTime::currentTime().toString("hh:mm:ss").prepend("[").append("] "));
     ui->listWidget_log->addItem(text);
     ui->listWidget_log->scrollToBottom();
 }
 
+/*
+ *      Open a new Dialog_connect
+ */
 void MainWindow::on_connect_action_triggered()
 {
     Dialog_connect* connect_window = new Dialog_connect(this);
     connect_window->exec();
     delete connect_window;
+}
+
+/*
+ *      Disable all buttons
+ */
+void MainWindow::disable_buttons() {
+    ui->pushButton_1_down->setEnabled(false);
+    ui->pushButton_1_upp->setEnabled(false);
+    ui->pushButton_2_down->setEnabled(false);
+    ui->pushButton_2_upp->setEnabled(false);
+    ui->pushButton_3_down->setEnabled(false);
+    ui->pushButton_3_upp->setEnabled(false);
+    ui->pushButton_base_left->setEnabled(false);
+    ui->pushButton_base_right->setEnabled(false);
+    ui->pushButton_calibrate_floor->setEnabled(false);
+    ui->pushButton_calibrate_tape->setEnabled(false);
+    ui->pushButton_close_gripper->setEnabled(false);
+    ui->pushButton_forward->setEnabled(false);
+    ui->pushButton_left->setEnabled(false);
+    ui->pushButton_open_gripper->setEnabled(false);
+    ui->pushButton_put_down_left->setEnabled(false);
+    ui->pushButton_put_down_right->setEnabled(false);
+    ui->pushButton_right->setEnabled(false);
+    ui->pushButton_start_line->setEnabled(false);
+    ui->pushButton_start_position_arm->setEnabled(false);
+    ui->pushButton_stop_line->setEnabled(false);
+    ui->pushButton_back->setEnabled(false);
+}
+
+/*
+ *      Enable all buttons
+ */
+void MainWindow::enable_buttons() {
+    ui->pushButton_1_down->setEnabled(true);
+    ui->pushButton_1_upp->setEnabled(true);
+    ui->pushButton_2_down->setEnabled(true);
+    ui->pushButton_2_upp->setEnabled(true);
+    ui->pushButton_3_down->setEnabled(true);
+    ui->pushButton_3_upp->setEnabled(true);
+    ui->pushButton_base_left->setEnabled(true);
+    ui->pushButton_base_right->setEnabled(true);
+    ui->pushButton_calibrate_floor->setEnabled(true);
+    ui->pushButton_calibrate_tape->setEnabled(true);
+    ui->pushButton_close_gripper->setEnabled(true);
+    ui->pushButton_forward->setEnabled(true);
+    ui->pushButton_left->setEnabled(true);
+    ui->pushButton_open_gripper->setEnabled(true);
+    ui->pushButton_put_down_left->setEnabled(true);
+    ui->pushButton_put_down_right->setEnabled(true);
+    ui->pushButton_right->setEnabled(true);
+    ui->pushButton_start_line->setEnabled(true);
+    ui->pushButton_start_position_arm->setEnabled(true);
+    ui->pushButton_stop_line->setEnabled(true);
+    ui->pushButton_back->setEnabled(true);
 }

@@ -126,10 +126,11 @@ private:
     void draw_y_axis_steering();
     void draw_y_axis_sensors();
 
+    void disable_buttons();
+    void enable_buttons();
+
     bluetooth* port = NULL;
 
-
-    //XXX: Should not be const, should be upadte every time we get a new highest value
     int max_y_steering = 200;
     int max_y_sensors = 200;
 
