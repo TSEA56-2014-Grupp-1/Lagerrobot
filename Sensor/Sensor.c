@@ -11,21 +11,21 @@
 #include "linesensor.h"
 #include "sidescanner.h"
 #include "../shared/bus.h"
-#include "sidescanner.h"
-
+#include "distance_sensors.h"
+uint16_t adtest = 0;
 
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
 		case 0 :
 			update_linesensor();
 		case 1 :
-			update_distance();
+			//update_distance_sensor_1(); this function should be in the "arm-sensor code"
 		break;
 		case 2 : 
-		
+			update_distance_sensor_2();
 		break;
 		case 3 :
-		
+			update_distance_sensor_3();
 		break;
 	}
 }
@@ -44,7 +44,12 @@ int main(void)
 	
     while(1)
     {
-		//sweep_left();
+		adtest = ad_interpolate(263,2);
+		adtest = ad_interpolate(400,2);
+		adtest = ad_interpolate(300,2);
+		adtest = ad_interpolate(200,2);
+		adtest = ad_interpolate(100,2);
+		adtest = ad_interpolate(50,2);
         //TODO:: Please write your application code 
     }
 }

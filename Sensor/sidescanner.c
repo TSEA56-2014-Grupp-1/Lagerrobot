@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "sidescanner.h"
+#include "distance_sensors.h"
 
 double distance;
 uint16_t zone_size = 20; 
@@ -15,7 +16,6 @@ uint8_t angle =0;
 uint8_t max_angle = 180;
 uint8_t object_found;
 uint8_t step = 1;
-uint8_t distance_read_ok;
 uint8_t angle_coordinate;
 uint8_t distance_coordinate;
 
@@ -65,11 +65,16 @@ uint8_t scanner_right_position(uint8_t angle)
 	return 0;
 }
 
-void update_distance()	{
-	distance = ADCH;
+
+void update_distance_sensor_2()	{
+	distance = ad_interpolate(ADC,2);
 	ADCSRA |= (1 << ADSC);
 }
 
+void update_distance_sensor_3()	{
+	distance = ad_interpolate(ADC,3);
+	ADCSRA |= (1 << ADSC);
+}
 
 uint8_t sweep_left()	{
 	//zone_size in volt = 1/distance

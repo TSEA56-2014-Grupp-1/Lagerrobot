@@ -27,7 +27,9 @@ uint8_t scanner_right_position(uint8_t);
 uint8_t sweep_left();
 uint8_t sweep_right();
 void wait_scanner_servo();
-void update_distance();
+void update_distance_sensor_1();
+void update_distance_sensor_2();
+void update_distance_sensor_3();
 void calculate_coordinates();
 
 
