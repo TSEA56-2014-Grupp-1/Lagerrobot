@@ -30,6 +30,13 @@ ISR(TIMER1_OVF_vect) {
 		++lcd_rotation_counter;
 }
 
+/**
+ * @brief Callback function that indicates a unit is ready to send symbols to the display.
+ * @details This is a standard callback for a bus_transmit. It will perform a request for each symbol pair in turn from the unit before it forces a display update.
+ * 
+ * @param id Standard callback parameter, the id of the transmission.
+ * @param data Standard callback parameter, here it is the address of the unit that made the request.
+ */
 void symbols_are_ready(uint8_t id, uint16_t data) {
 	uint16_t symbol_pair;
 	uint8_t module;
@@ -47,6 +54,7 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 		module = 0;
 	}
 	
+	clear_message(module);
 	for (int i = 0; i < 8; ++i) {
 		//loop over the symbol pairs
 		bus_request(data, 1, i, &symbol_pair);
@@ -60,19 +68,30 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 				
 	}
 	
-	// jump to the module that sent last
-	lcd_current_sender = module;
-	TCNT1 = 0xffff;
+	force_display_update(module);
 }
 
+/**
+ * @brief Clears the display page of a unit.
+ * @details Clears the stored display page of a unit, but does not update the display.
+ * 
+ * @param unit The identifier of the module whose page is to be cleared.
+ */
 void clear_message(uint8_t unit) {
 	for (int i = 0; i<16; ++i){
-		if (i < 13)
-			message_map_line1[unit][i] = 0x20;
+		message_map_line1[unit][i] = 0x20;
 		message_map_line2[unit][i] = 0x20;
 	}
+	message_map_line1[unit][16] = '\0';
+	message_map_line2[unit][16] = '\0';
 }
 
+
+/**
+ * @brief Initializes the communication unit.
+ * @details Sets up the ports for the display communication, the timers for 
+ * page rotation and clears the lcd variables and messages.
+ */
 void init(){
 	DDRA = 0xff;
 	DDRB = 0xff;

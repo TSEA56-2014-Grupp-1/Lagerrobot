@@ -22,7 +22,7 @@ int main(void)
 	
 	
 	sei();
-	
+	_delay_ms(200);
 	display(0, "%d/%2d/%4d", 3, 4, 2014);
 	display(1, "hest %.2f", 22.533);
     while(1)
