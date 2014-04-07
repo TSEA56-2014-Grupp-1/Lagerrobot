@@ -26,6 +26,18 @@ int main(int argc, char *argv[])
 
     //draw_x_axis(scene_graph_1);
 
+    w.print_on_log("Test test");
+    w.print_on_log("test2 testijgoeghe");
+    for (int i = 0; i < 1000; ++i) {
+        w.print_on_log(QString::number(i));
+    }
+
+    for (long int i = 0; i < 4000000; ++i) {
+
+       }
+
+
+    w.print_on_log("test2 testijgoeghe");
 
     return a.exec();
 }

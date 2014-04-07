@@ -8,6 +8,10 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <qDebug>
+#include <QtCore/qmath.h>
+
+
 /*
  *      Constructor for main window
  *
@@ -29,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     last_xpos_steering = 0;
     last_ypos_steering = 0;
+
+    ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 }
 
 //XXX: TODO:
@@ -306,4 +312,10 @@ void MainWindow::draw_y_axis_steering() {
         }
     }
 
+}
+
+void MainWindow::print_on_log(QString text) {
+    text.prepend(QTime::currentTime().toString("hh:mm:ss").prepend("[").append("] "));
+    ui->listWidget_log->addItem(text);
+    ui->listWidget_log->scrollToBottom();
 }

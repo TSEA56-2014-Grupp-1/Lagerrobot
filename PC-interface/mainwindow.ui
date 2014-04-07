@@ -122,9 +122,9 @@
     <property name="geometry">
      <rect>
       <x>770</x>
-      <y>280</y>
+      <y>390</y>
       <width>345</width>
-      <height>291</height>
+      <height>231</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -371,16 +371,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="QListView" name="listView_log">
-    <property name="geometry">
-     <rect>
-      <x>860</x>
-      <y>10</y>
-      <width>256</width>
-      <height>221</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QGraphicsView" name="graphicsView_graph_1">
     <property name="geometry">
      <rect>
@@ -398,6 +388,16 @@
       <y>470</y>
       <width>741</width>
       <height>171</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="listWidget_log">
+    <property name="geometry">
+     <rect>
+      <x>870</x>
+      <y>10</y>
+      <width>251</width>
+      <height>371</height>
      </rect>
     </property>
    </widget>

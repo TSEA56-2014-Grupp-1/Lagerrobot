@@ -5,9 +5,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsItem>
-#include <QTimer>
 #include <QTime>
-#include <QtCore/qmath.h>
 #include <QShortcut>
 #include <QKeySequence>
 #include <QKeyEvent>
@@ -26,6 +24,8 @@ public:
     void draw_next_point_steering(qreal);
 
     QTime *time = new QTime();
+
+    void print_on_log(QString);
 
 
 private slots:
