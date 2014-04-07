@@ -256,7 +256,7 @@ void MainWindow::on_pushButton_calibrate_floor_clicked()
 }
 
 /*
- *      Draws next point to steering graph, 1 pixel on y-axis is 10 ms
+ *      Draws next point to steering graph, 1 pixel on y-axis i Y_SCALE_STEERING ms
  *
  *      @param ypos Y-position of next data point
  */
@@ -291,14 +291,17 @@ void MainWindow::draw_x_axis(QGraphicsScene *graph) {
  *      Paints y-axis on the steering graph
  */
 void MainWindow::draw_y_axis_steering() {
-    scene_graph_steering->addLine(0,-1*MAX_Y_STEERING,0,MAX_Y_STEERING);
+    scene_graph_steering->addLine(0,-1*max_y_steering,0,max_y_steering);
 
     QGraphicsTextItem* current_number = new QGraphicsTextItem();
 
-    for (int i = -1*qFloor(MAX_Y_STEERING); i < qCeil(MAX_Y_STEERING); i = i + Y_INTERVAL_STEERING/Y_SCALE_STEERING) {
+    for (int i = -1*qFloor(max_y_steering); i < qCeil(max_y_steering); i = i + Y_INTERVAL_STEERING/Y_SCALE_STEERING) {
         if (i != 0) {
-            current_number = scene_graph_steering->addText(QString::number(i*Y_SCALE_STEERING));
-            current_number->setPos(-5,i-7);
+            if (i > 0)
+                current_number = scene_graph_steering->addText(QString::number(i*Y_SCALE_STEERING));
+            else
+                current_number = scene_graph_steering->addText(QString::number(-1*i*Y_SCALE_STEERING));
+            current_number->setPos(3,i-15);
             scene_graph_steering->addLine(-2,i,2,i);
         }
     }

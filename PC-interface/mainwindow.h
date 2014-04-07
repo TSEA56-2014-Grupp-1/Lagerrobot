@@ -120,8 +120,8 @@ private:
 
 
     //XXX: Should not be const, should be upadte every time we get a new highest value
-    const int MAX_Y_STEERING = 200;
-    const int MAX_Y_SENSORS = 200;
+    int max_y_steering = 200;
+    int max_y_sensors = 200;
 
     //Constants for painting graphs
     const int X_SCALE_STEERING = 10;
