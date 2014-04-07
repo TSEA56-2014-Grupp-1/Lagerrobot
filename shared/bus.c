@@ -8,6 +8,11 @@ uint16_t bus_response_data;
 uint16_t (*response_callbacks[64])(uint8_t, uint16_t) = {0};
 void (*receive_callbacks[64])(uint8_t, uint16_t) = {0};
 
+/**
+ *	Start listening on given address and enable interrupts
+ *
+ *	@param address 7-bit address to listen to
+ */
 void bus_init(uint8_t address) {
 	// Modify bus frequency
 	// 18200000/(16+2*TWBR*(4^TWSR prescaler)) = 8.8 kHz (testing shows 15.5kHz ...)
@@ -29,7 +34,12 @@ void bus_init(uint8_t address) {
 }
 
 /**
- *	Try to acquire control over the bus
+ *	Try to acquire control over the bus. Will continuously retry until control is
+ *	aquired. Possible status codes are:
+ *
+ *	- 0 if bytes were successfully sent
+ *
+ *	@return Status code
  */
 uint8_t bus_start() {
 	uint8_t status_code;
@@ -134,8 +144,8 @@ uint8_t bus_read_nack(uint8_t* data) {
 /**
  *	Calculate data byte for addressing the bus
  *
- *	@param	7-bit address for target, the 7th bit is ignored
- *	@param	1-bit to set send or receive, only the 0th bit is used. 0 means send, 1 means receive
+ *	@param address 7-bit address for target, the 7th bit is ignored
+ *	@param direction 1-bit to set send or receive, only the 0th bit is used. 0 means send, 1 means receive
  */
 uint8_t bus_calculate_address_packet(uint8_t address, uint8_t direction) {
 	if (direction) {
@@ -146,7 +156,19 @@ uint8_t bus_calculate_address_packet(uint8_t address, uint8_t direction) {
 }
 
 /**
- *	Send two bytes of raw data over the bus
+ *	Send two bytes of raw data over the bus. Possible status codes are:
+ *
+ *	- 0 if bytes were successfully sent
+ *	- 1 if failure to start bus communication
+ *	- 2 if target does not respond
+ *	- 3 if first byte was written but not acknowledged
+ *	- 4 if second byte was written but not acknowledged
+ *
+ *	@param address Target unit address
+ *	@param byte1 First byte to send
+ *	@param byte2 Second byte to send
+ *
+ *	@return Transfer status code
  */
 uint8_t bus_send(uint8_t address, uint8_t byte1, uint8_t byte2) {
 	if (bus_start() != 0) {
@@ -334,6 +356,10 @@ void bus_call_receive(uint8_t id, uint16_t data) {
 		return;
 	}
 	(*receive_callbacks[id])(id, data);
+}
+
+uint8_t bus_get_address() {
+	return TWAR >> 1;
 }
 
 ISR(TWI_vect) {
