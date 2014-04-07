@@ -2,8 +2,40 @@
 #include <QLabel>
 #include <QDebug>
 #include "mainwindow.h"
+#include "../shared/packets.h"
 
 QT_USE_NAMESPACE
+
+void bluetooth::process_packet(char packet_id, QByteArray parameters)
+{
+    switch (packet_id) {
+    case PKT_ARM_DECISION:
+
+        break;
+    case PKT_ARM_STATUS:
+
+        break;
+    case PKT_CHASSIS_DECISION:
+
+        break;
+    case PKT_CHASSIS_STATUS:
+
+        break;
+    case PKT_LINE_DATA:
+
+        break;
+    case PKT_RANGE_DATA:
+
+        break;
+    case PKT_RFID_DATA:
+
+        break;
+    case PKT_SPOOFED_RESPONSE:
+        window->print_on_log(QString::number(parameters[0], 16).append(QString::number(parameters[1], 16)));
+        break;
+
+    }
+}
 
 bluetooth::bluetooth(QString name, MainWindow* new_window)
 {
@@ -38,26 +70,20 @@ void bluetooth::handle_ready_read() {
 
     char packet_id;
     serialport->read(&packet_id, 1);
-    serialport->waitForReadyRead(500);
+    //serialport->waitForReadyRead(1000);
 
     char num_parameters;
     serialport->read(&num_parameters, 1);
-    serialport->waitForReadyRead(500);
+    //serialport->waitForReadyRead(1000);
 
     char temp_parameter;
     QByteArray parameters = QByteArray(num_parameters, 0);
     for (int i = 0; (serialport->read(&temp_parameter, 1) != 0) && i < num_parameters; ++i) {
         parameters[i] = temp_parameter;
-        serialport->waitForReadyRead(500);
+        //serialport->waitForReadyRead(1000);
     }
 
-
-    qDebug() << "Packet id: "  << QString::number(packet_id);
-    qDebug() << "Number of params: " << QString::number(num_parameters);
-
-    for (int i = 0; i < parameters.length(); ++i) {
-        qDebug() << parameters[i];
-    }
+    process_packet(packet_id, parameters);
 
 }
 
@@ -80,6 +106,9 @@ void bluetooth::handle_error(QSerialPort::SerialPortError error) {
     }
     else if (serialport->error() == QSerialPort::OpenError) {
         window->print_on_log("Error while opening already openden device.");
+    }
+    else if (serialport->error() == QSerialPort::TimeoutError) {
+        window->print_on_log("Serialport timed out.");
     }
     else if (serialport->error() == QSerialPort::NoError) {
         return;

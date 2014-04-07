@@ -17,6 +17,8 @@ private:
     QSerialPort *serialport;
     QByteArray current_packet;
     MainWindow *window;
+
+    void process_packet(char packet_id, QByteArray parameters);
 public:
 
     bluetooth(QString, MainWindow*);

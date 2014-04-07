@@ -41,12 +41,12 @@ int main(int argc, char *argv[])
     QByteArray test;
     test.resize(5);
 
-     test[0] = PKT_ARM_COMMAND;
+     test[0] = PKT_SPOOFED_REQUEST;
      //test[1] = 4;
-     test[1] = CMD_ARM_MOVE;
+     test[1] = 1;
      test[2] = 1;
-     test[3] = 0x34;
-     test[4] = 0x12;
+     test[3] = 0x00;
+     test[4] = 0x02;
 
      connection->open_port();
      connection->write(test);

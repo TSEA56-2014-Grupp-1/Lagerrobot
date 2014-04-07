@@ -59,7 +59,8 @@ uint8_t process_packet() {
 					display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
 					//send_packet(PKT_ARM_STATUS, 3, joint, pos_l, pos_h);
 					usart_write_byte(PKT_ARM_STATUS);
-					usart_write_byte(1);
+					usart_write_byte(3);
+					usart_write_byte(joint);
 					usart_write_byte(pos_h);
 					usart_write_byte(pos_l);
 				break;
@@ -144,7 +145,7 @@ uint8_t process_packet() {
 						&response);
 						
 			
-			//send_packet(PKT_SPOOFED_RESPONSE, (uint8_t[]){response >> 8, response});
+			send_packet(PKT_SPOOFED_RESPONSE, 2, (uint8_t)(response >> 8), (uint8_t) response);
 			
 			display(1, "%x", response);
 			
