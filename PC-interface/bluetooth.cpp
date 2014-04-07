@@ -63,6 +63,9 @@ void bluetooth::handle_error(QSerialPort::SerialPortError error) {
     else if (serialport->error() == QSerialPort::OpenError) {
         window->print_on_log("Error while opening already openden device.");
     }
+    else if (serialport->error() == QSerialPort::NoError) {
+        return;
+    }
     else {
         window->print_on_log("Unknown error.");
     }
