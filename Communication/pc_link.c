@@ -17,6 +17,7 @@
 
 uint8_t process_packet() {
 	uint8_t packet_id;
+	uint8_t num_parameters;
 	uint8_t parameter;
 	
 	uint8_t joint;
@@ -35,6 +36,9 @@ uint8_t process_packet() {
 	
 	if (usart_read_byte(&packet_id) == 1)
 		return 1;
+	
+// 	//if (usart_read_byte(&num_parameters) == 1)
+// 		return 1;
 		
 	switch (packet_id) {
 		case PKT_STOP:
@@ -46,7 +50,7 @@ uint8_t process_packet() {
 				return 1;
 			switch (parameter) {
 				case CMD_ARM_MOVE:
-					display(1, "arm move!");
+					display(0, "arm move!");
 					if (usart_read_byte(&joint) == 1 || 
 						usart_read_byte(&pos_l) == 1 ||
 						usart_read_byte(&pos_h) == 1)
