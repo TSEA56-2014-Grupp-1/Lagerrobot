@@ -11,10 +11,9 @@
 
 #include <avr/io.h>
 
-#define display(line_number, string, ...) _display(line_number, string, sizeof((float[]){0, ##__VA_ARGS__}) / sizeof(float) - 1, ##__VA_ARGS__)
+void display(uint8_t line_number, char* str, ...);
 
-void _display(uint8_t line_number, char* str, uint8_t num_vals, ...);
-
+void force_display_update(uint8_t module);
 void lcd_send_symbol(char);
 void lcd_send_command(char);
 int lcd_is_busy();

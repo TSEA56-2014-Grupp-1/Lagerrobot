@@ -14,8 +14,6 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-uint8_t lcd_rotation_counter = 0;
-
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
 		lcd_rotation_counter = 0;
@@ -86,6 +84,7 @@ void init(){
 	TCCR1B = 0b00000010; // normal mode, max prescaler; 
 	
 	lcd_current_sender = 0;
+	lcd_rotation_counter = 0;
 	clear_message(COMM);
 	clear_message(SENS);
 	clear_message(CHAS);
@@ -102,12 +101,16 @@ int main(void)
 	bus_register_receive(2, symbols_are_ready);
 	
 	
-	lcd_display(COMM, "Ouroborobot", "Startup.");
-	_delay_ms(700);
-	lcd_display(COMM, "Ouroborobot", "Startup..");
-	_delay_ms(700);
-	lcd_display(COMM, "Ouroborobot", "Startup...");
-	
+	display(0, "Ouroborobot");
+	display(1, "Startup.");
+	_delay_ms(300);
+	display(0, "Ouroborobot");
+	display(1, "Startup..");
+	_delay_ms(300);
+	display(0, "Ouroborobot");
+	display(1, "Startup...");
+	_delay_ms(300);
+	clear_message(COMM);
     while(1)
     {
 		

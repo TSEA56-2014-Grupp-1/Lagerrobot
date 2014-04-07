@@ -11,7 +11,7 @@
 
 #include <avr/io.h>
 
-#define F_CPU 18.432E6
+#define F_CPU 18432000UL
 
 
 #define COMM 0
@@ -24,5 +24,7 @@ char message_map_line1[4][17];
 char message_map_line2[4][17];
 
 uint8_t lcd_current_sender;
+
+uint8_t lcd_rotation_counter;
 
 #endif /* COMMUNICATION_H_ */
