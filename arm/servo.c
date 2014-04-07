@@ -30,8 +30,7 @@ void servo_enable_read(void) {
 	// XXX: Restore USART interrupts
 
 	// Set tri-state buffer to read
-	// TODO: Currently broken :(
-	//PORTD = ~(1 << PORTD2);
+	PORTD &= ~(1 << PORTD2);
 
 	// Wait for tri-state buffer to switch directions
 	_delay_us(10);
@@ -184,8 +183,6 @@ void vservo_send(
 	servo_enable_write();
 	for (i = 0; i < packet_length; i++) {
 		usart_write_byte(packet[i]);
-
-		//PORTB = packet[i]; // TODO: Remove debugging
 	}
 
 	// Indicate that all bytes are sent so servo_enable_read can wait for all
@@ -260,7 +257,6 @@ uint8_t servo_read(uint8_t id, uint8_t address, uint8_t length, uint8_t *data) {
 uint8_t _servo_write(uint8_t id, uint8_t data_length, ...) {
 	va_list data;
 
-	PORTB ^= 4;
 	va_start(data, data_length);
 	vservo_send(id, SERVO_INST_WRITE, data_length, data);
 	va_end(data);
@@ -305,23 +301,7 @@ void servo_action(uint8_t id) {
 	servo_send(id, SERVO_INST_ACTION);
 }
 
-uint8_t servo_move(uint8_t id, uint16_t angle) {
-	// 0xff 0xff 0x01 0x05 0x03 0x1e 0x00 0x02 0xd6
-	return servo_write(id, SERVO_GOAL_POSITION_L, (uint8_t)angle, (uint8_t)(angle >> 8));
+uint8_t servo_move_add(uint8_t id, uint16_t angle) {
+	return servo_reg_write(id, SERVO_GOAL_POSITION_L, (uint8_t)angle, (uint8_t)(angle >> 8));
 }
 
-int main(void) {
-	DDRB = 0xff;
-	PORTB = 0x00;
-
-	//uint16_t i, j;
-
-	servo_init();
-	servo_move(7, 512);
-
-	uint8_t i;
-	for (i = 0;; i++) {
-		_delay_ms(200);
-		servo_move(1, 412 + 100 * (i % 3));
-	}
-}

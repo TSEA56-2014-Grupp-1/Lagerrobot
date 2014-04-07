@@ -21,93 +21,63 @@
 
 void arm_init()
 {
-	servo_transfer_command(
-		SERVO_INST_WRITE,
-		servo_make_command(
-			SERVO_BROADCASTING_ID,
-			SERVO_CW_COMPLIANCE_MARGIN,
-			4,
-			(uint8_t[]){0x03, 0x03, 0x40, 0x40}));
+	servo_write(
+		SERVO_BROADCASTING_ID,
+		SERVO_CW_COMPLIANCE_MARGIN,
+		0x01, 0x01, 0x40, 0x40);
 
-	servo_transfer_command(
-		SERVO_INST_WRITE,
-		servo_make_command(
-			SERVO_BROADCASTING_ID,
-			SERVO_GOAL_SPEED_L,
-			2,
-			(uint8_t[]){0x80, 0x00}));
+	servo_write(
+		SERVO_BROADCASTING_ID,
+		SERVO_GOAL_SPEED_L,
+		0x40, 0x00);
 }
 
 
-void arm_move_joint_add(uint8_t joint, uint8_t goal_angle)
+void arm_move_joint_add(uint8_t joint, uint16_t goal_angle)
 {
 	switch (joint)
 	{
 		case 1:
-			servo_buffer_move (0x01, goal_angle);
+			servo_move_add (0x01, goal_angle);
 			break;
 		case 2:
-			servo_buffer_move (0x02, goal_angle);
-			servo_buffer_move (0x03, 300-goal_angle);
+			servo_move_add (0x02, goal_angle);
+			servo_move_add (0x03, 1023-goal_angle);
 			break;
 		case 3:
-			servo_buffer_move (0x04, goal_angle);
-			servo_buffer_move (0x05, 180);
+			servo_move_add (0x04, goal_angle);
+			servo_move_add (0x05, 1023-goal_angle);
 			break;
 		case 4:
-			servo_buffer_move (0x06, 180);
+			servo_move_add (0x06, goal_angle);
 			break;
 		case 5:
-			servo_buffer_move (0x07, 180);
+			servo_move_add (0x07, goal_angle);
 			break;
 		case 6:
-			servo_buffer_move (0x08, 180);
+			servo_move_add (0x08, goal_angle);
 			break;
 	}
 }
 
-int main(void)
-{
-	sei();
-	DDRB = 0x00;
-	PORTB = 0x00;
-	PORTB = 0x01;
-	while(1) {PORTB ^= 1;}
+int main(void) {
+
+	//uint16_t i, j;
+
 	servo_init();
 	arm_init();
 
-/* 	move_servo (0x07, 180);
-	move_servo(0x06, 275);
-// 	_delay_ms(240);
- 	move_servo(0x01, 180);
+	arm_move_joint_add(2, 511);
+	arm_move_joint_add(3, 511);
+	arm_move_joint_add(1, 412);
+	servo_action(0xfe);
 
-	_delay_ms(700);
-	_delay_ms(700);
-	_delay_ms(700);
-	_delay_ms(700);
-
-	move_servo(0x02, 180);
-
-	_delay_ms(700);
-	_delay_ms(700);
-	_delay_ms(700);
-	_delay_ms(700);
-*/
-	while(1)
-    {
-/*		//dance routine
-		move_servo(0x01, 270);
-		move_servo(0x07, 90);
-		_delay_ms(700);
-		_delay_ms(700);
-		_delay_ms(700);
-		_delay_ms(700);
-		move_servo(0x01, 90);
-		move_servo(0x07, 270);
-		_delay_ms(700);
-		_delay_ms(700);
-		_delay_ms(700);
-		_delay_ms(700);*/
-    }
-
+	uint8_t i;
+	for (i = 0;; i++) {
+// 		_delay_ms(1000);
+// 		arm_move_joint_add(1, 412 + 100 * (i % 3));
+// 		arm_move_joint_add(5, 100 * (i % 3));
+// 		arm_move_joint_add(6, 412 + 100 * (i % 3));
+// 		servo_action(0xfe);
+	}
 }
