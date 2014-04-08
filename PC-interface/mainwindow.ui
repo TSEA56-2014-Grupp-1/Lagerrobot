@@ -416,6 +416,7 @@
      <string>File</string>
     </property>
     <addaction name="connect_action"/>
+    <addaction name="actionDisconnect"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>
@@ -434,6 +435,11 @@
    </property>
    <property name="text">
     <string>Connect</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="text">
+    <string>Disconnect</string>
    </property>
   </action>
  </widget>

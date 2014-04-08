@@ -12,7 +12,7 @@
 #include <QtCore/qmath.h>
 #include <dialog_connect.h>
 #include "bluetooth.h"
-
+#include "../shared/packets.h"
 
 /*
  *      Constructor for main window
@@ -38,7 +38,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
+    timer->setInterval(250);
+    connect(timer, SIGNAL(timeout()), this, SLOT(request_data()));
+
     disable_buttons();
+    ui->actionDisconnect->setEnabled(false);
 }
 
 //XXX: TODO:
@@ -102,8 +106,15 @@ void MainWindow::connect_to_port(QString name) {
     bluetooth *connection = new bluetooth(name, this);
     print_on_log(QObject::tr("Connecting to port: %1").arg(name));
     new_connection(connection);
-    port->open_port();
-    enable_buttons();
+    if(port->open_port()) {
+        enable_buttons();
+        timer->start();
+    }
+    else {
+        delete port;
+        port = NULL;
+    }
+
 }
 
 void MainWindow::on_pushButton_forward_pressed()
@@ -272,15 +283,14 @@ void MainWindow::on_pushButton_put_down_left_clicked()
     //Leave object to the left
 }
 
-
 void MainWindow::on_pushButton_calibrate_tape_clicked()
 {
-    //Calibrate tape
+    port->send_packet(PKT_CALIBRATION_COMMAND, 2, CAL_LINE, 1);
 }
 
 void MainWindow::on_pushButton_calibrate_floor_clicked()
 {
-    //Calibrate floor
+    port->send_packet(PKT_CALIBRATION_COMMAND, 2, CAL_LINE, 0);
 }
 
 /*
@@ -357,6 +367,10 @@ void MainWindow::on_connect_action_triggered()
     Dialog_connect* connect_window = new Dialog_connect(this);
     connect_window->exec();
     delete connect_window;
+    if (port != NULL) {
+        ui->connect_action->setEnabled(false);
+        ui->actionDisconnect->setEnabled(true);
+    }
 }
 
 /*
@@ -411,4 +425,16 @@ void MainWindow::enable_buttons() {
     ui->pushButton_start_position_arm->setEnabled(true);
     ui->pushButton_stop_line->setEnabled(true);
     ui->pushButton_back->setEnabled(true);
+}
+
+void MainWindow::request_data() {
+    port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
+    timer->start();
+}
+
+void MainWindow::on_actionDisconnect_triggered()
+{
+    port->disconnect();
+    ui->actionDisconnect->setEnabled(false);
+    delete port;
 }

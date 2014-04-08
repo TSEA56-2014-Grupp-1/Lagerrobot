@@ -6,6 +6,7 @@
 #include <QGraphicsView>
 #include <QGraphicsItem>
 #include <QTime>
+#include <QTimer>
 #include <QShortcut>
 #include <QKeySequence>
 #include <QKeyEvent>
@@ -111,6 +112,10 @@ private slots:
 
     void on_connect_action_triggered();
 
+    void request_data();
+
+    void on_actionDisconnect_triggered();
+
 private:
     Ui::MainWindow *ui;
 
@@ -128,6 +133,8 @@ private:
 
     void disable_buttons();
     void enable_buttons();
+
+    QTimer *timer = new QTimer();
 
     bluetooth* port = NULL;
 
