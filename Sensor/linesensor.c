@@ -19,6 +19,9 @@
 	uint16_t floor_average[11];
 	uint16_t total_tape_average;
 	uint16_t total_floor_average;
+	
+// 	total_floor_average = 0;
+// 	total_tape_average = 0;
 
 typedef uint8_t surface_type;
 enum {floor, tape};
@@ -61,6 +64,16 @@ uint8_t not_on_tape()	{
 	return not_on_tape;
 }
 
+uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
+	tape_reference = input_tape_reference;
+	return 0;
+}
+
+uint16_t return_linesensor(uint8_t id, uint16_t sensor)	{
+	return (uint16_t)sensor_values[sensor];
+}
+
+//Formats the output to accomodate the chassi and transmits it on the bus
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 	if(pickup_station == Left)
 		chassi_output = station_Left;
@@ -189,36 +202,47 @@ void update_linesensor()	{
 	pickup_station_detection();
 	line_break_detection();
 }
-
-void calibrate_linesensor()	{	//should set sensor_scale-values and tape_reference
-	cli();	
-	uint8_t sensor_scale_temp_floor;
-	uint8_t sensor_scale_temp_tape;
+void init_linesensor_calibration()	{
+	cli();
 	//setup ADC for calibration-routine
 	ADCSRA = 0b10000111;
 	ADCSRA |= (1 << ADEN);
 	ADMUX = 0b00100000;
 	DDRB = 0b11111111;
-	calibrate_tape();
-	
-	calibrate_floor();
-	
+	total_tape_average = 0;
+	total_floor_average = 0;
+	sei();
+}
+//should set sensor_scale-values and tape_reference
+uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{	
+	cli();	
+	uint8_t sensor_scale_temp_floor;
+	uint8_t sensor_scale_temp_tape;
+
+	if(calibration_variable == 1)
+		calibrate_tape();
+	else if (calibration_variable == 0)
+		calibrate_floor();
+
 	//code for calculating sensor_scale-needs testing!
-	for(uint8_t i = 0; i<=10; i++)	{
-		if(tape_average[i] < total_tape_average)
-			sensor_scale_temp_tape = total_tape_average - tape_average[i];
-		else
-			sensor_scale_temp_tape = 0;//tape_average[i] - total_tape_average;
-		if(floor_average[i] < total_floor_average)
-			sensor_scale_temp_floor = total_floor_average - floor_average[i];
-		else
-			sensor_scale_temp_floor = 0;//floor_average[i] - total_floor_average;
+	if((total_floor_average != 0) && (total_tape_average != 0))	{
+		for(uint8_t i = 0; i<=10; i++)	{
+			if(tape_average[i] < total_tape_average)
+				sensor_scale_temp_tape = total_tape_average - tape_average[i];
+			else
+				sensor_scale_temp_tape = 0;//tape_average[i] - total_tape_average;
+			if(floor_average[i] < total_floor_average)
+				sensor_scale_temp_floor = total_floor_average - floor_average[i];
+			else
+				sensor_scale_temp_floor = 0;//floor_average[i] - total_floor_average;
 			
-		sensor_scale[i] = (sensor_scale_temp_floor + sensor_scale_temp_tape)/2;	
+			sensor_scale[i] = (sensor_scale_temp_floor + sensor_scale_temp_tape)/2;	
 	}
 	//calculate tape_reference
 	tape_reference = (total_floor_average + total_tape_average)/2;
+	}
 	sei();
+	return 0;
 }
 
 void calibrate_tape()	{
@@ -271,3 +295,4 @@ void calibrate_floor()	{
 			total_floor_average = total_floor_average/11;
 	}
 }
+
