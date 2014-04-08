@@ -83,7 +83,7 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 		chassi_output = station_Right;
 	if(not_on_tape())
 		chassi_output = No_tape;
-	return (((uint16_t)chassi_output << 8) | line_weight);
+	return (((uint16_t)(0x01 << 8) | line_weight));
 }
 
 void line_init(){
@@ -196,11 +196,25 @@ void line_break_detection()	{
 	sei();
 	};
 void update_linesensor()	{
+	display(0, "Weight:%d", line_weight);
 	update_linesensor_values();
 	update_linesensor_surfaces();
 	calculate_line_weight();
 	pickup_station_detection();
 	line_break_detection();
+	//display(0, "Weight:%d", line_weight);
+// 	//display(1, "%d%d%d%d%d%d%d%d%d%d%d",
+// 		sensor_values[0]/64,
+// 		sensor_values[1]/64,
+// 		sensor_values[2]/64,
+// 		sensor_values[3]/64,
+// 		sensor_values[4]/64,
+// 		sensor_values[5]/64,
+// 		sensor_values[6]/64,
+// 		sensor_values[7]/64,
+// 		sensor_values[8]/64,
+// 		sensor_values[9]/64,
+// 		sensor_values[10]/64);
 }
 void init_linesensor_calibration()	{
 	cli();
@@ -218,7 +232,7 @@ uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{
 	cli();	
 	uint8_t sensor_scale_temp_floor;
 	uint8_t sensor_scale_temp_tape;
-
+	init_linesensor_calibration();
 	if(calibration_variable == 1)
 		calibrate_tape();
 	else if (calibration_variable == 0)
@@ -241,6 +255,7 @@ uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{
 	//calculate tape_reference
 	tape_reference = (total_floor_average + total_tape_average)/2;
 	}
+	line_init();
 	sei();
 	return 0;
 }

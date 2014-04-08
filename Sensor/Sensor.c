@@ -36,10 +36,10 @@ int main(void)
 	bus_register_response(5, set_tape_reference);
 	bus_register_response(2, calibrate_linesensor);
 	lcd_interface_init();
-	
+	//display(0, "Hej");
 	//calibrate_linesensor();
 	line_init();
-	init_linesensor_calibration();
+	//init_linesensor_calibration();
 	sei();
 	
     while(1)
