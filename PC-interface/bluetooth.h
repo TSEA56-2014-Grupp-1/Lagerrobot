@@ -4,8 +4,11 @@
 #include <QSerialPort>
 #include <QObject>
 #include <QByteArray>
+#include <stdarg.h>
 
 class MainWindow;
+
+//#define send_packet(packet_id, ...) bluetooth::_send_packet(packet_id, sizeof((int[]){0,##__VA_ARGS__}) / sizeof(int), ##__VA_ARGS__)
 
 
 class bluetooth : public QObject
@@ -19,14 +22,17 @@ private:
     MainWindow *window;
 
     void process_packet(char packet_id, QByteArray parameters);
+
 public:
 
     bluetooth(QString, MainWindow*);
     ~bluetooth();
 
     void write(QByteArray);
-    void open_port();
 
+    bool open_port();
+
+    void send_packet(char packet_id, int num_params, ...);
 
 private slots:
     void handle_ready_read();
