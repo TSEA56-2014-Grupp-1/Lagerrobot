@@ -477,6 +477,10 @@ void bus_call_receive(uint8_t id, uint16_t data) {
 	(*receive_callbacks[id])(id, data);
 }
 
+uint8_t bus_get_address() {
+	return TWAR >> 1;
+}
+
 /**
  *	Handle interrupts from other masters
  */

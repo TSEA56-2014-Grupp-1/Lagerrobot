@@ -3,20 +3,26 @@
  *
  * Created: 4/4/2014 2:01:54 PM
  *  Author: johli887
- */ 
+ */
 
 
 #ifndef INVERSE_KINEMATICS_H_
 #define INVERSE_KINEMATICS_H_
 
-#define LENGTH_OF_ARM_1 18
-#define LENGTH_OF_ARM_2 17
-#define LENGTH_OF_ARM_3	8
+#define ARM_LENGTH_LINK_1 100 // 18
+#define ARM_LENGTH_LINK_2 100 // 17
+#define ARM_LENGTH_LINK_3 8
 
 typedef struct {
-	uint8_t x;
-	uint8_t y;
+	float x;
+	float y;
 }  coordinate;
+
+typedef struct {
+	float t1;
+	float t2;
+	float t3;
+} angles;
 
 coordinate calculate_coordinate(int theta1, int theta2, int theta3);
 
