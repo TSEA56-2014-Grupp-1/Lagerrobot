@@ -16,18 +16,15 @@
 
 int main(void)
 {
-	bus_init(BUS_ADDRESS_ARM);
+	bus_init(BUS_ADDRESS_CHASSIS);
 	
 	lcd_interface_init();
 	
 	
 	sei();
-	_delay_ms(700);
-	_delay_ms(700);
-	_delay_ms(700);
-	display_text("Jag ar en Arm", "Hihihihi");
-	//display_numbers(100, 1337);
-	
+	_delay_ms(200);
+	display(0, "ABCD");
+	display(1, "123A%.2f", 2.34);
     while(1)
     {
         //TODO:: Please write your application code 
