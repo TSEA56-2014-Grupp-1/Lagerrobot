@@ -8,6 +8,8 @@
  */
 
 #include "servo.h"
+#include "../shared/LCD_interface.h"
+#include "../shared/bus.h"
 
 /**
  *	Set tri-state buffer to write mode
@@ -90,6 +92,7 @@ uint8_t servo_calculate_checksum(uint8_t first_index, uint8_t last_index, uint8_
  *	@return Status code
  */
 uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
+	// 0-START 1-START 2-ID 3-LÄNGD 4-ERROR 5-PARAMETER
 	uint8_t i;
 	uint8_t data[256]; // XXX: This probably doesn't need to be this big
 	uint8_t data_length = 0;
@@ -103,12 +106,13 @@ uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
 
 		// Mark how many bytes to expect and pray that this is not wrong
 		if (i == 3) {
-			data_length = data[i] + 3;
+			data_length = data[i] + 4;
 		}
 	}
 
+
 	// Calculate checksum and compare against received one
-	if (data[data_length - 1] != servo_calculate_checksum(2, data_length - 1, data)) {
+	if (data[data_length - 1] != servo_calculate_checksum(2, data_length - 2, data)) {
 		return 2;
 	}
 
@@ -123,28 +127,28 @@ uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
 	}
 
 	// Check if there was an error code
-	if (data[3]) {
-		if (data[3] & SERVO_ERROR_INSTRUCTION) {
+	if (data[4]) {
+		if (data[4] & SERVO_ERROR_INSTRUCTION) {
 			return 5;
-		} else if (data[3] & SERVO_ERROR_OVERLOAD) {
+		} else if (data[4] & SERVO_ERROR_OVERLOAD) {
 			return 6;
-		} else if (data[3] & SERVO_ERROR_CHECKSUM) {
+		} else if (data[4] & SERVO_ERROR_CHECKSUM) {
 			return 7;
-		} else if (data[3] & SERVO_ERROR_RANGE) {
+		} else if (data[4] & SERVO_ERROR_RANGE) {
 			return 8;
-		} else if (data[3] & SERVO_ERROR_OVERHEAT) {
+		} else if (data[4] & SERVO_ERROR_OVERHEAT) {
 			return 9;
-		} else if (data[3] & SERVO_ERROR_ANGLE_LIMIT) {
+		} else if (data[4] & SERVO_ERROR_ANGLE_LIMIT) {
 			return 10;
-		} else if (data[3] & SERVO_ERROR_INPUT_VOLTAGE) {
+		} else if (data[4] & SERVO_ERROR_INPUT_VOLTAGE) {
 			return 11;
 		}
 	}
 
 	// Read parameters into given array if not null pointer
 	if (data_length > 5 && parameters != 0) {
-		for (i = 4; i < data_length; i++) {
-			parameters[i - 4] = data[i];
+		for (i = 5; i < data_length; i++) {
+			parameters[i - 5] = data[i];
 		}
 	}
 
@@ -242,6 +246,9 @@ uint8_t servo_read(uint8_t id, uint8_t address, uint8_t length, uint8_t *data) {
 	}
 
 	servo_send(id, SERVO_INST_READ, address, length);
+
+	// TODO: Calcualte optimal delay-time!
+	_delay_us(1200);
 	return servo_receive(id, data);
 }
 
@@ -265,9 +272,9 @@ uint8_t _servo_write(uint8_t id, uint8_t data_length, ...) {
 		return 0;
 	}
 
-	// TODO: Perform receive here!
-	return 0;
-	// return servo_receive(id, 0);
+	// TODO: Calcualte optimal delay-time!
+	_delay_us(1200);
+	return servo_receive(id, 0);
 }
 
 /**

@@ -75,7 +75,7 @@
  *	@brief Send arbitrary command to servo
  *
  *	Base function for sending data to servos. Uses _servo__send() to send specified
- *	data. Calling function is responsible for calling servo_receive() when there
+ *	data. Calling function is responsible for calling servo_receive() when1there
  *	is return data.
  *
  *	@param id Servo ID

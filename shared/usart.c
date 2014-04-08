@@ -33,6 +33,8 @@ void usart_init(uint16_t baudrate_register_value) {
 	// Enable pull-up for PD0 and PD1
 	PORTD |= 0x03;
 
+	usart_clear_buffer();
+
 	sei();
 }
 

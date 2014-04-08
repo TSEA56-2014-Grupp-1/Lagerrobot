@@ -10,7 +10,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define USART_RECEIVE_TIMEOUT_COUNT 30000
+#define USART_RECEIVE_TIMEOUT_COUNT 60000
 
 void usart_init(uint16_t baudrate_register_value);
 void usart_clear_buffer(void);
