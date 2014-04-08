@@ -8,6 +8,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
+
+
 uint16_t get_distance_sensor_1(int8_t index)	{
 	const uint16_t DISTANCE_SENSOR_1[31] = {
 		610, 610, 598, 547, 495, 456, 416, 388, 359, 338,

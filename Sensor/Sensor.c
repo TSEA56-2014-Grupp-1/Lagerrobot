@@ -44,12 +44,6 @@ int main(void)
 	
     while(1)
     {
-		adtest = ad_interpolate(263,2);
-		adtest = ad_interpolate(400,2);
-		adtest = ad_interpolate(300,2);
-		adtest = ad_interpolate(200,2);
-		adtest = ad_interpolate(100,2);
-		adtest = ad_interpolate(50,2);
         //TODO:: Please write your application code 
     }
 }
