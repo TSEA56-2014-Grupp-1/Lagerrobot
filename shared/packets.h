@@ -8,7 +8,7 @@
 #define PKT_CALIBRATION_COMMAND	3	//		sensor id(1)
 #define PKT_ARM_STATUS			4	//		<not defined yet>
 #define PKT_CHASSIS_STATUS		5	//		<not defined yet>
-#define PKT_LINE_DATA			6	//		sensor values(1-11), line flags(12)
+#define PKT_LINE_DATA			6	//		sensor values(1-11), line flags(12), center of mass(13)
 #define PKT_RANGE_DATA			7	//		ranger values(1-3), distances(4-6), angles(7-8) 
 #define PKT_RFID_DATA			8	//		tag bytes(1-12)
 #define	PKT_CHASSIS_DECISION	9	//		<not defined yet>

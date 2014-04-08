@@ -1,9 +1,9 @@
 /*
- * bluetooth.c
- *
- * Created: 2014-04-01 15:35:48
- *  Author: Karl
- */ 
+* bluetooth.c
+*
+* Created: 2014-04-01 15:35:48
+*  Author: Karl
+*/
 
 #include "pc_link.h"
 #include "Communication.h"
@@ -17,152 +17,195 @@
 
 uint8_t process_packet() {
 	uint8_t packet_id;
-	uint8_t num_parameters;
-	uint8_t parameter;
-	
-	uint8_t joint;
-	uint8_t pos_l;
-	uint8_t pos_h;
-	uint8_t speed;
-	uint8_t steering_power;
-	uint8_t metadata_h;
-	uint8_t metadata_l;
-	uint8_t predefine_id;
-	uint8_t transmission_id;
-	uint8_t request_id;
-	uint16_t response;
-	uint8_t is_on_tape;
-	uint8_t distance;
 	
 	if (usart_read_byte(&packet_id) == 1)
-		return 1;
+	return 1;
 	
-// 	//if (usart_read_byte(&num_parameters) == 1)
-// 		return 1;
+	// 	//if (usart_read_byte(&num_parameters) == 1)
+	// 		return 1;
+	
+	if (packet_id == PKT_STOP) {
+		// issue stop command here
+	}
+	else if (packet_id == PKT_ARM_COMMAND) {
+		uint8_t command;
 		
-	switch (packet_id) {
-		case PKT_STOP:
-			// issue stop command here
-		break;
-		case PKT_ARM_COMMAND:
-			display(0, "arm command!");
-			if (usart_read_byte(&parameter) == 1)
-				return 1;
-			switch (parameter) {
-				case CMD_ARM_MOVE:
-					display(0, "arm move!");
-					if (usart_read_byte(&joint) == 1 || 
-						usart_read_byte(&pos_l) == 1 ||
-						usart_read_byte(&pos_h) == 1)
-						return 1;		
-					// issue arm move command on bus here
-					display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
-					//send_packet(PKT_ARM_STATUS, 3, joint, pos_l, pos_h);
-					usart_write_byte(PKT_ARM_STATUS);
-					usart_write_byte(3);
-					usart_write_byte(joint);
-					usart_write_byte(pos_h);
-					usart_write_byte(pos_l);
-				break;
-				case CMD_ARM_GRIP:
-					// issue arm grip command on bus here
-				
-				break;
-				case CMD_ARM_RELEASE:
-					// issue arm release command on bus here
-				break;
-				case CMD_ARM_PREDEFINED_POS:
-					
-					if (usart_read_byte(&predefine_id) == 1)
-						return 1;
-					
-					// issue predefine position command on bus here
-				break;
-			}
-		break;
-		case PKT_CHASSIS_COMMAND:
-			if (usart_read_byte(&parameter) == 1)
-				return 1;
-				
-			switch (parameter) {
-				case CMD_CHASSIS_SPEED:
-					
-					if (usart_read_byte(&speed) == 1)
-						return 1;
-					
-					// issue chassis set speed command on bus here
-				break;
-				case CMD_CHASSIS_STEER:
-					
-					
-					if (usart_read_byte(&steering_power) == 1)
-						return 1;
-						
-					// issue chassis set steering power command on bus here
-				break;
-				case CMD_CHASSIS_START:
-					// issue chassis start line following / competition on bus here
-				break;
-			}
-		break;
-		case PKT_CALIBRATION_COMMAND:
-			if (usart_read_byte(&parameter) == 1)
-			return 1;
-			switch (parameter) {
-				case CAL_LINE:
-					
-					if (usart_read_byte(&is_on_tape) == 1)
-						return 1;
-					
-					// issue line sensor calibration command on bus here
-				break;
-				case CAL_RANGE:
-					
-					if (usart_read_byte(&distance) == 1)
-						return 1;
-					
-					// issue range sensor calibration command on bus here
-				break;
-			}
-		break;
-		case PKT_PACKET_REQUEST:
-			if (usart_read_byte(&parameter) == 1) // parameter is packet id
-				return 1;
-			
-			// assemble and send packet here
-		break;
-		case PKT_SPOOFED_REQUEST:
-			
-			if (usart_read_byte(&parameter) == 1	||
-				usart_read_byte(&request_id) == 1	||
-				usart_read_byte(&metadata_h) == 1	||
-				usart_read_byte(&metadata_l) == 1)
-				return 1;
-			display(0, "req %d", request_id);
-			bus_request(parameter, 
-						request_id, 
-						((uint16_t)metadata_h << 8) | (uint16_t) metadata_l, 
-						&response);
-						
-			
-			send_packet(PKT_SPOOFED_RESPONSE, 2, (uint8_t)(response >> 8), (uint8_t) response);
-			
-			display(1, "%x", response);
-			
-		break;
-		case PKT_SPOOFED_TRANSMIT:	
-			
-			if (usart_read_byte(&parameter) == 1	||
-				usart_read_byte(&transmission_id) == 1	||
-				usart_read_byte(&metadata_h) == 1	||
-				usart_read_byte(&metadata_l) == 1)	
+		display(0, "arm command!");
+		
+		if (usart_read_byte(&command) == 1)
 			return 1;
 			
-			bus_transmit(parameter, 
-						 transmission_id, 
-						 ((uint16_t)metadata_h << 8) | (uint16_t) metadata_l);
+		if (command == CMD_ARM_MOVE) {
+			display(0, "arm move!");
+			uint8_t joint;
+			uint8_t pos_l;
+			uint8_t pos_h;
+			
+			if (usart_read_byte(&joint) == 1 ||
+			usart_read_byte(&pos_l) == 1 ||
+			usart_read_byte(&pos_h) == 1)
+			return 1;
+			// issue arm move command on bus here
+			display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
+			//send_packet(PKT_ARM_STATUS, 3, joint, pos_l, pos_h);
+			usart_write_byte(PKT_ARM_STATUS);
+			usart_write_byte(3);
+			usart_write_byte(joint);
+			usart_write_byte(pos_h);
+			usart_write_byte(pos_l);
+		}
+		else if (command == CMD_ARM_GRIP) {
+			// issue arm grip command on bus here
+			
+		}
+		else if (command ==CMD_ARM_RELEASE) {
+			// issue arm release command on bus here
+		}
+		else if (command ==CMD_ARM_PREDEFINED_POS) {
+			uint8_t predefine_id;
+			if (usart_read_byte(&predefine_id) == 1)
+			return 1;
+			
+			// issue predefine position command on bus here
+			
+		}
+	}
+	else if (packet_id ==PKT_CHASSIS_COMMAND) {
+		uint8_t command;
 		
-		break;
+		if (usart_read_byte(&command) == 1)
+		return 1;
+		
+		if (command == CMD_CHASSIS_SPEED) {
+			
+			uint8_t speed;		
+			if (usart_read_byte(&speed) == 1)
+			return 1;
+			
+			// issue chassis set speed command on bus here
+		}
+		else if (command ==CMD_CHASSIS_STEER ) {
+					
+			uint8_t steering_power;
+			if (usart_read_byte(&steering_power) == 1)
+			return 1;
+			
+			// issue chassis set steering power command on bus here
+		}
+		else if (command ==CMD_CHASSIS_START) {
+			// issue chassis start line following / competition on bus here
+			
+		}
+	}
+	else if (packet_id ==PKT_CALIBRATION_COMMAND) {
+		uint8_t command;
+		display(0, "Got calibrate");
+		if (usart_read_byte(&command) == 1)
+		return 1;
+		if (command == CAL_LINE){
+			uint8_t is_on_tape;
+			display(1, "Line...");
+			if (usart_read_byte(&is_on_tape) == 1)
+				return 1;
+			display(1, "Line, tape=%d", is_on_tape);
+			bus_transmit(BUS_ADDRESS_SENSOR, 2, is_on_tape);
+		}
+		else if (command ==CAL_RANGE) {
+			uint8_t distance;
+			if (usart_read_byte(&distance) == 1)
+				return 1;
+
+			// issue range sensor calibration command on bus here
+		}
+	}
+
+	else if (packet_id == PKT_PACKET_REQUEST) {
+		uint8_t req_packet_id;
+		
+		display(0, "Got pkt req");
+		if (usart_read_byte(&req_packet_id) == 1) 
+			return 1;
+		
+		if (req_packet_id == PKT_LINE_DATA) {
+			uint8_t line_values[11];
+			uint8_t flags;
+			uint8_t center_mass;
+			
+			display(1, "Line data");
+			
+			uint16_t temp_line_value_pair;
+			for (int i = 0; i < 6; ++i) {
+				bus_request(BUS_ADDRESS_SENSOR, 3, i, &temp_line_value_pair);
+				line_values[2*i] = (uint8_t) temp_line_value_pair;
+				line_values[2*i+1] = (uint8_t) (temp_line_value_pair >> 8);
+			}
+			
+			uint16_t temp_flags_and_center;
+			
+			bus_request(BUS_ADDRESS_SENSOR, 4, 0, &temp_flags_and_center);
+			center_mass = (uint8_t) temp_flags_and_center;
+			flags = (uint8_t) (temp_flags_and_center >> 8);
+			
+			send_packet(PKT_LINE_DATA, 
+						13, 
+						line_values[0],
+						line_values[1],
+						line_values[2],
+						line_values[3],
+						line_values[4],
+						line_values[5],
+						line_values[6],
+						line_values[7],
+						line_values[8],
+						line_values[9],
+						line_values[10],
+						flags,
+						center_mass);
+		}
+	}
+	else if (packet_id ==PKT_SPOOFED_REQUEST) {
+		
+		uint8_t address;
+		uint8_t request_id;
+		uint8_t metadata_h;
+		uint8_t metadata_l;
+		
+		uint16_t response;
+				
+		if (usart_read_byte(&address) == 1	||
+		usart_read_byte(&request_id) == 1	||
+		usart_read_byte(&metadata_h) == 1	||
+		usart_read_byte(&metadata_l) == 1)
+		return 1;
+		display(0, "req %d", request_id);
+		bus_request(address,
+		request_id,
+		((uint16_t)metadata_h << 8) | (uint16_t) metadata_l,
+		&response);
+		
+		
+		send_packet(PKT_SPOOFED_RESPONSE, 2, (uint8_t)(response >> 8), (uint8_t) response);
+		
+		display(1, "%x", response);
+		
+	}
+	else if (packet_id ==PKT_SPOOFED_TRANSMIT) {
+		uint8_t address;
+		uint8_t transmission_id;
+		uint8_t metadata_h;
+		uint8_t metadata_l;
+		
+		if (usart_read_byte(&address) == 1	||
+		usart_read_byte(&transmission_id) == 1	||
+		usart_read_byte(&metadata_h) == 1	||
+		usart_read_byte(&metadata_l) == 1)
+		return 1;
+		
+		bus_transmit(address,
+		transmission_id,
+		((uint16_t)metadata_h << 8) | (uint16_t) metadata_l);
+		
+		
 	}
 	return 0;
 }
