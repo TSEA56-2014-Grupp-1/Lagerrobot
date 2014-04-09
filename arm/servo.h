@@ -152,6 +152,6 @@ uint8_t _servo_write(uint8_t, uint8_t, ...);
 uint8_t _servo_reg_write(uint8_t, uint8_t, ...);
 uint8_t servo_move_add(uint8_t id, uint16_t angle);
 void servo_action(uint8_t);
-
+uint8_t servo_move(uint8_t id, uint16_t angle);
 
 #endif /* SERVO_H_ */

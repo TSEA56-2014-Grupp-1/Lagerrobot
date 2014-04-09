@@ -62,13 +62,133 @@ void arm_move_joint_add(uint8_t joint, uint16_t goal_angle)
 	}
 }
 
-void arm_display_read_packet(uint8_t id, uint8_t adress, uint8_t data_length)
+void arm_move_joint(uint8_t joint, uint16_t goal_angle)
+{
+	switch (joint)
+	{
+		case 1:
+		servo_move (0x01, goal_angle);
+		break;
+		case 2:
+		servo_move_add (0x02, goal_angle);
+		servo_move_add (0x03, 1023-goal_angle);
+		servo_action(0xfe);
+		break;
+		case 3:
+		servo_move_add (0x04, goal_angle);
+		servo_move_add (0x05, 1023-goal_angle);
+		servo_action(0xfe);
+		break;
+		case 4:
+		servo_move (0x06, goal_angle);
+		break;
+		case 5:
+		servo_move (0x07, goal_angle);
+		break;
+		case 6:
+		servo_move (0x08, goal_angle);
+		break;
+	}
+}
+
+void arm_display_read_packet(uint8_t id, uint8_t adress, uint8_t length)
 {
 	uint8_t data[2];
 	uint16_t int_data;
-	(uint16_t)servo_read(id, adress, data_length, data);
+	int_data = (uint16_t)servo_read(id, adress, length, data);
+	if (length == 1)
+	{
+		display(1,"%u is %u", id, int_data);
+	}
+	else
+	{
+		int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
+		display(1,"%u is %u", id, int_data);
+	}
+}
+
+uint16_t joint_get_minangle(uint8_t joint)
+{
+	switch(joint)
+	{
+		case 1:
+			return JOINT_1_MINANGLE;
+		case 2:
+			return JOINT_2_MINANGLE;
+		case 3:
+			return JOINT_3_MINANGLE;
+		case 4:
+			return JOINT_4_MINANGLE;
+		case 5:
+			return JOINT_5_MINANGLE;
+		case 6:
+			return JOINT_6_MINANGLE;
+	}
+	return 0;
+}
+
+uint16_t joint_get_maxangle(uint8_t joint)
+{
+	switch(joint)
+	{
+		case 1:
+			return JOINT_1_MAXANGLE;
+		case 2:
+			return JOINT_2_MAXANGLE;
+		case 3:
+			return JOINT_3_MAXANGLE;
+		case 4:
+			return JOINT_4_MAXANGLE;
+		case 5:
+			return JOINT_5_MAXANGLE;
+		case 6:
+			return JOINT_6_MAXANGLE;
+	}
+	return 0;
+}
+
+uint8_t joint_get_servo_id(uint8_t joint)
+{
+		switch(joint)
+		{
+			case 1:
+				return 1;
+			case 2:
+				return 2;
+			case 3:
+				return 4;
+			case 4:
+				return 6;
+			case 5:
+				return 7;
+			case 6:
+				return 8;
+		}
+	return 0;
+}
+
+void arm_movement_command(uint8_t joint, uint8_t direction)
+{
+	if (direction == 0)
+	{
+		arm_move_joint(joint, joint_get_minangle(joint));
+	}
+	else if(direction == 1)
+	{
+		arm_move_joint(joint, joint_get_maxangle(joint));
+	}
+}
+
+void arm_stop_movement(uint8_t joint)
+{
+	uint8_t data[2];
+	uint16_t int_data;
+
+	(uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
 	int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
-	display(1,"%u is %u", id, int_data);
+
+	arm_move_joint(joint, int_data);
+	display(1,"%u is %u", joint_get_servo_id(joint), int_data);
 }
 
 int main(void) {
@@ -84,15 +204,24 @@ int main(void) {
 // 	arm_move_joint_add(6, 511);
 //   	servo_action(0xfe);
 	_delay_ms(2000);
-	arm_display_read_packet(3, SERVO_PRESENT_POSITION_L, 2);
-
 
 	uint8_t i;
 	for (i = 0;; i++) {
-// 		_delay_ms(1000);
-// 		arm_move_joint_add(1, 412 + 100 * (i % 3));
-// 		arm_move_joint_add(5, 100 * (i % 3));
-// 		arm_move_joint_add(6, 412 + 100 * (i % 3));
-// 		servo_action(0xfe);
+		_delay_ms(1000);
+		arm_movement_command(1, 0);
+		arm_movement_command(5, 0);
+		arm_movement_command(6, 0);
+		_delay_ms(1000);
+		arm_stop_movement(1);
+		arm_stop_movement(5);
+		arm_stop_movement(6);
+		_delay_ms(1000);
+		arm_movement_command(1, 1);
+		arm_movement_command(5, 1);
+		arm_movement_command(6, 1);
+		_delay_ms(1000);
+		arm_stop_movement(1);
+		arm_stop_movement(5);
+		arm_stop_movement(6);
 	}
 }

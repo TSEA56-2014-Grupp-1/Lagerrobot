@@ -312,3 +312,7 @@ uint8_t servo_move_add(uint8_t id, uint16_t angle) {
 	return servo_reg_write(id, SERVO_GOAL_POSITION_L, (uint8_t)angle, (uint8_t)(angle >> 8));
 }
 
+uint8_t servo_move(uint8_t id, uint16_t angle) {
+	return servo_write(id, SERVO_GOAL_POSITION_L, (uint8_t)angle, (uint8_t)(angle >> 8));
+}
+
