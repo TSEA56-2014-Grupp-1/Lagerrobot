@@ -179,17 +179,41 @@ void arm_movement_command(uint8_t joint, uint8_t direction)
 	}
 }
 
+uint8_t arm_is_joint_moving(uint8_t joint)
+{
+	uint8_t data[1];
+	servo_read(joint_get_servo_id(joint), SERVO_MOVING, 1, data);
+	return data[0];
+}
+
+
 void arm_stop_movement(uint8_t joint)
 {
 	uint8_t data[2];
 	uint16_t int_data;
+	uint8_t status_code;
 
-	(uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
+
+
+	status_code = (uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
 	int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
 
 	arm_move_joint(joint, int_data);
-	display(1,"%u is %u", joint_get_servo_id(joint), int_data);
+	_delay_ms(30);
+	
+	while (arm_is_joint_moving(joint) & !(status_code == 0))
+	{
+		display(1, "%u is %u", joint_get_servo_id(joint), status_code);
+		usart_clear_buffer();
+		status_code = (uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
+		int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
+
+		arm_move_joint(joint, int_data);
+		_delay_ms(30);
+	}
+	
 }
+
 
 int main(void) {
 
@@ -208,17 +232,9 @@ int main(void) {
 	uint8_t i;
 	for (i = 0;; i++) {
 		_delay_ms(1000);
-		arm_movement_command(1, 0);
-		arm_movement_command(5, 0);
-		arm_movement_command(6, 0);
-		_delay_ms(1000);
-		arm_stop_movement(1);
-		arm_stop_movement(5);
-		arm_stop_movement(6);
-		_delay_ms(1000);
-		arm_movement_command(1, 1);
-		arm_movement_command(5, 1);
-		arm_movement_command(6, 1);
+		arm_movement_command(1, i%2);
+		arm_movement_command(5, i%2);
+		arm_movement_command(6, i%2);
 		_delay_ms(1000);
 		arm_stop_movement(1);
 		arm_stop_movement(5);
