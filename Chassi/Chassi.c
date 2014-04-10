@@ -25,7 +25,7 @@ uint16_t request_line_data()
 uint16_t request_RFID_tag()
 {
 	uint16_t tag;
-	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag); // XXX PARAMETERS?
+	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag); 
 	return tag;
 }
 
@@ -40,13 +40,13 @@ return 0;
 //---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {	
+	//display(0, "no response");
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
 	uint8_t chassi_switch = 0;
 	
 	if(PINA & 1) {
-		stop_wheels();
 		chassi_switch = 1;
 		}
 
@@ -58,8 +58,8 @@ if (!is_station(station_data) && (chassi_switch != 1))	// Continue following lin
 	}
 	
 	stop_wheels();
-	uint8_t station_tag = 14;
-	station_tag = (uint8_t)request_RFID_tag();
+	uint16_t station_tag = 14;
+	station_tag = request_RFID_tag();
 	
 	if (station_data == 0)
 	{
@@ -73,8 +73,8 @@ if (!is_station(station_data) && (chassi_switch != 1))	// Continue following lin
 	}
 	else if (chassi_switch == 1)
 	{
-		display(0, "the switch");
-		display(1, "is switched");
+		display(0, "switch is");
+		display(1, "off");
 	}
 	else
 	{
@@ -82,7 +82,7 @@ if (!is_station(station_data) && (chassi_switch != 1))	// Continue following lin
 		display(1, "error");
 	}
 	
-	for (int i = 0; i < 15; ++i)
+	for (int i = 0; i < 10; ++i)
 	{
 		_delay_ms(200);
 	}
