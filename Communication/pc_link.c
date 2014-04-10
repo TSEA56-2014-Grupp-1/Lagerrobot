@@ -33,26 +33,25 @@ uint8_t process_packet() {
 		display(0, "arm command!");
 		
 		if (usart_read_byte(&command) == 1)
-			return 1;
-			
+		return 1;
+		
 		if (command == CMD_ARM_MOVE) {
-			display(0, "arm move!");
 			uint8_t joint;
-			uint8_t pos_l;
-			uint8_t pos_h;
+			uint8_t dir;
 			
-			if (usart_read_byte(&joint) == 1 ||
-			usart_read_byte(&pos_l) == 1 ||
-			usart_read_byte(&pos_h) == 1)
+			if (usart_read_byte(&dir) == 1 ||
+			usart_read_byte(&joint) == 1 )
 			return 1;
+			display(1, "Arm move!");
 			// issue arm move command on bus here
-			display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
+			//display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
 			//send_packet(PKT_ARM_STATUS, 3, joint, pos_l, pos_h);
-			usart_write_byte(PKT_ARM_STATUS);
+			/*usart_write_byte(PKT_ARM_STATUS);
 			usart_write_byte(3);
 			usart_write_byte(joint);
 			usart_write_byte(pos_h);
-			usart_write_byte(pos_l);
+			usart_write_byte(pos_l);*/
+			bus_transmit(BUS_ADDRESS_ARM, 2, ((uint16_t) dir << 8) | (uint16_t) joint);
 		}
 		else if (command == CMD_ARM_GRIP) {
 			// issue arm grip command on bus here
@@ -69,6 +68,12 @@ uint8_t process_packet() {
 			// issue predefine position command on bus here
 			
 		}
+		else if (command == CMD_ARM_STOP) {
+			uint8_t joint;
+			if (usart_read_byte(&joint) == 1)
+			return 1;
+			bus_transmit(BUS_ADDRESS_ARM, 3, (uint16_t) joint);
+		}
 	}
 	else if (packet_id ==PKT_CHASSIS_COMMAND) {
 		uint8_t command;
@@ -78,14 +83,14 @@ uint8_t process_packet() {
 		
 		if (command == CMD_CHASSIS_SPEED) {
 			
-			uint8_t speed;		
+			uint8_t speed;
 			if (usart_read_byte(&speed) == 1)
 			return 1;
 			
 			// issue chassis set speed command on bus here
 		}
 		else if (command ==CMD_CHASSIS_STEER ) {
-					
+			
 			uint8_t steering_power;
 			if (usart_read_byte(&steering_power) == 1)
 			return 1;
@@ -106,14 +111,14 @@ uint8_t process_packet() {
 			uint8_t is_on_tape;
 			display(1, "Line...");
 			if (usart_read_byte(&is_on_tape) == 1)
-				return 1;
+			return 1;
 			display(1, "Line, tape=%d", is_on_tape);
 			bus_transmit(BUS_ADDRESS_SENSOR, 2, is_on_tape);
 		}
 		else if (command ==CAL_RANGE) {
 			uint8_t distance;
 			if (usart_read_byte(&distance) == 1)
-				return 1;
+			return 1;
 
 			// issue range sensor calibration command on bus here
 		}
@@ -123,8 +128,8 @@ uint8_t process_packet() {
 		uint8_t req_packet_id;
 		
 		display(0, "Got pkt req");
-		if (usart_read_byte(&req_packet_id) == 1) 
-			return 1;
+		if (usart_read_byte(&req_packet_id) == 1)
+		return 1;
 		
 		if (req_packet_id == PKT_LINE_DATA) {
 			uint8_t line_values[11];
@@ -146,21 +151,21 @@ uint8_t process_packet() {
 			center_mass = (uint8_t) temp_flags_and_center;
 			flags = (uint8_t) (temp_flags_and_center >> 8);
 			
-			send_packet(PKT_LINE_DATA, 
-						13, 
-						line_values[0],
-						line_values[1],
-						line_values[2],
-						line_values[3],
-						line_values[4],
-						line_values[5],
-						line_values[6],
-						line_values[7],
-						line_values[8],
-						line_values[9],
-						line_values[10],
-						flags,
-						center_mass);
+			send_packet(PKT_LINE_DATA,
+			13,
+			line_values[0],
+			line_values[1],
+			line_values[2],
+			line_values[3],
+			line_values[4],
+			line_values[5],
+			line_values[6],
+			line_values[7],
+			line_values[8],
+			line_values[9],
+			line_values[10],
+			flags,
+			center_mass);
 		}
 	}
 	else if (packet_id ==PKT_SPOOFED_REQUEST) {
@@ -171,7 +176,7 @@ uint8_t process_packet() {
 		uint8_t metadata_l;
 		
 		uint16_t response;
-				
+		
 		if (usart_read_byte(&address) == 1	||
 		usart_read_byte(&request_id) == 1	||
 		usart_read_byte(&metadata_h) == 1	||
