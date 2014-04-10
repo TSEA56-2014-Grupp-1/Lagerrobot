@@ -196,7 +196,7 @@ void line_break_detection()	{
 	sei();
 	};
 void update_linesensor()	{
-	display(0, "Weight:%d", line_weight);
+	//display(0, "Weight:%d", line_weight);
 	update_linesensor_values();
 	update_linesensor_surfaces();
 	calculate_line_weight();

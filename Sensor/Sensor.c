@@ -41,7 +41,7 @@ int main(void)
 	line_init();
 	//init_linesensor_calibration();
 	sei();
-	
+	//bus_transmit(5,4,5);
     while(1)
     {
         //TODO:: Please write your application code 
