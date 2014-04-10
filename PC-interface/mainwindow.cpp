@@ -307,6 +307,7 @@ void MainWindow::draw_next_point_steering(qreal ypos) {
         max_y_steering = ypos + Y_INTERVAL_STEERING; //Adding y_interval to ypos, will give better axis.
     draw_x_axis(scene_graph_steering);
     draw_y_axis_steering();
+    ui->graphicsView_graph_1->centerOn(current_time, -127/Y_SCALE_STEERING);
 }
 
 /*

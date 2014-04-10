@@ -13,8 +13,21 @@
 
 QT_USE_NAMESPACE
 
-void bluetooth::process_packet(char packet_id, QByteArray parameters)
+QByteArray splice(QByteArray array, int startpos, int endpos) {
+    QByteArray result;
+    result.resize(endpos-startpos);
+
+    for (int i = startpos; i < endpos; ++i) {
+        result[i - startpos] = array[i];
+    }
+    return result;
+
+}
+
+void bluetooth::process_packet()
 {
+    quint8 packet_id = buffer.at(0);
+    QByteArray parameters = splice(buffer, 2, buffer.length());
     switch (packet_id) {
     case PKT_ARM_DECISION:
 
@@ -65,6 +78,10 @@ bool bluetooth::open_port() {
     if (serialport->open(QIODevice::ReadWrite)) {
         window->print_on_log("Bluetooth connected succesfully.");
         serialport->setBaudRate(QSerialPort::Baud115200);
+        serialport->setFlowControl(QSerialPort::NoFlowControl);
+        serialport->setDataBits(QSerialPort::Data8);
+        serialport->setParity(QSerialPort::NoParity);
+        serialport->setStopBits(QSerialPort::OneStop);
         return true;
     }
     else {
@@ -75,29 +92,33 @@ bool bluetooth::open_port() {
 
 
 void bluetooth::handle_ready_read() {
+    QByteArray newBytes;
 
-    //if (current_packet.isEmpty()) {
-    //char packet_id;
-    //serialport.read(&packet_id, 1);
+    if (buffer.isEmpty()) {
+        if (serialport->bytesAvailable() > 2) {
+            buffer = serialport->read(2); // read packet id and number of parameters
+            newBytes = serialport->read(buffer.at(1));
 
-
-
-    char packet_id;
-    serialport->read(&packet_id, 1);
-    //serialport->waitForReadyRead(1000);
-
-    char num_parameters;
-    serialport->read(&num_parameters, 1);
-    //serialport->waitForReadyRead(1000);
-
-    char temp_parameter;
-    QByteArray parameters = QByteArray(num_parameters, 0);
-    for (int i = 0; (serialport->read(&temp_parameter, 1) != 0) && i < num_parameters; ++i) {
-        parameters[i] = temp_parameter;
-        //serialport->waitForReadyRead(1000);
+            if (newBytes.length() < buffer.at(1)) {
+                buffer += newBytes;
+            }
+            else {
+                buffer += newBytes;
+                process_packet();
+                buffer.clear();
+            }
+        }
     }
-
-    process_packet(packet_id, parameters);
+    else {
+        if (serialport->bytesAvailable() >= buffer.at(1)-(buffer.length()-2)) {
+            buffer += serialport->read(buffer.at(1)-(buffer.length()-2));
+            process_packet();
+            buffer.clear();
+        }
+        else {
+            buffer += serialport->readAll();
+        }
+    }
 
 }
 
