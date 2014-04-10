@@ -15,9 +15,10 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 
-
+uint8_t check_error = 0;
 uint8_t station_RFID[12];
 uint8_t carrying_RFID[12];
+uint8_t tag = 15;
 
 void RFID_scanner_init()
 {
@@ -65,13 +66,19 @@ void station_to_LCD(uint8_t station){
 
 void read_RFID()
 {
-	PORTD = (0 << PORTD2); // Enable reading
+	//PORTD = (0 << PORTD2); // Enable reading
+	//_delay_ms(200);
+	//_delay_ms(100);
 	uint8_t i = 0;
+	
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		usart_read_byte(&station_RFID[i]);
+		check_error = usart_read_byte(&station_RFID[i]);
+		if (check_error == 1)
+		break;
 	}
-	PORTD |= (1 << PORTD2); // Disable reading
+	_delay_ms(100);
+	//PORTD |= (1 << PORTD2); // Disable reading
 }
 
 
@@ -91,37 +98,63 @@ uint8_t compare_RFID_arrays(uint8_t station_RFID[12], const uint8_t current_comp
 uint8_t identify_station_RFID()
 {
 	if (compare_RFID_arrays(station_RFID, RFID_B80))
-	return 80;
+	return 0;
 	else if (compare_RFID_arrays(station_RFID, RFID_B81))
-	return 81;
-	else if (compare_RFID_arrays(station_RFID, RFID_B82))
-	return 82;
-	else if (compare_RFID_arrays(station_RFID, RFID_B83))
-	return 83;
-	else if (compare_RFID_arrays(station_RFID, RFID_B84))
-	return 84;
-	else if (compare_RFID_arrays(station_RFID, RFID_B85))
-	return 85;
-	else
 	return 1;
+	else if (compare_RFID_arrays(station_RFID, RFID_B82))
+	return 2;
+	else if (compare_RFID_arrays(station_RFID, RFID_B83))
+	return 3;
+	else if (compare_RFID_arrays(station_RFID, RFID_B84))
+	return 4;
+	else if (compare_RFID_arrays(station_RFID, RFID_B85))
+	return 5;
+	else
+	return 15;
 };
 
-uint8_t station = 0;
 int main(void)
 {
 	RFID_scanner_init();
-	PORTD = 0;
-	DDRA = 0b11111111;
-	PORTA = 0;
+	//PORTD = 0;
+	DDRA = 0b11111111; //For testing
+	PORTA = 0; // For testing
 	usart_init(520);
 	sei();
+
+	PORTD = (0 << PORTD2); // Enable reading
 	_delay_ms(200);
-	_delay_ms(200);
+	_delay_ms(100);	
 	read_RFID();
-	//station = identify_station_RFID();
-	//station_to_LCD(station);
+	_delay_ms(100);
+	read_RFID();
+	_delay_ms(100);
+	PORTD |= (1 << PORTD2); // Disable reading
+	tag = identify_station_RFID();
+	PORTA = tag;
 	
-PORTA = station_RFID[8];
+	/* //TESTLOOP
+	for (int i = 0; i < 9; ++i) // For testing
+	{
+	read_RFID(); // At least 2 readings are needed!
+	tag = 15;
+	tag = identify_station_RFID();
+	station_RFID[1] = 0x0B;
+	PORTA = tag; // For testing
+	PORTA |= PORTA & (check_error << PORTA7);
+	_delay_ms(200);
+	_delay_ms(200);
+	_delay_ms(200);
+	_delay_ms(200);
+	_delay_ms(200);
+	_delay_ms(200);
+	_delay_ms(200);
+	PORTA = 0;
+	}
+	*/
+	
+	
+//	station_to_LCD(tag);
     while(1)
     {
         //TODO:: Please write your application code 
