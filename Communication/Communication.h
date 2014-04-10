@@ -46,4 +46,5 @@ uint8_t lcd_rotation_counter;
  * @param unit The identifier of the module whose page is to be cleared.
  */
 void clear_message(uint8_t unit);
+
 #endif /* COMMUNICATION_H_ */

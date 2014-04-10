@@ -119,7 +119,6 @@ int main(void)
 	
 	bus_register_receive(2, symbols_are_ready);
 	
-	
 	display(0, "Ouroborobot");
 	display(1, "Startup.");
 	_delay_ms(300);
