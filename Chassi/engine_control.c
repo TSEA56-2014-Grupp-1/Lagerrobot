@@ -30,3 +30,95 @@ void engine_init()
 	//set prescaler 8
 	TCCR1B |= (0 << CS12 | 1 << CS11 | 0 << CS10);
 }
+
+void engine_control_command(uint8_t checkout_id, uint16_t command_data)
+{
+	uint8_t command = (uint8_t)command_data;
+
+	switch(command)
+	{
+		//STOP WHEELS
+		case 0:
+			stop_wheels();
+			break;
+		//Increase speed forwards
+		case 1:
+			if(driving_direction())
+			{
+				speed_left += STEERING_SPEED_INCREASE;
+				speed_right += STEERING_SPEED_INCREASE;
+			}
+			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_right >= STEERING_SPEED_INCREASE))
+			{
+				speed_left -= STEERING_SPEED_INCREASE;
+				speed_right -= STEERING_SPEED_INCREASE;
+			}
+			else
+			{
+				drive_forward();
+				speed_left = STEERING_SPEED_INCREASE;
+				speed_right = STEERING_SPEED_INCREASE;
+			}
+			break;
+		//Increase speed backwards, or break in forwarddirection
+		case 2:
+			if(!driving_direction())
+			{
+				speed_left += STEERING_SPEED_INCREASE;
+				speed_right += STEERING_SPEED_INCREASE;
+			}
+			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_right >= STEERING_SPEED_INCREASE))
+			{
+				speed_left -= STEERING_SPEED_INCREASE;
+				speed_right -= STEERING_SPEED_INCREASE;
+			}
+			else
+			{
+				drive_backwards();
+				speed_left = STEERING_SPEED_INCREASE;
+				speed_right = STEERING_SPEED_INCREASE;
+			}
+			break;
+		//Increase turningspeed to right, spin right if standing still
+		case 3:
+			if((speed_right < STEERING_SPEED_INCREASE) | (speed_right < STEERING_SPEED_INCREASE))
+			{
+				spin_right();
+				speed_left = STEERING_SPIN_SPEED;
+				speed_right = STEERING_SPIN_SPEED;
+			}
+			else if(driving_direction())
+			{
+				speed_right -= STEERING_SPEED_INCREASE;
+			}
+			else
+			{
+				speed_left -= STEERING_SPEED_INCREASE;
+			}
+			break;
+		//Increase turningspeed to left, spin left if standing still
+		case 4:
+			if((speed_right < STEERING_SPEED_INCREASE) | (speed_right < STEERING_SPEED_INCREASE))
+			{
+				spin_left();
+				speed_left = STEERING_SPIN_SPEED;
+				speed_right = STEERING_SPIN_SPEED;
+			}
+			else if(driving_direction())
+			{
+				speed_left -= STEERING_SPEED_INCREASE;
+			}
+			else
+			{
+				speed_right -= STEERING_SPEED_INCREASE;
+			}
+			break;
+		//TODO: Enable automatic steering
+		//case 5:
+
+	}
+
+	drive_left_wheels(speed_left);
+	drive_right_wheels(speed_right);
+
+}
