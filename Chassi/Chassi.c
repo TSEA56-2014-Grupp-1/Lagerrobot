@@ -18,13 +18,20 @@
 uint16_t request_line_data()
 {
 	uint16_t data;
-	bus_request(4, 4, 0, &data);
+	bus_request(BUS_ADDRESS_SENSOR, 4, 0, &data);
 	return data;
+}
+
+uint16_t request_RFID_tag()
+{
+	uint16_t tag;
+	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag); // XXX PARAMETERS?
+	return tag;
 }
 
 uint8_t is_station(uint8_t station_data)
 {
- if (station_data == 0 || station_data == 2 )
+ if (station_data == 0 || station_data == 2)
 return 1;
 else
 return 0;
@@ -32,24 +39,18 @@ return 0;
 
 //---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
-{
-	if(PINA & 1) {
-		stop_wheels();
-		//continue when switch turned back?
-		//TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt cause switch set to manual steering
-		//Try this instead!
-		//TCCR0B = 0; // Disable timer-counter
-		return;
-	}
-	
+{	
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
+	uint8_t chassi_switch = 0;
 	
-	//pd_update(curr_error);
-	//steering_algorithm();
+	if(PINA & 1) {
+		stop_wheels();
+		chassi_switch = 1;
+		}
 
-if (!is_station(station_data))	// Continue following line
+if (!is_station(station_data) && (chassi_switch != 1))	// Continue following line
 	{
 		pd_update(curr_error);
 		steering_algorithm();
@@ -57,22 +58,36 @@ if (!is_station(station_data))	// Continue following line
 	}
 	
 	stop_wheels();
+	uint8_t station_tag = 14;
+	station_tag = (uint8_t)request_RFID_tag();
+	
 	if (station_data == 0)
 	{
-		display(0, "station");
-		display(1, "left");
+		display(0, "st. left");
+		display(1, "rfid: %d", station_tag);
 	}
 	else if (station_data == 2)
 	{
-		display(0, "station");
-		display(1, "right");
+		display(0, "st. right");
+		display(1, "rfid: %d", station_tag);
+	}
+	else if (chassi_switch == 1)
+	{
+		display(0, "the switch");
+		display(1, "is switched");
 	}
 	else
 	{
 		display(0, "unknown");
 		display(1, "error");
 	}
-	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
+	
+	for (int i = 0; i < 15; ++i)
+	{
+		_delay_ms(200);
+	}
+	
+	//TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 }
 
 
