@@ -37,21 +37,21 @@ enum composite_output_type {station_Left, station_No, station_Right,No_tape};
 
 //Hemmagjorda datatyper
 composite_output_type chassi_output;
-line_type line_status;
-surface_type sensor_surface_types[11];	
-station_type pickup_station;
+line_type line_status = 1;
+surface_type sensor_surface_types[11] = {0,0,0,0,0,0,0,0,0,0,0};	
+station_type pickup_station = No;
 
 //Heltal
 uint8_t sensor_channel;
 uint8_t sensor_values[11];
 uint8_t temp_sensor_values[11];
-uint8_t line_weight;
+uint8_t line_weight = 127;
 double sensor_scale[11];
 // for (uint8_t i = 0; i <= 10 ;i++)	{
 // 	sensor_scale[i] = 1;
 // }
 
-uint8_t tape_reference = 100;
+uint8_t tape_reference = 150;
 
 
 uint8_t not_on_tape()	{
@@ -69,12 +69,17 @@ uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
 	return 0;
 }
 
-uint16_t return_linesensor(uint8_t id, uint16_t sensor)	{
-	return (uint16_t)sensor_values[sensor];
+
+uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
+	if (sensor_pair != 5)
+	return ((uint16_t)sensor_values[2*sensor_pair] << 8) | (uint16_t) sensor_values[2*sensor_pair + 1];
+	else
+	return (uint16_t) sensor_values[2*sensor_pair];
 }
 
 //Formats the output to accomodate the chassi and transmits it on the bus
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
+	chassi_output = 1;
 	if(pickup_station == Left)
 		chassi_output = station_Left;
 	else if(pickup_station == No)
@@ -83,7 +88,7 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 		chassi_output = station_Right;
 	//if(not_on_tape())
 		//chassi_output = No_tape;
-	return (((uint16_t)(pickup_station) << 8) | line_weight);
+	return (((uint16_t)(chassi_output) << 8) | line_weight);
 }
 
 void line_init(){
@@ -152,6 +157,7 @@ void calculate_line_weight()	{
 	sei();
 }
 void pickup_station_detection() {
+	cli();
 	uint8_t current_sensor;
 	uint8_t tape_width;
 
@@ -163,19 +169,17 @@ void pickup_station_detection() {
 		current_sensor++;
 	}
 	
-	if((tape_width > 5 )&& (line_weight < 127) && (line_status == 0))	{
+	if((tape_width > 5 )&& (line_weight < 127))	{
 		pickup_station = Right;
-		//display_text("Pickup","Left");
 	}
-	else if ((tape_width > 5) && (line_weight > 127) && (line_status == 0))	{
+	else if ((tape_width > 5) && (line_weight > 127))	{
 		pickup_station = Left;
-		//display_text("Pickup", "Right");
 	}
 	else
 	{
 		pickup_station = No;
-		//display_text("pickup","not");
 	}
+	sei();
 }
 void line_break_detection()	{	
 	cli();
@@ -196,25 +200,12 @@ void line_break_detection()	{
 	sei();
 	};
 void update_linesensor()	{
-	//display(0, "Weight:%d", line_weight);
 	update_linesensor_values();
 	update_linesensor_surfaces();
 	calculate_line_weight();
 	pickup_station_detection();
 	line_break_detection();
-	//display(0, "Weight:%d", line_weight);
-// 	//display(1, "%d%d%d%d%d%d%d%d%d%d%d",
-// 		sensor_values[0]/64,
-// 		sensor_values[1]/64,
-// 		sensor_values[2]/64,
-// 		sensor_values[3]/64,
-// 		sensor_values[4]/64,
-// 		sensor_values[5]/64,
-// 		sensor_values[6]/64,
-// 		sensor_values[7]/64,
-// 		sensor_values[8]/64,
-// 		sensor_values[9]/64,
-// 		sensor_values[10]/64);
+
 }
 void init_linesensor_calibration()	{
 	cli();
