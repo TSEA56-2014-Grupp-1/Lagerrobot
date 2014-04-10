@@ -5,7 +5,7 @@
  *  Author: eriny778
  */
 
-#if !defined(F_CPU)
+#ifndef F_CPU
 	#define F_CPU 16000000UL
  #endif
 
@@ -167,8 +167,11 @@ uint8_t joint_get_servo_id(uint8_t joint)
 	return 0;
 }
 
-void arm_movement_command(uint8_t joint, uint8_t direction)
+void arm_movement_command(uint8_t callback_id, uint16_t command_data)
 {
+	uint8_t joint = (uint8_t)(command_data);
+	uint8_t direction = (uint8_t)(command_data >> 8);
+
 	if (direction == 0)
 	{
 		arm_move_joint(joint, joint_get_minangle(joint));
@@ -179,7 +182,7 @@ void arm_movement_command(uint8_t joint, uint8_t direction)
 	}
 }
 
-uint8_t arm_is_joint_moving(uint8_t joint)
+uint8_t joint_is_moving(uint8_t joint)
 {
 	uint8_t data[1];
 	servo_read(joint_get_servo_id(joint), SERVO_MOVING, 1, data);
@@ -187,23 +190,27 @@ uint8_t arm_is_joint_moving(uint8_t joint)
 }
 
 
-void arm_stop_movement(uint8_t joint)
+void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 {
 	uint8_t data[2];
 	uint16_t int_data;
 	uint8_t status_code;
+	uint8_t joint = (uint8_t)_joint;
 
 
+	status_code = (uint16_t)servo_read(
+		joint_get_servo_id(joint),
+		 SERVO_PRESENT_POSITION_L,
+		  2,
+		   data);
 
-	status_code = (uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
 	int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
 
 	arm_move_joint(joint, int_data);
 	_delay_ms(30);
 	
-	while (arm_is_joint_moving(joint) & !(status_code == 0))
+	while (joint_is_moving(joint) & !(status_code == 0))
 	{
-		display(1, "%u is %u", joint_get_servo_id(joint), status_code);
 		usart_clear_buffer();
 		status_code = (uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
 		int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
@@ -211,9 +218,7 @@ void arm_stop_movement(uint8_t joint)
 		arm_move_joint(joint, int_data);
 		_delay_ms(30);
 	}
-	
 }
-
 
 int main(void) {
 
@@ -223,21 +228,23 @@ int main(void) {
 	arm_init();
 	bus_init(0b0000110);
 	lcd_interface_init();
-
+	bus_register_receive(2, arm_movement_command);
+	bus_register_receive(3, arm_stop_movement);
 
 // 	arm_move_joint_add(6, 511);
 //   	servo_action(0xfe);
-	_delay_ms(2000);
+//	_delay_ms(2000);
 
 	uint8_t i;
 	for (i = 0;; i++) {
-		_delay_ms(1000);
-		arm_movement_command(1, i%2);
-		arm_movement_command(5, i%2);
-		arm_movement_command(6, i%2);
-		_delay_ms(1000);
-		arm_stop_movement(1);
-		arm_stop_movement(5);
-		arm_stop_movement(6);
+
+// 		_delay_ms(1000);
+// 		arm_movement_command(0, ((uint16_t)1 | ((uint16_t)i%2 << 8)));
+// 		arm_movement_command(0, ((uint16_t)5 | ((uint16_t)i%2 << 8)));
+// 		arm_movement_command(0, ((uint16_t)6 | ((uint16_t)i%2 << 8)));
+// 		_delay_ms(1000);
+// 		arm_stop_movement(0, 1);
+// 		arm_stop_movement(0, 5);
+// 		arm_stop_movement(0, 6);
 	}
 }
