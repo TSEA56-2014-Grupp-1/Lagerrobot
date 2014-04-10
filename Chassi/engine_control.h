@@ -19,6 +19,9 @@
 #include <util/delay.h>
 #include <stdlib.h>
 
+#define STEERING_SPEED_INCREASE 150
+#define STEERING_SPIN_SPEED 500
+
 uint16_t line_weight;
 int prev_error;
 int16_t proportional_gain;
@@ -29,5 +32,6 @@ uint16_t speed_left;
 uint16_t speed_right;
 
 void engine_init();
+void engine_control_command(uint8_t checkout_id, uint16_t command_data);
 
 #endif

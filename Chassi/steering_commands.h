@@ -22,5 +22,6 @@ void stop_wheels();
 void wait_wheels(int tenth_secs);
 void turn_right(int speed);
 void turn_left(int speed);
+uint8_t driving_direction();
 
 #endif

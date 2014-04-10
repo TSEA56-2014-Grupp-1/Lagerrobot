@@ -63,3 +63,8 @@ void wait_wheels(int tenth_secs)
 		_delay_ms(100);
 	}
 }
+
+uint8_t driving_direction()
+{
+	return ((PORTD & (1<<PORTD0)) & !(PORTD & (1<<PORTD1)));
+}

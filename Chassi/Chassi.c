@@ -132,6 +132,8 @@ ISR(interrupt_arm) // XX Name for interrupt vector??
 }
 */
 
+
+
 int main(void)
 {
 	bus_init(1);
@@ -139,6 +141,7 @@ int main(void)
 	engine_init();
 	regulator_init();
 	lcd_interface_init();
+	bus_register_receive(8, engine_control_command);
 
 	//enable timer interrupts for ocie0a
 	//sei();
