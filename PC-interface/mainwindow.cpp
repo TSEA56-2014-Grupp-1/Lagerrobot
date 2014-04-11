@@ -65,9 +65,11 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
         on_pushButton_back_pressed();
     }
     else if (key_pressed->key() == Qt::Key_A) {
-        on_pushButton_left_pressed();
+        //on_pushButton_left_pressed();
+        on_pushButton_base_left_pressed();
     }
     else if (key_pressed->key() == Qt::Key_D) {
+        //on_pushButton_base_right_pressed();
         on_pushButton_base_right_pressed();
     }
 }
@@ -83,11 +85,14 @@ void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
     }
     else if (key_released->key() == Qt::Key_S) {
         on_pushButton_back_released();
+
     }
     else if (key_released->key() == Qt::Key_A) {
-        on_pushButton_left_released();
+        //on_pushButton_left_released();
+        on_pushButton_base_left_released();
     }
     else if (key_released->key() == Qt::Key_D) {
+        //on_pushButton_base_right_released();
         on_pushButton_base_right_released();
     }
 }
@@ -180,92 +185,93 @@ void MainWindow::on_lineEdit_Kp_editingFinished()
 
 void MainWindow::on_pushButton_close_gripper_clicked()
 {
-    //close gripper
+     //port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 6);
 }
 
 void MainWindow::on_pushButton_open_gripper_clicked()
 {
-    //open gripper
+    //port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 6);
 }
 
 void MainWindow::on_pushButton_3_upp_pressed()
 {
-    //Start moving 3 joint upp
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 4);
 }
 
 void MainWindow::on_pushButton_3_upp_released()
 {
-    //Stop moving 3 joint upp
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
 }
 
 void MainWindow::on_pushButton_3_down_pressed()
 {
-    //Start moving 3 joint down
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 4);
 }
 
 void MainWindow::on_pushButton_3_down_released()
 {
-    //Stop moving 3 joint down
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
 }
 
 void MainWindow::on_pushButton_2_upp_pressed()
 {
-    //Start moving 2 joint upp
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 3);
 }
 
 void MainWindow::on_pushButton_2_upp_released()
 {
-    //Stop moving 2 joint upp
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
 }
 
 void MainWindow::on_pushButton_2_down_pressed()
 {
-    //Start moving 2 joint down
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 3);
 }
 
 void MainWindow::on_pushButton_2_down_released()
 {
-    //Stop moving 2 joint down
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
 }
 
 void MainWindow::on_pushButton_1_upp_pressed()
 {
-    //Start moving 1 joint upp
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 2);
 }
 
 void MainWindow::on_pushButton_1_upp_released()
 {
-    //Stop moving 1 joint upp
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
 }
 
 void MainWindow::on_pushButton_1_down_pressed()
 {
-    //Start moving 1 joint down
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 2);
 }
 
 void MainWindow::on_pushButton_1_down_released()
 {
-    //Stop moving 1 joint down
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
 }
 
 void MainWindow::on_pushButton_base_left_pressed()
 {
-    //Start to rotate base left
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 1);
 }
 
 void MainWindow::on_pushButton_base_left_released()
 {
-    //Stop rotating base left
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
 }
 
 void MainWindow::on_pushButton_base_right_pressed()
 {
-    //Start to rotate base right
+    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 1);
 }
 
 void MainWindow::on_pushButton_base_right_released()
 {
-    //Stop rotating base right
+    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
+    print_on_log("base right released");
 }
 
 void MainWindow::on_pushButton_start_position_arm_clicked()
@@ -307,6 +313,7 @@ void MainWindow::draw_next_point_steering(qreal ypos) {
         max_y_steering = ypos + Y_INTERVAL_STEERING; //Adding y_interval to ypos, will give better axis.
     draw_x_axis(scene_graph_steering);
     draw_y_axis_steering();
+    ui->graphicsView_graph_1->centerOn(current_time, -127/Y_SCALE_STEERING);
 }
 
 /*
@@ -428,7 +435,7 @@ void MainWindow::enable_buttons() {
 }
 
 void MainWindow::request_data() {
-    port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
+    //port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
     timer->start();
 }
 

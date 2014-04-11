@@ -20,8 +20,9 @@ private:
     QSerialPort *serialport;
     QByteArray current_packet;
     MainWindow *window;
+    QByteArray buffer;
 
-    void process_packet(char packet_id, QByteArray parameters);
+    void process_packet();
 
 public:
 

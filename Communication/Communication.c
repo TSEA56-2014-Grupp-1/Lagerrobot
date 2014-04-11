@@ -137,6 +137,7 @@ int main(void)
 	display(1, "Startup...");
 	_delay_ms(300);
 	clear_message(COMM);
+	while (!usart_has_bytes());
     while(1)
     {
 		
