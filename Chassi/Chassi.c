@@ -40,7 +40,6 @@ return 0;
 //---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {	
-	//display(0, "no response");
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
@@ -59,17 +58,17 @@ if (!is_station(station_data) && (chassi_switch != 1))	// Continue following lin
 	
 	stop_wheels();
 	uint16_t station_tag = 14;
-	station_tag = request_RFID_tag();
+	//station_tag = request_RFID_tag();
 	
 	if (station_data == 0)
 	{
 		display(0, "st. left");
-		display(1, "rfid: %d", station_tag);
+		display(1, "rfid: ui");
 	}
 	else if (station_data == 2)
 	{
 		display(0, "st. right");
-		display(1, "rfid: %d", station_tag);
+		display(1, "rfid: ui");
 	}
 	else if (chassi_switch == 1)
 	{
@@ -82,12 +81,7 @@ if (!is_station(station_data) && (chassi_switch != 1))	// Continue following lin
 		display(1, "error");
 	}
 	
-	for (int i = 0; i < 10; ++i)
-	{
-		_delay_ms(200);
-	}
-	
-	//TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
+	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 }
 
 
