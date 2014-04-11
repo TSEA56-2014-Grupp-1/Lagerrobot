@@ -63,7 +63,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	
 		stop_wheels();
 		uint16_t station_tag = 14;
-		//station_tag = request_RFID_tag();
+		station_tag = request_RFID_tag();
 	
 		if (station_data == 0)
 		{
