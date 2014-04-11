@@ -26,12 +26,12 @@ void arm_init()
 	servo_write(
 		SERVO_BROADCASTING_ID,
 		SERVO_CW_COMPLIANCE_MARGIN,
-		0x01, 0x01, 0x40, 0x40);
+		0x02, 0x02, 0x40, 0x40);
 
 	servo_write(
 		SERVO_BROADCASTING_ID,
 		SERVO_GOAL_SPEED_L,
-		0x40, 0x00);
+		0x80, 0x00);
 }
 
 
@@ -192,11 +192,13 @@ uint8_t joint_is_moving(uint8_t joint)
 
 void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 {
+	usart_clear_buffer();	
 	uint8_t data[2];
 	uint16_t int_data;
 	uint8_t status_code;
 	uint8_t joint = (uint8_t)_joint;
 
+	display(0, "%u", joint);
 
 	status_code = (uint16_t)servo_read(
 		joint_get_servo_id(joint),
@@ -205,6 +207,8 @@ void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 		   data);
 
 	int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
+
+	display(1, "%u %u", int_data, status_code);
 
 	arm_move_joint(joint, int_data);
 	_delay_ms(30);
@@ -218,6 +222,7 @@ void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 		arm_move_joint(joint, int_data);
 		_delay_ms(30);
 	}
+
 }
 
 int main(void) {
@@ -237,7 +242,7 @@ int main(void) {
 
 	uint8_t i;
 	for (i = 0;; i++) {
-
+// 		
 // 		_delay_ms(1000);
 // 		arm_movement_command(0, ((uint16_t)1 | ((uint16_t)i%2 << 8)));
 // 		arm_movement_command(0, ((uint16_t)5 | ((uint16_t)i%2 << 8)));
