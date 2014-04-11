@@ -104,7 +104,7 @@ uint8_t read_RFID()
 {
 	PORTD = (0 << PORTD2); // Enable reading
 	uint8_t i;
-	for (i = 0; i < 0; ++i)
+	for (i = 0; i < 70; ++i)
 	{
 		RFID_read_usart();
 		if(identify_station_RFID() != 15)
@@ -112,8 +112,6 @@ uint8_t read_RFID()
 		PORTD |= (1 << PORTD2); // Disable reading
 		return identify_station_RFID();
 		}
-		else
-		_delay_ms(10);
 	}
 	PORTD |= (1 << PORTD2); // Disable reading
 	return 15;

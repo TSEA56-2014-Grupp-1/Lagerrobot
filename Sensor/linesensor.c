@@ -8,23 +8,21 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "linesensor.h"
+#define F_CPU 20000000UL
+#include <util/delay.h>
 //#include "../shared/LCD_interface.h"
 
-// #define F_CPU 20000000UL;
-// #include <util/delay.h>
-//ska flyttas in i calibrate
-	uint8_t tape_sensor_references[11][10];
-	uint8_t floor_sensor_references[11][10];
-	uint16_t tape_average[11];
-	uint16_t floor_average[11];
-	uint16_t total_tape_average;
-	uint16_t total_floor_average;
-	
-// 	total_floor_average = 0;
-// 	total_tape_average = 0;
+//Used for calibration
+uint8_t tape_sensor_references[11][10];
+uint8_t floor_sensor_references[11][10];
+uint16_t tape_average[11];
+uint16_t floor_average[11];
+uint16_t total_tape_average;
+uint16_t total_floor_average;
 
+//Defining different datatypes	
 typedef uint8_t surface_type;
-enum {floor, tape};
+enum {Floor, tape};
 
 typedef uint8_t station_type;
 enum station_type {Left, No, Right};
@@ -35,21 +33,20 @@ enum line_type {line, interrupt, crossing};
 typedef uint8_t composite_output_type;
 enum composite_output_type {station_Left, station_No, station_Right,No_tape};
 
-//Hemmagjorda datatyper
+//Declaring variables with homemade datatypes
 composite_output_type chassi_output;
 line_type line_status = 1;
 surface_type sensor_surface_types[11] = {0,0,0,0,0,0,0,0,0,0,0};	
 station_type pickup_station = No;
 
-//Heltal
+
 uint8_t sensor_channel;
 uint8_t sensor_values[11];
 uint8_t temp_sensor_values[11];
 uint8_t line_weight = 127;
 double sensor_scale[11];
-// for (uint8_t i = 0; i <= 10 ;i++)	{
-// 	sensor_scale[i] = 1;
-// }
+
+uint8_t pickup_iterator = 0;
 
 uint8_t tape_reference = 150;
 
@@ -131,7 +128,7 @@ void update_linesensor_surfaces()	{
 		if(sensor_values[current_sensor] >= tape_reference)
 			sensor_surface_types[current_sensor] = tape;
 		else
-			sensor_surface_types[current_sensor] = floor;
+			sensor_surface_types[current_sensor] = Floor;
 		current_sensor++;
 	}
 	
@@ -156,28 +153,40 @@ void calculate_line_weight()	{
 	line_weight = temp_line_weight / tot_weight;
 	sei();
 }
-void pickup_station_detection() {
-	cli();
-	uint8_t current_sensor;
+
+uint8_t get_tape_width()	{
 	uint8_t tape_width;
-
-	tape_width =0;
+	uint8_t current_sensor;
+	tape_width = 0;
 	current_sensor = 0;
-
+	
 	while(current_sensor <=10)	{
 		tape_width = tape_width + sensor_surface_types[current_sensor];
 		current_sensor++;
 	}
-	
-	if((tape_width > 5 )&& (line_weight < 127))	{
-		pickup_station = Right;
+	return tape_width;
+}
+void pickup_station_detection() {
+	cli();	
+
+	if((get_tape_width() > 4 )&& (line_weight < 127))	{
+		if (get_tape_width() > 9)
+			pickup_station = No;
+		else if (get_tape_width() > 4 && pickup_iterator >= 50)	{
+			pickup_station = Right;
+		}
 	}
-	else if ((tape_width > 5) && (line_weight > 127))	{
-		pickup_station = Left;
+	else if ((get_tape_width() > 5) && (line_weight > 127))	{
+		if (get_tape_width() > 9)
+			pickup_station = No;
+		else if (get_tape_width() > 4 && pickup_iterator >= 50)	{
+			pickup_station = Left;
+		}
 	}
 	else
 	{
 		pickup_station = No;
+		pickup_iterator++;
 	}
 	sei();
 }
