@@ -21,7 +21,7 @@
 
 
 /*	commands (in packets)	|	cmd_id	  |	command data					*/ 
-#define CMD_ARM_MOVE			0	//		direction(1), joint(1)
+#define CMD_ARM_MOVE			0	//		direction(1), joint(2)
 #define CMD_ARM_GRIP			1	//		none
 #define CMD_ARM_RELEASE			2	//		none
 #define CMD_ARM_PREDEFINED_POS	3	//		predefine id(1)

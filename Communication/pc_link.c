@@ -40,8 +40,8 @@ uint8_t process_packet() {
 			uint8_t dir;
 			
 			if (usart_read_byte(&dir) == 1 ||
-			usart_read_byte(&joint) == 1 )
-			return 1;
+				usart_read_byte(&joint) == 1 ){
+				return 1;}
 			display(1, "Arm move!");
 			// issue arm move command on bus here
 			//display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
@@ -100,6 +100,17 @@ uint8_t process_packet() {
 		else if (command ==CMD_CHASSIS_START) {
 			// issue chassis start line following / competition on bus here
 			
+		}
+		else if (command == CMD_CHASSIS_PARAMETERS) {
+			uint8_t Kp;
+			uint8_t Kd;
+			
+			if (usart_read_byte(&Kp) == 1 ||
+				usart_read_byte(&Kd) == 1)
+				return 1;
+				
+			bus_transmit(BUS_ADDRESS_CHASSIS, 11, (uint16_t) Kp);
+			bus_transmit(BUS_ADDRESS_CHASSIS, 12, (uint16_t) Kd);
 		}
 	}
 	else if (packet_id ==PKT_CALIBRATION_COMMAND) {
