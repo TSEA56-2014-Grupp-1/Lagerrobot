@@ -256,6 +256,7 @@ uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{
 	tape_reference = (total_floor_average + total_tape_average)/2;
 	}
 	line_init();
+	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,tape_reference);
 	sei();
 	return 0;
 }
