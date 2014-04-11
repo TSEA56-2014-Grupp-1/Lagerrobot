@@ -44,6 +44,11 @@ uint16_t return_rfid_tag(uint8_t id, uint16_t metadata)
 	return tag;
 }
 
+void make_rfid_read(uint8_t id, uint16_t metadata)
+{
+	read_RFID();
+}
+
 void RFID_scanner_init()
 {
 	DDRD = 0b00000100; // Set PD2 as Output
@@ -64,16 +69,17 @@ void RFID_read_usart()
 
 void read_RFID()
 {
-	PORTD = (0 << PORTD2); // Enable reading
+	//PORTD = (0 << PORTD2); // Enable reading
 	//tag = 1;
 	uint8_t i;
-	for (i = 0; i < 50; ++i)
+	for (i = 0; i < 20; ++i)
 	{
 		RFID_read_usart();
 		if(identify_station_RFID() != 1)
 		{
 		PORTD |= (1 << PORTD2); // Disable reading
 		tag = identify_station_RFID();
+		break;
 		}
 	}
 	PORTD |= (1 << PORTD2); // Disable reading

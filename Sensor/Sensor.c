@@ -40,6 +40,7 @@ int main(void)
 	bus_register_response(5, set_tape_reference);
 	bus_register_response(2, calibrate_linesensor);
 	bus_register_response(6, return_rfid_tag);
+	bus_register_receive(15, make_rfid_read);
 	//lcd_interface_init();
 	//display(0, "Hej");
 	//calibrate_linesensor();
