@@ -32,8 +32,23 @@ float ik_calculate_x_limit(float beta)
 /**
  *	Convert float angle in radians to servo angle
  */
-uint16_t ik_rad_to_servo_angle(float rad, uint16_t ref_position) {
-	// TODO
+uint16_t ik_rad_to_servo_angle(uint8_t id, float rad) {
+	// Converts radians to servo angle
+	float common_factor = 1023.0f * 180 / (300 * M_PI);
+
+	switch (id) {
+		case 1:
+			return (uint16_t)(511.0f - rad * common_factor + 0.5f);
+		case 2:
+			return (uint16_t)(818.4f - rad * common_factor + 0.5f);
+		case 3:
+			return (uint16_t)(818.4f + rad * common_factor + 0.5f);
+		case 4:
+			return (uint16_t)(511.0f + rad * common_factor + 0.5f);
+		case 5:
+			return (uint16_t)(511.0f - rad * common_factor + 0.5f);
+	}
+
 	return 0;
 }
 
@@ -132,30 +147,4 @@ uint8_t ik_angles(coordinate coord, float x_limit, angles *joint_angles)
 
 	joint_angles->t3 = theta3;
 	return 0;
-}
-
-float rad_to_deg(float rad) {
-	return rad * 180.0 / M_PI;
-}
-
-int main(void)
-{
-	angles ang;
-	coordinate coord = {.x = 100, .y = 150};
-	coordinate coord_impossible = {.x = 160, .y = -10};
-
-	printf("Status: %d\n", ik_angles(coord, ik_calculate_x_limit(M_PI / 2), &ang));
-	printf("Rad t1: %.2f\n", rad_to_deg(ang.t1));
-	printf("Rad t2: %.2f\n", rad_to_deg(ang.t2));
-	printf("Rad t3: %.2f\n", rad_to_deg(ang.t3));
-
-	printf("\n");
-/*
-	printf("Status: %d\n", ik_coordinate_to_angles(coord, 1, &ang));
-	printf("Rad t1: %.2f\n", rad_to_deg(ang.t1));
-	printf("Rad t2: %.2f\n", rad_to_deg(ang.t2));
-
-	printf("Status: %d\n", ik_coordinate_to_angles(coord_impossible, 0, &ang));
-	printf("Rad t1: %.2f\n", rad_to_deg(ang.t1));
-	printf("Rad t2: %.2f\n", rad_to_deg(ang.t2));*/
 }
