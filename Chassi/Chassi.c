@@ -49,38 +49,38 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		chassi_switch = 1;
 		}
 
-if (!is_station(station_data) && (chassi_switch != 1))	// Continue following line
-	{
-		pd_update(curr_error);
-		steering_algorithm();
-		return;
-	}
+	if (!is_station(station_data) && (chassi_switch != 1))	// Continue following line
+		{
+			pd_update(curr_error);
+			steering_algorithm();
+			return;
+		}
+	else if (!is_station(station_data) && (chassi_switch == 1))
+		{
+			stop_wheels();
+			return;
+		}
 	
-	stop_wheels();
-	uint16_t station_tag = 14;
-	//station_tag = request_RFID_tag();
+		stop_wheels();
+		uint16_t station_tag = 14;
+		//station_tag = request_RFID_tag();
 	
-	if (station_data == 0)
-	{
-		display(0, "st. left");
-		display(1, "rfid: ui");
-	}
-	else if (station_data == 2)
-	{
-		display(0, "st. right");
-		display(1, "rfid: ui");
-	}
-	else if (chassi_switch == 1)
-	{
-		display(0, "switch is");
-		display(1, "off");
-	}
-	else
-	{
-		display(0, "unknown");
-		display(1, "error");
-	}
-	
+		if (station_data == 0)
+		{
+			display(0, "st. left");
+			display(1, "rfid: %d", station_tag);
+		}
+		else if (station_data == 2)
+		{
+			display(0, "st. right");
+			display(1, "rfid: %d", station_tag);
+		}
+		else
+		{
+			display(0, "unknown");
+			display(1, "error");
+		}
+		
 	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 }
 
@@ -168,7 +168,6 @@ int main(void)
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
 	
 	//enable startswitch (manuell / autonomus)
-	
 	
 	
     while(1)
