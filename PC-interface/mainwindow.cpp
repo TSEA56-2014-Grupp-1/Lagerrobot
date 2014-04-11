@@ -175,12 +175,16 @@ void MainWindow::on_pushButton_stop_line_clicked()
 
 void MainWindow::on_lineEdit_Kd_editingFinished()
 {
-    //Update Kd with current value
+    int Kp = ui->lineEdit_Kp->text().toInt();
+    int Kd = ui->lineEdit_Kd->text().toInt();
+    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
 }
 
 void MainWindow::on_lineEdit_Kp_editingFinished()
 {
-    //Update Kp with current value
+    int Kp = ui->lineEdit_Kp->text().toInt();
+    int Kd = ui->lineEdit_Kd->text().toInt();
+    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
 }
 
 void MainWindow::on_pushButton_close_gripper_clicked()
