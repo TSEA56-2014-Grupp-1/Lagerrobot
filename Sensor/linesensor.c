@@ -8,6 +8,7 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "linesensor.h"
+#include "../shared/bus.h"
 #define F_CPU 20000000UL
 #include <util/delay.h>
 //#include "../shared/LCD_interface.h"
