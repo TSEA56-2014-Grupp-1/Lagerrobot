@@ -50,45 +50,6 @@ void RFID_scanner_init()
 	DDRD = 0b00000100; // Set PD2 as Output
 }
 
-void station_to_LCD(uint8_t station){
-	if (station == 80)
-	{
-	display(1,"station");
-	display(0, "80");
-	}
-	else if (station == 81)
-	{
-			display(1,"station");
-			display(0, "81");
-	}
-	else if (station == 82)
-	{
-			display(1,"station");
-			display(0, "82");
-	}
-	else if (station == 83)
-	{
-			display(1,"station");
-			display(0, "83");
-	}
-	else if (station == 84)
-	{
-			display(1,"station");
-			display(0, "84");
-	}
-	else if (station == 85)
-	{
-			display(1,"station");
-			display(0, "85");
-	}
-	else 
-	{
-			display(1,"station");
-			display(0, "unkown");
-	}
-}
-
-
 void RFID_read_usart()
 {
 	uint8_t i = 0;
@@ -104,7 +65,7 @@ uint8_t read_RFID()
 {
 	PORTD = (0 << PORTD2); // Enable reading
 	uint8_t i;
-	for (i = 0; i < 70; ++i)
+	for (i = 0; i < 100; ++i)
 	{
 		RFID_read_usart();
 		if(identify_station_RFID() != 15)
@@ -134,17 +95,17 @@ uint8_t compare_RFID_arrays(uint8_t station_RFID[12], const uint8_t current_comp
 uint8_t identify_station_RFID()
 {
 	if (compare_RFID_arrays(station_RFID, RFID_B80))
-	return 0;
+	return 80;
 	else if (compare_RFID_arrays(station_RFID, RFID_B81))
-	return 1;
+	return 81;
 	else if (compare_RFID_arrays(station_RFID, RFID_B82))
-	return 2;
+	return 82;
 	else if (compare_RFID_arrays(station_RFID, RFID_B83))
-	return 3;
+	return 83;
 	else if (compare_RFID_arrays(station_RFID, RFID_B84))
-	return 4;
+	return 84;
 	else if (compare_RFID_arrays(station_RFID, RFID_B85))
-	return 5;
+	return 85;
 	else
-	return 15;
+	return 1;
 };
