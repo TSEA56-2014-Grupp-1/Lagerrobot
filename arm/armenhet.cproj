@@ -152,6 +152,12 @@
     <Compile Include="arm.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="inverse_kinematics.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="inverse_kinematics.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="servo.c">
       <SubType>compile</SubType>
     </Compile>
