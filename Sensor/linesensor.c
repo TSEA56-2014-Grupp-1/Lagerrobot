@@ -9,6 +9,7 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
+#include "../RFID_scanner/RFID_scanner.h"
 #define F_CPU 20000000UL
 #include <util/delay.h>
 //#include "../shared/LCD_interface.h"
@@ -78,12 +79,16 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
 //Formats the output to accomodate the chassi and transmits it on the bus
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 	chassi_output = 1;
-	if(pickup_station == Left)
-		PORTD = PORTD & (0 << PORTD2);
+	if(pickup_station == Left)	{
+		chassi_output = station_Left;
+		read_RFID();
+	}
 	else if(pickup_station == No)
 		chassi_output = station_No;
-	else if(pickup_station == Right) 
-		PORTD = PORTD & (0 << PORTD2);
+	else if(pickup_station == Right)	{
+		chassi_output = station_Right;
+		read_RFID();
+	}
 	//if(not_on_tape())
 		//chassi_output = No_tape;
 	return (((uint16_t)(chassi_output) << 8) | line_weight);

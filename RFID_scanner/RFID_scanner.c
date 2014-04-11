@@ -15,12 +15,11 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 
-uint8_t check_error = 0;
 uint8_t station_RFID[12];
-uint8_t carrying_RFID[12];
-uint8_t tag = 15;
+//uint8_t carrying_RFID[12];
+uint16_t tag = 0;
 
-
+//-----RFID_tags-----
 const uint8_t  RFID_B80[] = {
 	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44, 0x42, 0x39, 0x31, 0x36, 0x41, 0x0D
 };
@@ -42,7 +41,7 @@ const uint8_t RFID_B85[] = {
 
 uint16_t return_rfid_tag(uint8_t id, uint16_t metadata)
 {
-	return (uint16_t) read_RFID();
+	return tag;
 }
 
 void RFID_scanner_init()
@@ -54,6 +53,7 @@ void RFID_scanner_init()
 void RFID_read_usart()
 {
 	uint8_t i = 0;
+	uint8_t check_error = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
 		check_error = usart_read_byte(&station_RFID[i]);
@@ -62,9 +62,10 @@ void RFID_read_usart()
 	}
 }
 
-uint8_t read_RFID()
+void read_RFID()
 {
 	PORTD = (0 << PORTD2); // Enable reading
+	//tag = 1;
 	uint8_t i;
 	for (i = 0; i < 50; ++i)
 	{
@@ -72,11 +73,10 @@ uint8_t read_RFID()
 		if(identify_station_RFID() != 1)
 		{
 		PORTD |= (1 << PORTD2); // Disable reading
-		return identify_station_RFID();
+		tag = identify_station_RFID();
 		}
 	}
 	PORTD |= (1 << PORTD2); // Disable reading
-	return 1;
 }
 
 
