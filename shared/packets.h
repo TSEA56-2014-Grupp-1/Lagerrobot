@@ -19,6 +19,7 @@
 #define PKT_SPOOFED_TRANSMIT	14	//		bus transmit packets(1-4) (address, id, metadata_h, metadata_l)
 #define PKT_CALIBRATION_DATA    15  //      calibration value (1)
 
+
 /*	commands (in packets)	|	cmd_id	  |	command data					*/ 
 #define CMD_ARM_MOVE			0	//		direction(1), joint(1)
 #define CMD_ARM_GRIP			1	//		none
