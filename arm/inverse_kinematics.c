@@ -7,9 +7,17 @@
 
 coordinate ik_calculate_coordinate(float theta1, float theta2, float theta3)
 {
-	coordinate temp;
-	temp.x = ARM_LENGTH_LINK_1 * cos(theta1) + ARM_LENGTH_LINK_2 * cos(theta2) + ARM_LENGTH_LINK_3 * cos(theta3);
-	temp.y = ARM_LENGTH_LINK_1 * sin(theta1) + ARM_LENGTH_LINK_2 * sin(theta2) + ARM_LENGTH_LINK_3 * sin(theta3);
+	coordinate temp = {.x = 0, .y = 0};
+
+	temp.x += ARM_LENGTH_LINK_1 * cos(theta1);
+	temp.y += ARM_LENGTH_LINK_1 * sin(theta1);
+
+	temp.x += ARM_LENGTH_LINK_2 * cos(theta1 + theta2);
+	temp.y += ARM_LENGTH_LINK_2 * sin(theta1 + theta2);
+
+	temp.x += ARM_LENGTH_LINK_3 * cos(theta1 + theta2 + theta3);
+	temp.y += ARM_LENGTH_LINK_3 * sin(theta1 + theta2 + theta3);
+
 	return temp;
 }
 
@@ -32,7 +40,7 @@ uint16_t ik_rad_to_servo_angle(float rad, uint16_t ref_position) {
 coordinate ik_find_p(coordinate coord, float x_limit)
 {
 	// Limit wrist start coordinate when close to robot body
-	if ((coord.x - ARM_LENGTH_LINK_3) < x_limit || coord.y <= ARM_Y_LIMIT)
+	if (coord.x - ARM_LENGTH_LINK_3 < x_limit && coord.y <= ARM_Y_LIMIT)
 	{
 		return (coordinate){
 			.x = x_limit,
@@ -91,13 +99,14 @@ uint8_t ik_angles_p(coordinate coord, angles *joint_angles) {
 
 	joint_angles->t1 = atan2f(sin_theta1, cos_theta1);
 	joint_angles->t2 = atan2f(sin_theta2, cos_theta2);
-		
+
 	return 0;
 }
 
-uint8_t ik_angles(coordinate coord,float x_limit, angles *joint_angles)
+uint8_t ik_angles(coordinate coord, float x_limit, angles *joint_angles)
 {
-	coordinate p = find_p(coord, x_limit);
+	coordinate p = ik_find_p(coord, x_limit);
+
 	if (ik_angles_p(p, joint_angles) != 0) {
 		return 1;
 	}
@@ -109,14 +118,14 @@ uint8_t ik_angles(coordinate coord,float x_limit, angles *joint_angles)
 
 	coordinate u = vector_between(j, p);
 	coordinate v = vector_between(p, coord);
-	
+
 	float theta3 = acos(dot_product(u, v) / (vector_length(u) * vector_length(v)));
 	coordinate option1 = ik_calculate_coordinate(joint_angles->t1, joint_angles->t2, theta3);
 	coordinate option2 = ik_calculate_coordinate(joint_angles->t1, joint_angles->t2, -theta3);
-	
+
 	float option1_length = vector_length(vector_between(coord, option1));
 	float option2_length = vector_length(vector_between(coord, option2));
-	
+
 	if (option1_length > option2_length) {
 		theta3 *= -1;
 	}
@@ -129,24 +138,24 @@ float rad_to_deg(float rad) {
 	return rad * 180.0 / M_PI;
 }
 
-/*int main(void)
+int main(void)
 {
 	angles ang;
-	coordinate coord = {.x = 100, .y = 100};
+	coordinate coord = {.x = 100, .y = 150};
 	coordinate coord_impossible = {.x = 160, .y = -10};
 
-	printf("Status: %d\n", ik_coordinate_to_angles(coord, 0, &ang));
+	printf("Status: %d\n", ik_angles(coord, ik_calculate_x_limit(M_PI / 2), &ang));
 	printf("Rad t1: %.2f\n", rad_to_deg(ang.t1));
 	printf("Rad t2: %.2f\n", rad_to_deg(ang.t2));
+	printf("Rad t3: %.2f\n", rad_to_deg(ang.t3));
 
 	printf("\n");
-
+/*
 	printf("Status: %d\n", ik_coordinate_to_angles(coord, 1, &ang));
 	printf("Rad t1: %.2f\n", rad_to_deg(ang.t1));
 	printf("Rad t2: %.2f\n", rad_to_deg(ang.t2));
 
 	printf("Status: %d\n", ik_coordinate_to_angles(coord_impossible, 0, &ang));
 	printf("Rad t1: %.2f\n", rad_to_deg(ang.t1));
-	printf("Rad t2: %.2f\n", rad_to_deg(ang.t2));
+	printf("Rad t2: %.2f\n", rad_to_deg(ang.t2));*/
 }
-*/

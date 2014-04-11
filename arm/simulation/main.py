@@ -53,11 +53,17 @@ def on_draw():
         "anchor_x" : "left",
         "anchor_y" : "top"
     }
+
+    x, y = ik.chain_add(*chain)
+    pyglet.text.Label(
+        "Position: {x}x{y}".format(x=x, y=y),
+        y=window.height - 10 , **kwargs).draw()
+
     for i, (length, angle) in enumerate(chain):
         pyglet.text.Label(
             "Joint {id}: {deg} deg, {len} px".format(
                 id=i + 1, deg=ik.rad_to_deg(angle), len=length),
-            y=window.height - 10 - i * 20, **kwargs).draw()
+            y=window.height - 30 - i * 20, **kwargs).draw()
 
     draw_line(
         (window.width // 2 - 50, 0),

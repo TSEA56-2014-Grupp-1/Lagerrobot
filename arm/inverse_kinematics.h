@@ -12,8 +12,8 @@
 #define ARM_LENGTH_LINK_1 100 // 18
 #define ARM_LENGTH_LINK_2 100 // 17
 #define ARM_LENGTH_LINK_3 50 // 8
-#define ARM_Y_LIMIT -10
-#define SHORTEST_X_DISTANCE_FROM_ORIGO 12	 //måste mätas mer noga
+#define ARM_Y_LIMIT 0
+#define SHORTEST_X_DISTANCE_FROM_ORIGO 60	 //måste mätas mer noga
 
 typedef struct {
 	float x;
@@ -26,8 +26,8 @@ typedef struct {
 	float t3;
 } angles;
 
-coordinate calculate_coordinate(float theta1, float theta2, float theta3);
-coordinate find_p(coordinate coord, float x_limit);
+coordinate ik_calculate_coordinate(float theta1, float theta2, float theta3);
+coordinate ik_find_p(coordinate coord, float x_limit);
 float ik_calculate_x_limit(float beta);
 
 float dot_product(coordinate a, coordinate b);
