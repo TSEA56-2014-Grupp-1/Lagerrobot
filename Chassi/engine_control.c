@@ -6,6 +6,21 @@
  */ 
 
 #include "engine_control.h"
+#include "../shared/LCD_interface.h"
+
+
+void engine_set_kp(uint8_t id, uint16_t kp_data)
+{
+	proportional_gain = kp_data;
+	display(0, "kp %d", proportional_gain);
+}
+
+void engine_set_kd(uint8_t id, uint16_t kd_data)
+{
+	derivative_gain = kd_data;
+	display(1, "kd %d", derivative_gain);
+}
+
 
 void engine_init()
 {

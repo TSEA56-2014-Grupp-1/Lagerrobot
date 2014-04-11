@@ -27,10 +27,11 @@ int prev_error;
 int16_t proportional_gain;
 int16_t derivative_gain;
 int16_t control;
-//double curr_error;
 uint16_t speed_left;
 uint16_t speed_right;
 
+void engine_set_kp(uint8_t id, uint16_t kp_data);
+void engine_set_kd(uint8_t id, uint16_t kd_data);
 void engine_init();
 void engine_control_command(uint8_t checkout_id, uint16_t command_data);
 

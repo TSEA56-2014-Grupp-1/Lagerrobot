@@ -123,7 +123,6 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	carrying_rfid = rfid_station; // Will be set to 0 later if no object found in ISR(interrupt_arm)
 	
 	TIMSK0 &= (0b11111101); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
-	reti();
 }
 
 
@@ -151,6 +150,9 @@ int main(void)
 	regulator_init();
 	lcd_interface_init();
 	bus_register_receive(8, engine_control_command);
+	bus_register_receive(11, engine_set_kp);
+	bus_register_receive(12, engine_set_kd);
+	
 
 	//enable timer interrupts for ocie0a
 	//sei();
