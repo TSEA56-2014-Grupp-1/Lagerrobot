@@ -112,6 +112,9 @@ void init(){
 	clear_message(ARM);
 }
 
+void forward_calibration_data(uint8_t id, uint16_t metadata)	{
+	send_packet(PKT_CALIBRATION_DATA,2,id-10,(uint8_t)metadata);
+} 
 
 int main(void)
 {
@@ -121,6 +124,8 @@ int main(void)
 	bus_init(0b0000101);
 	
 	bus_register_receive(2, symbols_are_ready);
+	bus_register_receive(10,forward_calibration_data);
+	bus_register_receive(11,forward_calibration_data);
 	
 	display(0, "Ouroborobot");
 	display(1, "Startup.");
