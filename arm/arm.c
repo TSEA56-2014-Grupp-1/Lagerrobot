@@ -12,8 +12,11 @@
 #include <avr/io.h>
 #include "arm.h"
 #include "servo.h"
+#include "inverse_kinematics.h"
 #include "../shared/LCD_interface.h"
 #include "../shared/bus.h"
+
+#include <math.h>
 
 #include <inttypes.h>
 #include <avr/interrupt.h>
@@ -222,17 +225,14 @@ void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 		arm_move_joint(joint, int_data);
 		_delay_ms(30);
 	}
-
 }
 
 int main(void) {
-
-	//uint16_t i, j;
-
 	servo_init();
 	arm_init();
 	bus_init(0b0000110);
 	lcd_interface_init();
+
 	bus_register_receive(2, arm_movement_command);
 	bus_register_receive(3, arm_stop_movement);
 
@@ -240,9 +240,19 @@ int main(void) {
 //   	servo_action(0xfe);
 //	_delay_ms(2000);
 
+	coordinate target = {.x = 300.0f, .y = 200.0f};
+	angles joint_angles;
+
+	ik_angles(target, ik_calculate_x_limit(M_PI / 2), &joint_angles);
+
+	arm_move_joint_add(2, ik_rad_to_servo_angle(2, joint_angles.t1));
+	arm_move_joint_add(3, ik_rad_to_servo_angle(3, joint_angles.t2));
+	arm_move_joint_add(4, ik_rad_to_servo_angle(4, joint_angles.t3));
+
+	servo_action(SERVO_BROADCASTING_ID);
+
 	uint8_t i;
 	for (i = 0;; i++) {
-// 		
 // 		_delay_ms(1000);
 // 		arm_movement_command(0, ((uint16_t)1 | ((uint16_t)i%2 << 8)));
 // 		arm_movement_command(0, ((uint16_t)5 | ((uint16_t)i%2 << 8)));
