@@ -50,6 +50,9 @@ void bluetooth::process_packet()
     case PKT_RFID_DATA:
 
         break;
+    case PKT_CALIBRATION_DATA:
+        window->print_on_log(QString("Calibration, new tape reference: ").append(QString::number(parameters[1])));
+        break;
     case PKT_SPOOFED_RESPONSE:
         window->print_on_log(QString::number(parameters[0], 16).append(QString::number(parameters[1], 16)));
         break;
