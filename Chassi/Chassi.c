@@ -28,12 +28,16 @@ uint16_t request_RFID_tag()
 	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag); 
 	return tag;
 }
-/*
-void make_rfid_read()
+
+void disable_rfid_read()
 {
 	bus_transmit(BUS_ADDRESS_SENSOR,15,0);
 }
-*/
+
+void enable_rfid_read()
+{
+	bus_transmit(BUS_ADDRESS_SENSOR, 16, 0);
+}
 
 uint8_t is_station(uint8_t station_data)
 {
@@ -68,10 +72,12 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		}
 	
 		stop_wheels();
-		//make_rfid_read();
 		uint8_t station_tag = 14;
 		station_tag = (uint8_t)request_RFID_tag();
-	
+		if (station_tag == 1)
+			station_tag = (uint8_t)request_RFID_tag();
+		disable_rfid_read();
+
 		if (station_data == 0)
 		{
 			display(0, "st. left");
@@ -159,6 +165,7 @@ int main(void)
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
+	enable_rfid_read();
 	
 
 	//enable timer interrupts for ocie0a
