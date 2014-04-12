@@ -28,12 +28,12 @@ uint16_t request_RFID_tag()
 	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag); 
 	return tag;
 }
-
+/*
 void make_rfid_read()
 {
 	bus_transmit(BUS_ADDRESS_SENSOR,15,0);
 }
-
+*/
 
 uint8_t is_station(uint8_t station_data)
 {
@@ -68,7 +68,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		}
 	
 		stop_wheels();
-		make_rfid_read();
+		//make_rfid_read();
 		uint8_t station_tag = 14;
 		station_tag = (uint8_t)request_RFID_tag();
 	
