@@ -56,26 +56,31 @@ void RFID_scanner_init()
 void RFID_read_usart()
 {
 	uint8_t i = 0;
-	uint8_t check_error = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		check_error = usart_read_byte(&station_RFID[i]);
-		if (check_error == 1)
-		break;
+		usart_read_byte(&station_RFID[i]);
 	}
 }
 
 uint16_t read_RFID(uint8_t id, uint16_t metadata)
-{
+{	
+	return 0;
+	/*uint8_t i;
+	for(i = 0; i < 10; ++i)
+	{
 	RFID_read_usart();
+	if(station_RFID[0] == 0x0A)
 	return (uint16_t)identify_station_RFID();
+	}
+	return 2;
+	*/
 }
 
 
-uint8_t compare_RFID_arrays(uint8_t station_RFID[12], const uint8_t current_compare_RFID[12])
+uint8_t compare_RFID_arrays(const uint8_t current_compare_RFID[12])
 {
 	uint8_t i;
-	for (i = 1; i <= 11; ++i)
+	for (i = 7; i <= 10; ++i)
 	{
 		if(station_RFID[i] != current_compare_RFID[i])
 		{
@@ -87,19 +92,17 @@ uint8_t compare_RFID_arrays(uint8_t station_RFID[12], const uint8_t current_comp
 
 uint8_t identify_station_RFID()
 {
-	//if (sizeof(station_RFID) != sizeof(RFID_B80))
-	//return 3;
-	if (compare_RFID_arrays(station_RFID, RFID_B80))
+	if (compare_RFID_arrays(RFID_B80))
 	return 80;
-	else if (compare_RFID_arrays(station_RFID, RFID_B81))
+	else if (compare_RFID_arrays(RFID_B81))
 	return 81;
-	else if (compare_RFID_arrays(station_RFID, RFID_B82))
+	else if (compare_RFID_arrays(RFID_B82))
 	return 82;
-	else if (compare_RFID_arrays(station_RFID, RFID_B83))
+	else if (compare_RFID_arrays(RFID_B83))
 	return 83;
-	else if (compare_RFID_arrays(station_RFID, RFID_B84))
+	else if (compare_RFID_arrays(RFID_B84))
 	return 84;
-	else if (compare_RFID_arrays(station_RFID, RFID_B85))
+	else if (compare_RFID_arrays(RFID_B85))
 	return 85;
 	else
 	return 1;
