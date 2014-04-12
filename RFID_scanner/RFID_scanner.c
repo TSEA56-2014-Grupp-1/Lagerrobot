@@ -16,8 +16,6 @@
 #include "../shared/LCD_interface.h"
 
 uint8_t station_RFID[12];
-//uint8_t carrying_RFID[12];
-uint8_t tag = 0;
 
 //-----RFID_tags-----
 const uint8_t  RFID_B80[] = {
@@ -39,20 +37,20 @@ const uint8_t RFID_B85[] = {
 	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44 ,0x33, 0x44, 0x42, 0x42, 0x38, 0x0D
 };
 
-uint16_t return_rfid_tag(uint8_t id, uint16_t metadata)
+void RFID_disable_reading(uint8_t id, uint16_t metadata)
 {
-	return (uint16_t)tag;
+	PORTD |= (1 << PORTD2); // Disable reading
 }
 
-void make_rfid_read(uint8_t id, uint16_t metadata)
+void RFID_enable_reading(uint8_t id, uint16_t metadata)
 {
-	read_RFID();
+	PORTD = PORTD & (0 << PORTD2); // Enable reading
 }
 
 void RFID_scanner_init()
 {
 	DDRD = 0b00000100; // Set PD2 as Output
-	//PORTD |= (1 << PORTD2); // Disable reading
+	PORTD |= (1 << PORTD2); // Disable reading
 }
 
 void RFID_read_usart()
@@ -67,22 +65,10 @@ void RFID_read_usart()
 	}
 }
 
-void read_RFID()
+uint16_t read_RFID(uint8_t id, uint16_t metadata)
 {
-	//PORTD = (0 << PORTD2); // Enable reading
-	//tag = 1;
-	uint8_t i;
-	for (i = 0; i < 20; ++i)
-	{
-		RFID_read_usart();
-		if(identify_station_RFID() != 1)
-		{
-		//PORTD |= (1 << PORTD2); // Disable reading
-		tag = identify_station_RFID();
-		break;
-		}
-	}
-	//PORTD |= (1 << PORTD2); // Disable reading
+	RFID_read_usart();
+	return (uint16_t)identify_station_RFID();
 }
 
 
@@ -101,6 +87,8 @@ uint8_t compare_RFID_arrays(uint8_t station_RFID[12], const uint8_t current_comp
 
 uint8_t identify_station_RFID()
 {
+	//if (sizeof(station_RFID) != sizeof(RFID_B80))
+	//return 3;
 	if (compare_RFID_arrays(station_RFID, RFID_B80))
 	return 80;
 	else if (compare_RFID_arrays(station_RFID, RFID_B81))

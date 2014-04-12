@@ -11,11 +11,11 @@
 
 //----Functions---
 void RFID_scanner_init();
-void read_RFID();
+uint16_t read_RFID(uint8_t id, uint16_t metadata);
 void RFID_read_usart();
 uint8_t compare_RFID_arrays(uint8_t station_RFID[11], const uint8_t current_compare_RFID[11]);
 uint8_t identify_station_RFID();
-uint16_t return_rfid_tag(uint8_t id, uint16_t metadata);
-void make_rfid_read(uint8_t id, uint16_t metadata);
+void RFID_disable_reading(uint8_t id, uint16_t metadata);
+void RFID_enable_reading(uint8_t id, uint16_t metadata);
 
 #endif /* RFID-SCANNER_H_ */
