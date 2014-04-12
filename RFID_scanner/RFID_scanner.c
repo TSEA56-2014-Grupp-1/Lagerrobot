@@ -17,7 +17,7 @@
 
 uint8_t station_RFID[12];
 //uint8_t carrying_RFID[12];
-uint16_t tag = 0;
+uint8_t tag = 0;
 
 //-----RFID_tags-----
 const uint8_t  RFID_B80[] = {
@@ -41,7 +41,7 @@ const uint8_t RFID_B85[] = {
 
 uint16_t return_rfid_tag(uint8_t id, uint16_t metadata)
 {
-	return tag;
+	return (uint16_t)tag;
 }
 
 void make_rfid_read(uint8_t id, uint16_t metadata)
@@ -77,12 +77,12 @@ void read_RFID()
 		RFID_read_usart();
 		if(identify_station_RFID() != 1)
 		{
-		PORTD |= (1 << PORTD2); // Disable reading
+		//PORTD |= (1 << PORTD2); // Disable reading
 		tag = identify_station_RFID();
 		break;
 		}
 	}
-	PORTD |= (1 << PORTD2); // Disable reading
+	//PORTD |= (1 << PORTD2); // Disable reading
 }
 
 
