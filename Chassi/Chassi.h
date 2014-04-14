@@ -28,8 +28,8 @@ uint64_t Time_since_start = 0;
 uint16_t request_line_data(); // send command to Sensor
 uint8_t is_station(uint8_t);
 /*
-void disable_rfid_read();
-void enable_rfid_read();
+void disable_rfid_reader();
+void enable_rfid_reader();
 
 void follow_line(uint8_t line_data)
 void stop_wheels()
