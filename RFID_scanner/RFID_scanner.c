@@ -13,7 +13,7 @@
 #include "../RFID_scanner/RFID_scanner.h"
 #include "../shared/usart.h"
 #include "../shared/bus.h"
-#include "../shared/LCD_interface.h"
+//#include "../shared/LCD_interface.h"
 
 uint8_t station_RFID[12];
 
@@ -36,7 +36,7 @@ const uint8_t RFID_B84[] = {
 const uint8_t RFID_B85[] = {
 	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44 ,0x33, 0x44, 0x42, 0x42, 0x38, 0x0D
 };
-
+/*
 void RFID_disable_reading(uint8_t id, uint16_t metadata)
 {
 	PORTD |= (1 << PORTD2); // Disable reading
@@ -46,33 +46,38 @@ void RFID_enable_reading(uint8_t id, uint16_t metadata)
 {
 	PORTD = PORTD & (0 << PORTD2); // Enable reading
 }
-
+*/
 void RFID_scanner_init()
 {
 	DDRD = 0b00000100; // Set PD2 as Output
-	PORTD |= (1 << PORTD2); // Disable reading
+	PORTD = PORTD & (0 << PORTD2); // Disable reading
 }
 
-void RFID_read_usart()
+uint8_t RFID_read_usart()
 {
 	uint8_t i = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		usart_read_byte(&station_RFID[i]);
+		if (usart_read_byte(&station_RFID[i]) == 1)
+			return 1;
 	}
+	return 0;
 }
 
 uint16_t read_RFID(uint8_t id, uint16_t metadata)
 {	
+
 	ADCSRA = ADCSRA & (0 << ADEN); // Disable ADC
-	uint8_t i;
-	for(i = 0; i <= 10; ++i)
+	
+	for(uint8_t i = 0; i <= 10; ++i)
 	{
-	RFID_read_usart();
-	if(station_RFID[0] == 0x0A)
-	PORTD |= (1 << PORTD2); // Disable rfid reading
-	ADCSRA |= (1 << ADEN); // Enable ADC
-	return (uint16_t)identify_station_RFID();
+		RFID_read_usart();
+		if(station_RFID[0] == 0x0A) 
+		{
+			PORTD |= (1 << PORTD2); // Disable rfid reading
+			ADCSRA |= (1 << ADEN); // Enable ADC
+			return (uint16_t)identify_station_RFID();
+		}
 	}
 	PORTD |= (1 << PORTD2); // Disable rfid reading
 	ADCSRA |= (1 << ADEN); // Enable ADC
@@ -86,9 +91,7 @@ uint8_t compare_RFID_arrays(const uint8_t current_compare_RFID[12])
 	for (i = 7; i <= 10; ++i)
 	{
 		if(station_RFID[i] != current_compare_RFID[i])
-		{
 			return 0;
-		}
 	}
 	return 1;
 }

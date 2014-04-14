@@ -10,7 +10,7 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
-#include "../shared/LCD_interface.h"
+//#include "../shared/LCD_interface.h"
 #include "../RFID_scanner/RFID_scanner.h"
 #include "../shared/usart.h"
 
@@ -40,9 +40,9 @@ int main(void)
 	bus_register_response(5, set_tape_reference);
 	bus_register_response(2, calibrate_linesensor);
 	bus_register_response(6, read_RFID);
-	bus_register_receive(15, RFID_disable_reading);
-	bus_register_receive(16, RFID_enable_reading);
-	lcd_interface_init();
+	//bus_register_receive(15, RFID_disable_reading);
+	//bus_register_receive(16, RFID_enable_reading);
+	//lcd_interface_init();
 	//display(0, "Hej");
 	//calibrate_linesensor();
 	line_init();
