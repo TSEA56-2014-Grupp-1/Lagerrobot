@@ -64,16 +64,19 @@ void RFID_read_usart()
 
 uint16_t read_RFID(uint8_t id, uint16_t metadata)
 {	
-	return 0;
-	/*uint8_t i;
-	for(i = 0; i < 10; ++i)
+	ADCSRA = ADCSRA & (0 << ADEN); // Disable ADC
+	uint8_t i;
+	for(i = 0; i <= 10; ++i)
 	{
 	RFID_read_usart();
 	if(station_RFID[0] == 0x0A)
+	PORTD |= (1 << PORTD2); // Disable rfid reading
+	ADCSRA |= (1 << ADEN); // Enable ADC
 	return (uint16_t)identify_station_RFID();
 	}
+	PORTD |= (1 << PORTD2); // Disable rfid reading
+	ADCSRA |= (1 << ADEN); // Enable ADC
 	return 2;
-	*/
 }
 
 
