@@ -36,7 +36,7 @@ const uint8_t RFID_B84[] = {
 const uint8_t RFID_B85[] = {
 	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44 ,0x33, 0x44, 0x42, 0x42, 0x38, 0x0D
 };
-/*
+
 void RFID_disable_reading(uint8_t id, uint16_t metadata)
 {
 	PORTD |= (1 << PORTD2); // Disable reading
@@ -46,7 +46,7 @@ void RFID_enable_reading(uint8_t id, uint16_t metadata)
 {
 	PORTD = PORTD & (0 << PORTD2); // Enable reading
 }
-*/
+
 void RFID_scanner_init()
 {
 	DDRD = 0b00000100; // Set PD2 as Output
@@ -66,22 +66,19 @@ uint8_t RFID_read_usart()
 
 uint16_t read_RFID(uint8_t id, uint16_t metadata)
 {	
-
 	ADCSRA = ADCSRA & (0 << ADEN); // Disable ADC
-	
 	for(uint8_t i = 0; i <= 10; ++i)
 	{
-		RFID_read_usart();
 		if(station_RFID[0] == 0x0A) 
 		{
 			PORTD |= (1 << PORTD2); // Disable rfid reading
 			ADCSRA |= (1 << ADEN); // Enable ADC
-			return (uint16_t)identify_station_RFID();
+			return identify_station_RFID();
 		}
 	}
 	PORTD |= (1 << PORTD2); // Disable rfid reading
 	ADCSRA |= (1 << ADEN); // Enable ADC
-	return 2;
+	return 0;
 }
 
 
