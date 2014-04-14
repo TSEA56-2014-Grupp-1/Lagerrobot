@@ -175,16 +175,16 @@ void MainWindow::on_pushButton_stop_line_clicked()
 
 void MainWindow::on_lineEdit_Kd_editingFinished()
 {
-    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
-    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
-    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
+//    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
+//    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
+//    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
 }
 
 void MainWindow::on_lineEdit_Kp_editingFinished()
 {
-    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
-    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
-    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
+//    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
+//    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
+//    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
 }
 
 void MainWindow::on_pushButton_close_gripper_clicked()
@@ -448,4 +448,13 @@ void MainWindow::on_actionDisconnect_triggered()
     port->disconnect();
     ui->actionDisconnect->setEnabled(false);
     delete port;
+}
+
+void MainWindow::on_pushButton_send_param_clicked()
+{
+    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
+    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
+    port->send_packet(PKT_CHASSIS_COMMAND , 3,CMD_CHASSIS_PARAMETERS, Kp, Kd);
+    print_on_log(QString::number(PKT_CHASSIS_COMMAND));
+    print_on_log(QString::number(CMD_CHASSIS_PARAMETERS));
 }

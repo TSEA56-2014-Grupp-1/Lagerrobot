@@ -19,20 +19,79 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>369</width>
-      <height>271</height>
+      <width>438</width>
+      <height>277</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_chassi">
-     <item row="5" column="1">
-      <widget class="QPushButton" name="pushButton_calibrate_tape">
+     <item row="1" column="3">
+      <widget class="QPushButton" name="pushButton_right">
        <property name="text">
-        <string>Kalibrera tejp</string>
+        <string>Höger</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
-      <widget class="QLineEdit" name="lineEdit_Kd"/>
+     <item row="7" column="3">
+      <widget class="QLineEdit" name="lineEdit_Kp"/>
+     </item>
+     <item row="7" column="2">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Kp-&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" colspan="3">
+      <widget class="QPushButton" name="pushButton_stop_line">
+       <property name="text">
+        <string>Stoppa linjeföljning</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="3">
+      <widget class="QPushButton" name="pushButton_start_line">
+       <property name="text">
+        <string>Start linjeföljning</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="pushButton_forward">
+       <property name="text">
+        <string>Fram</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pushButton_back">
+       <property name="text">
+        <string>Bak</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="pushButton_left">
+       <property name="text">
+        <string>Vänster</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QPushButton" name="pushButton_calibrate_floor">
+       <property name="text">
+        <string>Kalibrera golv</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Kd-&gt;</string>
+       </property>
+      </widget>
      </item>
      <item row="5" column="0">
       <spacer name="horizontalSpacer">
@@ -47,74 +106,22 @@
        </property>
       </spacer>
      </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="label_3">
+     <item row="7" column="1">
+      <widget class="QLineEdit" name="lineEdit_Kd"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="pushButton_calibrate_tape">
        <property name="text">
-        <string>Kd-&gt;</string>
+        <string>Kalibrera tejp</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="3">
-      <widget class="QPushButton" name="pushButton_calibrate_floor">
+     <item row="8" column="2">
+      <widget class="QPushButton" name="pushButton_send_param">
        <property name="text">
-        <string>Kalibrera golv</string>
+        <string>Send Kp and Kd</string>
        </property>
       </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QPushButton" name="pushButton_left">
-       <property name="text">
-        <string>Vänster</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pushButton_back">
-       <property name="text">
-        <string>Bak</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QPushButton" name="pushButton_right">
-       <property name="text">
-        <string>Höger</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="pushButton_forward">
-       <property name="text">
-        <string>Fram</string>
-       </property>
-       <property name="autoDefault">
-        <bool>false</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1" colspan="3">
-      <widget class="QPushButton" name="pushButton_start_line">
-       <property name="text">
-        <string>Start linjeföljning</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1" colspan="3">
-      <widget class="QPushButton" name="pushButton_stop_line">
-       <property name="text">
-        <string>Stoppa linjeföljning</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2">
-      <widget class="QLabel" name="label_2">
-       <property name="text">
-        <string>Kp-&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="3">
-      <widget class="QLineEdit" name="lineEdit_Kp"/>
      </item>
     </layout>
    </widget>

@@ -116,6 +116,8 @@ private slots:
 
     void on_actionDisconnect_triggered();
 
+    void on_pushButton_send_param_clicked();
+
 private:
     Ui::MainWindow *ui;
 
