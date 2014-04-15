@@ -98,6 +98,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		stop_wheels();
 		return;
 	}
+	
 	stop_wheels();
 	
 	uint8_t station_tag = 0;

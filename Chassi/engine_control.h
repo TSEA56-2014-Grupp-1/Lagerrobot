@@ -23,7 +23,7 @@
 #define STEERING_SPIN_SPEED 500
 
 uint16_t line_weight;
-int prev_error;
+uint8_t prev_error;
 int16_t proportional_gain;
 int16_t derivative_gain;
 int16_t control;

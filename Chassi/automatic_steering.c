@@ -73,10 +73,10 @@ void pd_update(int8_t curr_error)
 	double diff;
 	int16_t p_term;
 	double d_term;
-	double dt = 0.0167;
+	//double dt = 0.0167;
 	
 	// differentiation
-	diff = ((curr_error - prev_error) / dt);
+	diff = (curr_error - prev_error);
 	
 	// scaling
 	p_term = (proportional_gain * curr_error);
