@@ -46,6 +46,7 @@ uint8_t sensor_channel;
 uint8_t sensor_values[11];
 uint8_t temp_sensor_values[11];
 uint8_t line_weight = 127;
+uint8_t ad_value = 0;
 double sensor_scale[11];
 
 uint8_t pickup_iterator = 0;
@@ -258,8 +259,8 @@ uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{
 	tape_reference = (total_floor_average + total_tape_average)/2;
 	}
 	line_init();
-	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,tape_reference);
 	sei();
+	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,tape_reference);
 	return 0;
 }
 
