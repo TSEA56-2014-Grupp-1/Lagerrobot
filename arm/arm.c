@@ -240,7 +240,7 @@ int main(void) {
 //   	servo_action(0xfe);
 //	_delay_ms(2000);
 
-	coordinate target = {.x = 300.0f, .y = 200.0f};
+	coordinate target = {.x = 360.0f, .y = 0.0f};
 	angles joint_angles;
 
 	ik_angles(target, ik_calculate_x_limit(M_PI / 2), &joint_angles);

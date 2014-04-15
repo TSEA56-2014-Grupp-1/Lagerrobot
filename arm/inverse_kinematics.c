@@ -112,7 +112,7 @@ uint8_t ik_angles_p(coordinate coord, angles *joint_angles) {
 	sin_theta1 -= ARM_LENGTH_LINK_2 * sin_theta2 * coord.x;
 	sin_theta1 /= det_cmatrix;
 
-	joint_angles->t1 = atan2f(sin_theta1, cos_theta1);
+	joint_angles->t1 = atan2f(sin_theta1, cos_theta1) + ARM_ADJUSTMENT_OF_ANGLE;
 	joint_angles->t2 = atan2f(sin_theta2, cos_theta2);
 
 	return 0;

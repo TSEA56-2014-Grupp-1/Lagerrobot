@@ -14,7 +14,8 @@
 #define ARM_LENGTH_LINK_2 149L
 #define ARM_LENGTH_LINK_3 152L
 #define ARM_Y_LIMIT 0L
-#define SHORTEST_X_DISTANCE_FROM_ORIGO 150L
+#define SHORTEST_X_DISTANCE_FROM_ORIGO 140L
+#define ARM_ADJUSTMENT_OF_ANGLE 0.3L	//the faulty angle due to the arm crook
 
 typedef struct {
 	float x;
