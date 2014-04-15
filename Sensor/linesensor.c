@@ -50,6 +50,7 @@ uint8_t ad_value = 0;
 double sensor_scale[11];
 
 uint16_t pickup_iterator = 0;
+uint8_t previous_pickup_station = No;
 
 uint8_t tape_reference = 150;
 
@@ -169,30 +170,65 @@ uint8_t get_tape_width()	{
 	}
 	return tape_width;
 }
+uint8_t is_tape_right()	{
+	uint8_t number_of_tape_sensors = 0;
+	for(uint8_t i = 7; i<=10; i++)	{
+		if (sensor_surface_types[i] == 1)
+		number_of_tape_sensors++;
+	}
+	if(number_of_tape_sensors > 4)
+	return 1;
+	else
+	return 0;
+}
+uint8_t is_tape_left()	{
+	uint8_t number_of_tape_sensors = 0;
+	for(uint8_t i = 0; i<5; i++)	{
+		if (sensor_surface_types[i] == 1)
+		number_of_tape_sensors++;
+	}
+	if(number_of_tape_sensors > 4)
+	return 1;
+	else
+	return 0;
+}
+
+
 void pickup_station_detection() {
 	cli();
-
-	if((get_tape_width() > 4 )&& (line_weight < 127))	{
-		if (get_tape_width() > 8)
+	if (pickup_iterator == 0)	{
+		if(!is_tape_left() && !is_tape_right())	{
 			pickup_station = No;
-		else if (get_tape_width() > 4 && pickup_iterator >= 1000)	{
-			pickup_station = Right;
+			return;
 		}
-	}
-	else if ((get_tape_width() > 4) && (line_weight > 127))	{
-		if (get_tape_width() > 8)
+		else if (is_tape_right() && is_tape_left())	{
 			pickup_station = No;
-		else if (get_tape_width() > 4 && pickup_iterator >= 1000)	{
-			pickup_station = Left;
+			previous_pickup_station = No;
+			pickup_iterator = 65000;
+		}
+		else if (is_tape_left() && previous_pickup_station == No)	{
+			previous_pickup_station = Left;
+		}
+		else if (is_tape_right() && previous_pickup_station == No)	{
+			previous_pickup_station = Right;
+		}
+		else if (!is_tape_left() && previous_pickup_station == Left)	{
+			if (!is_tape_right())
+				pickup_station = Left;
+		}
+		else if (!is_tape_right() && previous_pickup_station == Right)	{
+			if (!is_tape_left())
+				pickup_station = Right;
 		}
 	}
 	else
 	{
-		pickup_station = No;
-		pickup_iterator++;
+		--pickup_iterator;
 	}
 	sei();
 }
+
+
 void line_break_detection()	{	
 	cli();
 	uint8_t current_sensor;
