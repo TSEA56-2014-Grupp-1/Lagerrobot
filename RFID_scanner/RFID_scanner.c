@@ -13,14 +13,11 @@
 #include "../RFID_scanner/RFID_scanner.h"
 #include "../shared/usart.h"
 #include "../shared/bus.h"
-#include "../shared/LCD_interface.h"
+//#include "../shared/LCD_interface.h"
 
-uint8_t check_error = 0;
 uint8_t station_RFID[12];
-uint8_t carrying_RFID[12];
-uint8_t tag = 15;
 
-
+//-----RFID_tags-----
 const uint8_t  RFID_B80[] = {
 	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44, 0x42, 0x39, 0x31, 0x36, 0x41, 0x0D
 };
@@ -40,71 +37,75 @@ const uint8_t RFID_B85[] = {
 	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44 ,0x33, 0x44, 0x42, 0x42, 0x38, 0x0D
 };
 
-uint16_t return_rfid_tag(uint8_t id, uint16_t metadata)
+void RFID_disable_reading(uint8_t id, uint16_t metadata)
 {
-	return (uint16_t) read_RFID();
+	PORTD |= (1 << PORTD2); // Disable reading
+}
+
+void RFID_enable_reading(uint8_t id, uint16_t metadata)
+{
+	PORTD = PORTD & (0 << PORTD2); // Enable reading
 }
 
 void RFID_scanner_init()
 {
 	DDRD = 0b00000100; // Set PD2 as Output
+	PORTD = PORTD & (0 << PORTD2); // Disable reading
 }
 
-void RFID_read_usart()
+uint8_t RFID_read_usart()
 {
 	uint8_t i = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		check_error = usart_read_byte(&station_RFID[i]);
-		if (check_error == 1)
-		break;
+		if (usart_read_byte(&station_RFID[i]) == 1)
+			return 1;
 	}
+	return 0;
 }
 
-uint8_t read_RFID()
-{
-	PORTD = (0 << PORTD2); // Enable reading
-	uint8_t i;
-	for (i = 0; i < 100; ++i)
+uint16_t read_RFID(uint8_t id, uint16_t metadata)
+{	
+	ADCSRA = ADCSRA & (0 << ADEN); // Disable ADC
+	for(uint8_t i = 0; i <= 10; ++i)
 	{
-		RFID_read_usart();
-		if(identify_station_RFID() != 15)
+		if(station_RFID[0] == 0x0A) 
 		{
-		PORTD |= (1 << PORTD2); // Disable reading
-		return identify_station_RFID();
+			PORTD |= (1 << PORTD2); // Disable rfid reading
+			ADCSRA |= (1 << ADEN); // Enable ADC
+			return identify_station_RFID();
 		}
 	}
-	PORTD |= (1 << PORTD2); // Disable reading
-	return 15;
+	PORTD |= (1 << PORTD2); // Disable rfid reading
+	ADCSRA |= (1 << ADEN); // Enable ADC
+	return 0;
 }
 
 
-uint8_t compare_RFID_arrays(uint8_t station_RFID[12], const uint8_t current_compare_RFID[12])
+uint8_t compare_RFID_arrays(const uint8_t current_compare_RFID[12])
 {
 	uint8_t i;
-	for (i = 1; i <= 11; ++i)
+	for (i = 7; i <= 10; ++i)
 	{
 		if(station_RFID[i] != current_compare_RFID[i])
-		{
 			return 0;
-		}
 	}
 	return 1;
 }
 
 uint8_t identify_station_RFID()
 {
-	if (compare_RFID_arrays(station_RFID, RFID_B80))
+	if (compare_RFID_arrays(RFID_B80))
 	return 80;
-	else if (compare_RFID_arrays(station_RFID, RFID_B81))
+	else if (compare_RFID_arrays(RFID_B81))
 	return 81;
-	else if (compare_RFID_arrays(station_RFID, RFID_B82))
+	else if (compare_RFID_arrays(RFID_B82))
 	return 82;
-	else if (compare_RFID_arrays(station_RFID, RFID_B83))
+	else if (compare_RFID_arrays(RFID_B83))
 	return 83;
-	else if (compare_RFID_arrays(station_RFID, RFID_B84))
+	else if (compare_RFID_arrays(RFID_B84))
 	return 84;
-	else if (compare_RFID_arrays(station_RFID, RFID_B85))
+	else if (compare_RFID_arrays(RFID_B85))
 	return 85;
 	else
 	return 1;
