@@ -175,14 +175,14 @@ void pickup_station_detection() {
 	if((get_tape_width() > 4 )&& (line_weight < 127))	{
 		if (get_tape_width() > 9)
 			pickup_station = No;
-		else if (get_tape_width() > 4 && pickup_iterator >= 50)	{
+		else if (get_tape_width() > 4 && pickup_iterator >= 100)	{
 			pickup_station = Right;
 		}
 	}
 	else if ((get_tape_width() > 5) && (line_weight > 127))	{
 		if (get_tape_width() > 9)
 			pickup_station = No;
-		else if (get_tape_width() > 4 && pickup_iterator >= 50)	{
+		else if (get_tape_width() > 4 && pickup_iterator >= 100)	{
 			pickup_station = Left;
 		}
 	}
