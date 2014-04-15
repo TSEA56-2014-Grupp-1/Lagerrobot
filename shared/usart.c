@@ -26,6 +26,7 @@ uint8_t usart_read_byte(uint8_t * data) {
 	uint16_t timeout_counter = 0;
 	
 	while (!usart_has_bytes()) {
+		uint8_t USART_RECEIVE_TIMEOUT_COUNT = 255;
 		if (timeout_counter++ >= USART_RECEIVE_TIMEOUT_COUNT)
 			return 1;
 	}
