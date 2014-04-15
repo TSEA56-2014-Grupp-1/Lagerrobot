@@ -39,12 +39,40 @@ void enable_rfid_reader()
 	bus_transmit(BUS_ADDRESS_SENSOR, 8, 0);
 }
 
+void arm_is_done(uint8_t id, uint16_t pickup_data)
+{
+	if (pickup_data == 0)
+	carrying_rfid = station_list[station_count];
+	else
+	carrying_rfid = 0;
+	TIMSK0 |= (1 << OCIE0A); // Enable timer interrupts
+}
+
+
 uint8_t is_station(uint8_t station_data)
 {
- if (station_data == 0 || station_data == 2)
-return 1;
-else
-return 0;
+	if (station_data == 0 || station_data == 2)
+	return 1;
+	else
+	return 0;
+}
+
+uint8_t is_lap_finished(uint8_t station_tag)
+{
+	uint8_t match_counter = 0;
+	for(uint8_t i = 0; i <= station_count; ++i)
+	{
+		if (station_tag == station_list[i])
+		++match_counter;
+	}
+	if (match_counter < 2)
+	return 0;
+	else return 1;		
+}
+
+uint8_t station_match_with_carrying(uint8_t current_station)
+{
+	return (carrying_rfid == current_station);
 }
 
 //---Timer interrupt----
@@ -57,41 +85,40 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	
 	if(PINA & 1) {
 		chassi_switch = 1;
-		}
+	}
 
-	if (!is_station(station_data) && (chassi_switch != 1))	// Continue following line
-		{
-			pd_update(curr_error);
-			steering_algorithm();
-			return;
-		}
-	else if (!is_station(station_data) && (chassi_switch == 1))
-		{
-			stop_wheels();
-			return;
-		}
-	
+	if (!is_station(station_data) && (chassi_switch != 1))	// wheels are on and not on station
+	{
+		pd_update(curr_error);
+		steering_algorithm();
+		return;
+	}
+	else if (!is_station(station_data) && (chassi_switch == 1)) //wheels are off and not on station
+	{
 		stop_wheels();
-		
-
-		
-		uint8_t station_tag = 0;
-		station_tag = (uint8_t)request_RFID_tag();
-		//disable_rfid_reader();
-		if (station_data == 0)
-		{
-			display(0, "st. left");	
-			display(1, "rfid: %d", station_tag);
-		}
-		else if (station_data == 2)
-		{
-			display(0, "st. right");
-			display(1, "rfid: %d", station_tag);
-		}
-		else
-		{
-			display(0, "error");	
-		}			
+		return;
+	}
+	stop_wheels();
+	
+	uint8_t station_tag = 0;
+	station_tag = (uint8_t)request_RFID_tag();
+	//disable_rfid_reader(); 
+	
+	if (station_data == 0)
+	{
+		display(0, "st. left");	
+		display(1, "rfid: %d", station_tag);
+	}
+	else if (station_data == 2)
+	{
+		display(0, "st. right");
+		display(1, "rfid: %d", station_tag);
+	}
+	else
+	{
+		display(0, "error");
+	}			
+	
 	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 }
 
@@ -101,12 +128,12 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	{
 		send_decision_to_pc(WRONG_STATION_MEM) ;
 		follow_line(line_data);
-		reti();
+		return;
 	}
 	
 	stop_wheels(); //stop robot. Perhaps do this before if!(is_right_station_mem())
 	send_decision_to_pc(AT_STATION);
-	
+
 	uint8_t time_for_station;
 	uint32_t rfid_station = request_rfid_data();
 	if (rfid_station == carrying_rfid) // Put down holding object here?
@@ -116,7 +143,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		send_decision_to_pc(OBJECT_IS_PUT_DOWN);
 		send_rfid_to_pc(rfid_station, time_for_station);
 		follow_line(line_data);
-		reti();
+		return;
 	}
 	else if (carrying_rfid != 0) // Carrying object but no match for RFID
 	{
@@ -124,7 +151,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		send_decision_to_pc(WRONG_STATION_RFID);
 		send_rfid_to_pc(rfid_station, time_for_station);
 		follow_line(line_data);
-		reti();
+		return;
 	}
 	
 	pick_up_object();
@@ -163,6 +190,7 @@ int main(void)
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
+	bus_register_receive(1, arm_is_done);
 	//enable_rfid_reader();
 	
 
