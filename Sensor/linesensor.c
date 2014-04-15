@@ -45,6 +45,7 @@ uint8_t sensor_channel;
 uint8_t sensor_values[11];
 uint8_t temp_sensor_values[11];
 uint8_t line_weight = 127;
+uint8_t ad_value = 0;
 double sensor_scale[11];
 
 uint8_t pickup_iterator = 0;

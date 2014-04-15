@@ -17,7 +17,7 @@
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
 		case 0 :
- 			update_linesensor(); 
+ 			update_linesensor_values();
 		case 1 :
 		
 		break;
@@ -49,6 +49,10 @@ int main(void)
 	//bus_transmit(5,4,5);
     while(1)
     {
+		update_linesensor_surfaces();
+		calculate_line_weight();
+		pickup_station_detection();
+		line_break_detection();
         //TODO:: Please write your application code 
     }
 }
