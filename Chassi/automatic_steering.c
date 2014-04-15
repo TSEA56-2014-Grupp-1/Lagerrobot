@@ -69,7 +69,7 @@ void steering_algorithm ()
 
 
 void pd_update(int8_t curr_error)
-{
+{	
 	double diff;
 	int16_t p_term;
 	double d_term;
@@ -93,5 +93,5 @@ void regulator_init()
 {
 	prev_error = 0;
 	proportional_gain = 150;
-	derivative_gain = 10;
+	derivative_gain = 5;
 }

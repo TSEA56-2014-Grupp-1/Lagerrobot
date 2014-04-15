@@ -201,7 +201,7 @@ int main(void)
 	TIFR0 |= (1 << OCF0A);
 	
 	// interrupt frequency 30hz --- or 60hz according to bus-reads??
-	OCR0A = 0xff; 
+	OCR0A = 0x80; 
 	
 	// set to mode 2 (CTC) => clear TCNT0 on compare match
 	TCCR0A |= (1 << WGM01 | 0 << WGM00); 
