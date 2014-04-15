@@ -67,9 +67,15 @@ uint8_t RFID_read_usart()
 uint16_t read_RFID(uint8_t id, uint16_t metadata)
 {	
 	ADCSRA = ADCSRA & (0 << ADEN); // Disable ADC
-	for(uint8_t i = 0; i <= 10; ++i)
+	for(uint8_t i = 0; i <= 100; ++i) // Try larger
 	{
-		if(station_RFID[0] == 0x0A) 
+		if (RFID_read_usart())
+		{
+			PORTD |= (1 << PORTD2); // Disable rfid reading
+			ADCSRA |= (1 << ADEN); // Enable ADC
+			return 2;
+		}
+		else if(station_RFID[0] == 0x0A) 
 		{
 			PORTD |= (1 << PORTD2); // Disable rfid reading
 			ADCSRA |= (1 << ADEN); // Enable ADC
