@@ -49,7 +49,7 @@ uint8_t line_weight = 127;
 uint8_t ad_value = 0;
 double sensor_scale[11];
 
-uint8_t pickup_iterator = 0;
+uint16_t pickup_iterator = 0;
 
 uint8_t tape_reference = 150;
 
@@ -170,19 +170,19 @@ uint8_t get_tape_width()	{
 	return tape_width;
 }
 void pickup_station_detection() {
-	cli();	
+	cli();
 
 	if((get_tape_width() > 4 )&& (line_weight < 127))	{
-		if (get_tape_width() > 9)
+		if (get_tape_width() > 8)
 			pickup_station = No;
-		else if (get_tape_width() > 4 && pickup_iterator >= 100)	{
+		else if (get_tape_width() > 4 && pickup_iterator >= 1000)	{
 			pickup_station = Right;
 		}
 	}
-	else if ((get_tape_width() > 5) && (line_weight > 127))	{
-		if (get_tape_width() > 9)
+	else if ((get_tape_width() > 4) && (line_weight > 127))	{
+		if (get_tape_width() > 8)
 			pickup_station = No;
-		else if (get_tape_width() > 4 && pickup_iterator >= 100)	{
+		else if (get_tape_width() > 4 && pickup_iterator >= 1000)	{
 			pickup_station = Left;
 		}
 	}
