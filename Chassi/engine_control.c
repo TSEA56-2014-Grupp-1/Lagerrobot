@@ -54,7 +54,8 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 	{
 		//STOP WHEELS
 		case 0:
-			stop_wheels();
+			speed_left = 0;
+			speed_right = 0;
 			break;
 		//Increase speed forwards
 		case 1:
@@ -63,7 +64,7 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 				speed_left += STEERING_SPEED_INCREASE;
 				speed_right += STEERING_SPEED_INCREASE;
 			}
-			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_right >= STEERING_SPEED_INCREASE))
+			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_left >= STEERING_SPEED_INCREASE))
 			{
 				speed_left -= STEERING_SPEED_INCREASE;
 				speed_right -= STEERING_SPEED_INCREASE;
@@ -82,7 +83,7 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 				speed_left += STEERING_SPEED_INCREASE;
 				speed_right += STEERING_SPEED_INCREASE;
 			}
-			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_right >= STEERING_SPEED_INCREASE))
+			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_left >= STEERING_SPEED_INCREASE))
 			{
 				speed_left -= STEERING_SPEED_INCREASE;
 				speed_right -= STEERING_SPEED_INCREASE;
@@ -96,36 +97,39 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 			break;
 		//Increase turningspeed to right, spin right if standing still
 		case 3:
-			if((speed_right < STEERING_SPEED_INCREASE) | (speed_right < STEERING_SPEED_INCREASE))
+			if((speed_right < STEERING_SPEED_INCREASE) | (speed_left < STEERING_SPEED_INCREASE))
 			{
-				spin_right();
-				speed_left = STEERING_SPIN_SPEED;
-				speed_right = STEERING_SPIN_SPEED;
+// 				spin_right();
+// 				speed_left = STEERING_SPIN_SPEED;
+// 				speed_right = STEERING_SPIN_SPEED;
 			}
 			else if(driving_direction())
 			{
 				speed_right -= STEERING_SPEED_INCREASE;
+				speed_left += STEERING_SPEED_INCREASE;
 			}
-			else
+			else if(!driving_direction())
 			{
 				speed_left -= STEERING_SPEED_INCREASE;
 			}
 			break;
 		//Increase turningspeed to left, spin left if standing still
 		case 4:
-			if((speed_right < STEERING_SPEED_INCREASE) | (speed_right < STEERING_SPEED_INCREASE))
+			if((speed_right < STEERING_SPEED_INCREASE) | (speed_left < STEERING_SPEED_INCREASE))
 			{
-				spin_left();
-				speed_left = STEERING_SPIN_SPEED;
-				speed_right = STEERING_SPIN_SPEED;
+// 				spin_left();
+// 				speed_left = STEERING_SPIN_SPEED;
+// 				speed_right = STEERING_SPIN_SPEED;
 			}
 			else if(driving_direction())
 			{
+				speed_right += STEERING_SPEED_INCREASE;
 				speed_left -= STEERING_SPEED_INCREASE;
 			}
-			else
+			else if(!driving_direction())
 			{
 				speed_right -= STEERING_SPEED_INCREASE;
+				speed_left += STEERING_SPEED_INCREASE;
 			}
 			break;
 		//TODO: Enable automatic steering
