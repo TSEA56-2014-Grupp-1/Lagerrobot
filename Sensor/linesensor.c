@@ -176,7 +176,7 @@ uint8_t is_tape_right()	{
 		if (sensor_surface_types[i] == 1)
 		number_of_tape_sensors++;
 	}
-	if(number_of_tape_sensors > 4)
+	if(number_of_tape_sensors >= 4)
 		return 1;
 	else
 		return 0;
@@ -187,7 +187,7 @@ uint8_t is_tape_left()	{
 		if (sensor_surface_types[i] == 1)
 		number_of_tape_sensors++;
 	}
-	if(number_of_tape_sensors > 4)
+	if(number_of_tape_sensors >= 4)
 		return 1;
 	else
 		return 0;
