@@ -50,6 +50,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 	carrying_rfid = station_list[station_count];
 	else
 	carrying_rfid = 0;
+	//Benefit turn around?
 	TIMSK0 |= (1 << OCIE0A); // Enable timer interrupts
 }
 
@@ -60,6 +61,11 @@ uint8_t is_station(uint8_t station_data)
 	return 1;
 	else
 	return 0;
+}
+
+uint8_t no_line(uint8_t station_data)
+{
+	return (station_data == 4);
 }
 
 uint8_t is_lap_finished(uint8_t station_tag)
@@ -80,6 +86,9 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 	return (carrying_rfid == current_station);
 }
 
+
+
+
 //---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {	
@@ -91,7 +100,12 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	if(PINA & 1) {
 		chassi_switch = 1;
 	}
-
+/*
+	if (no_line(station_data) && (chassi_switch != 1))
+	{
+		return;
+	}
+*/
 	if (!is_station(station_data) && (chassi_switch != 1))	// wheels are on and not on station
 	{
 		pd_update(curr_error);
@@ -173,23 +187,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	
 	TIMSK0 &= (0b11111101); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 }
-
-
-
-
-ISR(interrupt_arm) // XX Name for interrupt vector??
-{
-	TIMSK0 |= (1 << OCIE0A); // Enable timer-interrupt again
-// object found according to arm? save as carrying_rfid (0 if not) XX
-
-	if (benefit_turn_around())
-	{
-		turn_around();
-	}
-}
 */
-
-
 
 int main(void)
 {
@@ -203,7 +201,6 @@ int main(void)
 	bus_register_receive(12, engine_set_kd);
 	bus_register_receive(1, arm_is_done);
 	//enable_rfid_reader();
-	
 	//sei();
 	//enable timer interrupts for ocie0a
 	TIMSK0 |= (1 << OCIE0A);
@@ -218,9 +215,6 @@ int main(void)
 	
 	//prescale
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
-	
-	//enable startswitch (manuell / autonomus)
-	
 	
     while(1)
     {
