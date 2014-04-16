@@ -156,6 +156,7 @@ int main(void)
 		if (process_packet() == 1)  {// timeout 
 			display(1, "timed out...");
 		}
+		usart_reset_buffer();
 		
 		while (!usart_has_bytes());
 		/*

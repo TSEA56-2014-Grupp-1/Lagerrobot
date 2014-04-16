@@ -34,6 +34,11 @@ uint8_t usart_read_byte(uint8_t * data) {
 	return 0;
 }
 
+void usart_reset_buffer() {
+	usart_buffer_read_index = 0;
+	usart_buffer_write_index = 0;
+}
+
 uint8_t usart_has_bytes() {
 	return usart_buffer_read_index != usart_buffer_write_index;
 }

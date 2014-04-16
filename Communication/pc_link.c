@@ -30,7 +30,7 @@ uint8_t process_packet() {
 	else if (packet_id == PKT_ARM_COMMAND) {
 		uint8_t command;
 		
-		display(0, "arm command!");
+		//display(0, "arm command!");
 		
 		if (usart_read_byte(&command) == 1)
 		return 1;
