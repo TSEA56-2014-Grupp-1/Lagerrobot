@@ -76,7 +76,7 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 			}
 			
 		}
-		force_display_update(module);
+		lcd_force_display_update(module);
 	}
 }
 

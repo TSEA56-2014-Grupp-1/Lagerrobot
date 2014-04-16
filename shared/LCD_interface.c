@@ -1,27 +1,25 @@
 #include "../shared/LCD_interface.h"
 #include "../shared/bus.h"
 #include <avr/io.h>
-#include <stdio.h>
-#include <stdarg.h>
 
-uint16_t lcd_symbol_pairs[8];
+uint16_t lcdi_symbol_pairs[8];
 /**
  * @brief Registers the symbol request with the bus.
  * @details Masks the bus plumbing from the lcd user.
  */
-void lcd_interface_init(){
-	bus_register_response(1, symbol_request);
-	display_clear();
+void lcdi_init(){
+	bus_register_response(1, lcdi_symbol_request);
+	lcdi_display_clear();
 }
 
 /**
  * @brief Clears the display page of the current unit.
  * @details Sets all display positions to space (' ').
  */
-void display_clear() {
+void lcdi_display_clear() {
 	for (int i = 0; i < 16; ++i) {
-		lcd_display_symbols[0][i] = 0x20;
-		lcd_display_symbols[1][i] = 0x20;
+		lcdi_display_symbols[0][i] = 0x20;
+		lcdi_display_symbols[1][i] = 0x20;
 	}
 }
 
@@ -38,22 +36,22 @@ void display(uint8_t line_number, const char* str, ...) {
 	
 	va_list data;
 	va_start(data, str);
-	vsnprintf(lcd_display_symbols[line_number], 17, str, data);
+	vsnprintf(lcdi_display_symbols[line_number], 17, str, data);
 	va_end(data);
 	
 	uint16_t temp_symbol_pair;
 	
 	for (int i = 0; i < 8; ++i) {
-		temp_symbol_pair = ((uint16_t) lcd_display_symbols[line_number][(i << 1) & 0b00001111] << 8) |
-					  ((uint16_t) lcd_display_symbols[line_number][((i << 1) & 0b00001111) + 1]);
+		temp_symbol_pair = ((uint16_t) lcdi_display_symbols[line_number][(i << 1) & 0b00001111] << 8) |
+					  ((uint16_t) lcdi_display_symbols[line_number][((i << 1) & 0b00001111) + 1]);
 					
-		lcd_symbol_pairs[i] = temp_symbol_pair;
+		lcdi_symbol_pairs[i] = temp_symbol_pair;
 		  
 		if ((uint8_t) (temp_symbol_pair >> 8) == 0x00)
-			lcd_symbol_pairs[i] = ((uint16_t) 0x20) << 8 | (uint8_t) temp_symbol_pair;
+			lcdi_symbol_pairs[i] = ((uint16_t) 0x20) << 8 | (uint8_t) temp_symbol_pair;
 		
 		if ((uint8_t) temp_symbol_pair == 0x00)
-			lcd_symbol_pairs[i] = temp_symbol_pair & (0xff00 | ((uint16_t) 0x20));
+			lcdi_symbol_pairs[i] = temp_symbol_pair & (0xff00 | ((uint16_t) 0x20));
 		
 		
 	}
@@ -72,6 +70,6 @@ void display(uint8_t line_number, const char* str, ...) {
  * 
  * @return [description]
  */
-uint16_t symbol_request(uint8_t id, uint16_t data) {
-	return	lcd_symbol_pairs[data];
+uint16_t lcdi_symbol_request(uint8_t id, uint16_t data) {
+	return	lcdi_symbol_pairs[data];
 }

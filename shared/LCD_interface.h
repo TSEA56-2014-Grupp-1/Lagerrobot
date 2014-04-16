@@ -7,19 +7,19 @@
 /**
  * @brief The symbols to be displayed.
  */
-char lcd_display_symbols[2][17];
+char lcdi_display_symbols[2][17];
 
 /**
  * @brief Registers the symbol request with the bus.
  * @details Masks the bus plumbing from the lcd user.
  */
-void lcd_interface_init();
+void lcdi_init();
 
 /**
  * @brief Clears the display page of the current unit.
  * @details Sets all display positions to space (' ').
  */
-void display_clear();
+void lcdi_display_clear();
 
 /**
  * @brief Displays a formatted string of text and variables on the display.
@@ -43,6 +43,6 @@ void display(uint8_t line_number, const char* str, ...);
  * 
  * @return [description]
  */
-uint16_t symbol_request(uint8_t id, uint16_t data);
+uint16_t lcdi_symbol_request(uint8_t id, uint16_t data);
 
 #endif
