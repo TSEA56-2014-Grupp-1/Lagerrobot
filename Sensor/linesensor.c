@@ -177,9 +177,9 @@ uint8_t is_tape_right()	{
 		number_of_tape_sensors++;
 	}
 	if(number_of_tape_sensors > 4)
-	return 1;
+		return 1;
 	else
-	return 0;
+		return 0;
 }
 uint8_t is_tape_left()	{
 	uint8_t number_of_tape_sensors = 0;
@@ -188,40 +188,48 @@ uint8_t is_tape_left()	{
 		number_of_tape_sensors++;
 	}
 	if(number_of_tape_sensors > 4)
-	return 1;
+		return 1;
 	else
-	return 0;
+		return 0;
 }
 
 
 void pickup_station_detection() {
 	cli();
 	if (pickup_iterator == 0)	{
-		if(!is_tape_left() && !is_tape_right())	{
-			pickup_station = No;
-			return;
-		}
-		else if (is_tape_right() && is_tape_left())	{
+		if (is_tape_right() && is_tape_left())	{
 			pickup_station = No;
 			previous_pickup_station = No;
 			pickup_iterator = 65000;
 		}
-		else if (is_tape_left() && previous_pickup_station == No)	{
+		else if (is_tape_left() && (previous_pickup_station == No))	{
 			previous_pickup_station = Left;
 		}
-		else if (is_tape_right() && previous_pickup_station == No)	{
+		else if (is_tape_right() && (previous_pickup_station == No))	{
 			previous_pickup_station = Right;
 		}
-		else if (!is_tape_left() && previous_pickup_station == Left)	{
+		else if (!is_tape_left() && (previous_pickup_station == Left))	{
 			if (!is_tape_right())
 				pickup_station = Left;
+			else {
+				previous_pickup_station = No;
+				pickup_iterator = 65000;
+			}
 		}
-		else if (!is_tape_right() && previous_pickup_station == Right)	{
+		else if (!is_tape_right() && (previous_pickup_station == Right))	{
 			if (!is_tape_left())
 				pickup_station = Right;
+			else {
+				previous_pickup_station = No;
+				pickup_iterator = 65000;
+			}
+		}
+		else if(!is_tape_left() && !is_tape_right())	{
+			pickup_station = No;
+			return;
 		}
 	}
-	else
+	else if (pickup_iterator > 0)
 	{
 		--pickup_iterator;
 	}
