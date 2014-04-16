@@ -35,12 +35,14 @@ ISR(TIMER1_OVF_vect) {
  * @details This is a standard callback for a bus_transmit. It will perform a request for each symbol pair in turn from the unit before it forces a display update.
  * 
  * @param id Standard callback parameter, the id of the transmission.
- * @param data Standard callback parameter, here it is the address of the unit that made the request.
+ * @param data Standard callback parameter, the three highest bits denote which line is to be displayed, the lower byte is 
+ * the address of the unit that wants to use the display.
  */
 void symbols_are_ready(uint8_t id, uint16_t data) {
 	uint16_t symbol_pair;
+	uint8_t line_number;
 	uint8_t module;
-	switch(data) {
+	switch((uint8_t) data) {
 		case BUS_ADDRESS_ARM:
 		module = ARM;
 		break;
@@ -54,21 +56,28 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 		module = 0;
 	}
 	
-	clear_message(module);
-	for (int i = 0; i < 8; ++i) {
-		//loop over the symbol pairs
-		bus_request(data, 1, i, &symbol_pair);
-		message_map_line1[module][2*i] = symbol_pair >> 8;
-		message_map_line1[module][2*i+1] = symbol_pair;
-		
-		//fourth bit contains line data
-		bus_request(data, 1, i | 0b00001000, &symbol_pair);
-		message_map_line2[module][2*i] = symbol_pair >> 8;
-		message_map_line2[module][2*i+1] = symbol_pair;
-				
-	}
+	line_number = (uint8_t) (data >> 8);
 	
-	force_display_update(module);
+	if (line_number < 2) {
+		clear_message(module);
+		
+		for (int i = 0; i < 8; ++i) {
+			//loop over the symbol pairs, fourth bit in metadata contains line number
+			bus_request((uint8_t) data, 1, i | (line_number << 3), &symbol_pair);
+			
+			if (line_number == 0) {
+				message_map_line1[module][2*i] = symbol_pair >> 8;
+				message_map_line1[module][2*i+1] = symbol_pair;
+				
+			}
+			else if (line_number == 1) {
+				message_map_line2[module][2*i] = symbol_pair >> 8;
+				message_map_line2[module][2*i+1] = symbol_pair;
+			}
+			
+		}
+		force_display_update(module);
+	}
 }
 
 /**

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-uint16_t lcd_symbol_pairs[16];
+uint16_t lcd_symbol_pairs[8];
 /**
  * @brief Registers the symbol request with the bus.
  * @details Masks the bus plumbing from the lcd user.
@@ -41,20 +41,24 @@ void display(uint8_t line_number, const char* str, ...) {
 	vsnprintf(lcd_display_symbols[line_number], 17, str, data);
 	va_end(data);
 	
-	uint16_t temp_symbol;
-	//construct symbol pairs, bit 5 in index denotes which line.
-	for (int i = 0; i < 16; ++i) {
-		temp_symbol = ((uint16_t) lcd_display_symbols[(i & 0b00001000) >> 3][(i << 1) & 0b00001111] << 8) |
-					  ((uint16_t) lcd_display_symbols[(i & 0b00001000) >> 3][((i << 1) & 0b00001111) + 1]);
-		if ((uint8_t) (temp_symbol >> 8) == 0x00)
-			lcd_symbol_pairs[i] = ((uint16_t) 0x20) << 8 | (uint8_t) temp_symbol;
+	uint16_t temp_symbol_pair;
+	
+	for (int i = 0; i < 8; ++i) {
+		temp_symbol_pair = ((uint16_t) lcd_display_symbols[line_number][(i << 1) & 0b00001111] << 8) |
+					  ((uint16_t) lcd_display_symbols[line_number][((i << 1) & 0b00001111) + 1]);
+					
+		lcd_symbol_pairs[i] = temp_symbol_pair;
+		  
+		if ((uint8_t) (temp_symbol_pair >> 8) == 0x00)
+			lcd_symbol_pairs[i] = ((uint16_t) 0x20) << 8 | (uint8_t) temp_symbol_pair;
 		
-		if ((uint8_t) (temp_symbol) == 0x00)
-		lcd_symbol_pairs[i] = temp_symbol | ((uint16_t) 0x20);
-		lcd_symbol_pairs[i] = temp_symbol;
+		if ((uint8_t) temp_symbol_pair == 0x00)
+			lcd_symbol_pairs[i] = temp_symbol_pair & (0xff00 | ((uint16_t) 0x20));
+		
+		
 	}
 	
-	bus_transmit(BUS_ADDRESS_COMMUNICATION, 2, bus_get_address());
+	bus_transmit(BUS_ADDRESS_COMMUNICATION, 2, ((uint16_t) line_number << 8) | (uint16_t) bus_get_address());
 }
 
 /**
