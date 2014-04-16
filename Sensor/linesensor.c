@@ -200,7 +200,7 @@ void pickup_station_detection() {
 		if (is_tape_right() && is_tape_left())	{
 			pickup_station = No;
 			previous_pickup_station = No;
-			pickup_iterator = 2000;
+			pickup_iterator = 5000;
 		}
 		else if (is_tape_left() && (previous_pickup_station == No))	{
 			previous_pickup_station = Left;
@@ -213,7 +213,7 @@ void pickup_station_detection() {
 				pickup_station = Left;
 			else {
 				previous_pickup_station = No;
-				pickup_iterator = 2000;
+				pickup_iterator = 5000;
 			}
 		}
 		else if (!is_tape_right() && (previous_pickup_station == Right))	{
@@ -221,7 +221,7 @@ void pickup_station_detection() {
 				pickup_station = Right;
 			else {
 				previous_pickup_station = No;
-				pickup_iterator = 2000;
+				pickup_iterator = 5000;
 			}
 		}
 		else if(!is_tape_left() && !is_tape_right())	{
