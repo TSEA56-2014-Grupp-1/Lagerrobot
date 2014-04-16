@@ -39,6 +39,11 @@ void enable_rfid_reader()
 	bus_transmit(BUS_ADDRESS_SENSOR, 8, 0);
 }
 
+void send_to_arm(uint16_t arm_action_trans)
+{
+	bus_transmit(BUS_ADDRESS_ARM, 1, arm_action_trans);
+}
+
 void arm_is_done(uint8_t id, uint16_t pickup_data)
 {
 	if (pickup_data == 0)
@@ -104,6 +109,11 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	uint8_t station_tag = 0;
 	station_tag = (uint8_t)request_RFID_tag();
 	//disable_rfid_reader(); 
+	uint8_t arm_action = 0;
+	if(station_match_with_carrying(station_tag))
+		arm_action = 1; // 1 = put down object
+	send_to_arm(arm_action);
+	
 	
 	if (station_data == 0)
 	{
@@ -183,7 +193,7 @@ ISR(interrupt_arm) // XX Name for interrupt vector??
 
 int main(void)
 {
-	bus_init(1);
+	bus_init(1); // 1 = BUS_ADDRESS_CHASSIS
 	_delay_ms(100);
 	engine_init();
 	regulator_init();
@@ -194,13 +204,12 @@ int main(void)
 	bus_register_receive(1, arm_is_done);
 	//enable_rfid_reader();
 	
-
-	//enable timer interrupts for ocie0a
 	//sei();
+	//enable timer interrupts for ocie0a
 	TIMSK0 |= (1 << OCIE0A);
 	TIFR0 |= (1 << OCF0A);
 	
-	// interrupt frequency 30hz --- or 60hz according to bus-reads??
+	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
 	OCR0A = 0x80; 
 	
 	// set to mode 2 (CTC) => clear TCNT0 on compare match
