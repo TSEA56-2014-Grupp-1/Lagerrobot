@@ -65,12 +65,15 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
         on_pushButton_back_pressed();
     }
     else if (key_pressed->key() == Qt::Key_A) {
-        //on_pushButton_left_pressed();
-        on_pushButton_base_left_pressed();
+        on_pushButton_left_pressed();
+        //on_pushButton_base_left_pressed();
     }
     else if (key_pressed->key() == Qt::Key_D) {
+        on_pushButton_right_pressed();
         //on_pushButton_base_right_pressed();
-        on_pushButton_base_right_pressed();
+    }
+    else if (key_pressed->key() == Qt::Key_Escape) {
+        on_pushButton_stop_pressed();
     }
 }
 
@@ -88,12 +91,12 @@ void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
 
     }
     else if (key_released->key() == Qt::Key_A) {
-        //on_pushButton_left_released();
-        on_pushButton_base_left_released();
+        on_pushButton_left_released();
+        //on_pushButton_base_left_released();
     }
     else if (key_released->key() == Qt::Key_D) {
+        on_pushButton_right_released();
         //on_pushButton_base_right_released();
-        on_pushButton_base_right_released();
     }
 }
 
@@ -124,13 +127,13 @@ void MainWindow::connect_to_port(QString name) {
 
 void MainWindow::on_pushButton_forward_pressed()
 {
-    //Go forward
+    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 1);
 }
 
 
 void MainWindow::on_pushButton_back_pressed()
 {
-    //Go backwards
+    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 2);
 }
 
 void MainWindow::on_pushButton_forward_released()
@@ -145,7 +148,7 @@ void MainWindow::on_pushButton_back_released()
 
 void MainWindow::on_pushButton_left_pressed()
 {
-    //Start turning left
+    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 4);
 }
 
 void MainWindow::on_pushButton_left_released()
@@ -155,7 +158,7 @@ void MainWindow::on_pushButton_left_released()
 
 void MainWindow::on_pushButton_right_pressed()
 {
-    //start going right
+    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 3);
 }
 
 void MainWindow::on_pushButton_right_released()
@@ -457,4 +460,9 @@ void MainWindow::on_pushButton_send_param_clicked()
     port->send_packet(PKT_CHASSIS_COMMAND , 3,CMD_CHASSIS_PARAMETERS, Kp, Kd);
     print_on_log(QString::number(PKT_CHASSIS_COMMAND));
     print_on_log(QString::number(CMD_CHASSIS_PARAMETERS));
+}
+
+void MainWindow::on_pushButton_stop_pressed()
+{
+    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 0);
 }

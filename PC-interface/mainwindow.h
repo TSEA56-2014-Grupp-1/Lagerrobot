@@ -118,6 +118,8 @@ private slots:
 
     void on_pushButton_send_param_clicked();
 
+    void on_pushButton_stop_pressed();
+
 private:
     Ui::MainWindow *ui;
 
