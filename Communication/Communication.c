@@ -124,7 +124,7 @@ int main(void)
 {
 	init();
 	lcd_init();
-	bus_init(0b0000101);
+	bus_init(BUS_ADDRESS_COMMUNICATION);
 	
 	bus_register_receive(2, symbols_are_ready);
 	
@@ -139,9 +139,9 @@ int main(void)
 	display(1, "Startup...");
 	_delay_ms(300);
 	clear_message(COMM);
-    while(1)
+    for(;;)
     {
 		
-        //TODO:: Please write your application code 
+        
     }
 }
