@@ -107,12 +107,12 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	stop_wheels();
 	
 	uint8_t station_tag = 0;
-	station_tag = (uint8_t)request_RFID_tag();
+	//station_tag = (uint8_t)request_RFID_tag();
 	//disable_rfid_reader(); 
-	uint8_t arm_action = 0;
-	if(station_match_with_carrying(station_tag))
-		arm_action = 1; // 1 = put down object
-	send_to_arm(arm_action);
+//	uint8_t arm_action = 0;
+	//if(station_match_with_carrying(station_tag))
+	//	arm_action = 1; // 1 = put down object
+	//send_to_arm(arm_action);
 	
 	
 	if (station_data == 0)
