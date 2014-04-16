@@ -29,12 +29,12 @@ void arm_init()
 	servo_write(
 		SERVO_BROADCASTING_ID,
 		SERVO_CW_COMPLIANCE_MARGIN,
-		0x02, 0x02, 0x40, 0x40);
+		0x00, 0x00, 0x40, 0x40);
 
 	servo_write(
 		SERVO_BROADCASTING_ID,
 		SERVO_GOAL_SPEED_L,
-		0x80, 0x00);
+		0x20, 0x00);
 }
 
 
@@ -195,7 +195,7 @@ uint8_t joint_is_moving(uint8_t joint)
 
 void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 {
-	usart_clear_buffer();	
+	usart_clear_buffer();
 	uint8_t data[2];
 	uint16_t int_data;
 	uint8_t status_code;
@@ -215,7 +215,7 @@ void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 
 	arm_move_joint(joint, int_data);
 	_delay_ms(30);
-	
+
 	while (joint_is_moving(joint) & !(status_code == 0))
 	{
 		usart_clear_buffer();
@@ -236,11 +236,26 @@ int main(void) {
 	bus_register_receive(2, arm_movement_command);
 	bus_register_receive(3, arm_stop_movement);
 
+	//arm_display_read_packet(4, SERVO_PRESENT_POSITION_L, 2);
+
+
+	_delay_ms(2000);
+	arm_move_joint_add(2, ik_rad_to_servo_angle(2, 0.0f));
+	//arm_move_joint_add(2, ik_rad_to_servo_angle(2, M_PI / 2));
+	arm_move_joint_add(3, ik_rad_to_servo_angle(3, 0.0f));
+	arm_move_joint_add(4, ik_rad_to_servo_angle(4, 0.0f));
+	servo_action(SERVO_BROADCASTING_ID);
+
+	for (;;) {}
+
+	// id 2 - 754 for 0
+	// id 4 - 757 for 0
+
+
 // 	arm_move_joint_add(6, 511);
 //   	servo_action(0xfe);
-//	_delay_ms(2000);
 
-	coordinate target = {.x = 360.0f, .y = 0.0f};
+	/*coordinate target = {.x = 360.0f, .y = 0.0f};
 	angles joint_angles;
 
 	ik_angles(target, ik_calculate_x_limit(M_PI / 2), &joint_angles);
@@ -250,7 +265,7 @@ int main(void) {
 	arm_move_joint_add(4, ik_rad_to_servo_angle(4, joint_angles.t3));
 
 	servo_action(SERVO_BROADCASTING_ID);
-
+*/
 	uint8_t i;
 	for (i = 0;; i++) {
 // 		_delay_ms(1000);

@@ -34,19 +34,19 @@ float ik_calculate_x_limit(float beta)
  */
 uint16_t ik_rad_to_servo_angle(uint8_t id, float rad) {
 	// Converts radians to servo angle
-	float common_factor = 1023.0f * 180 / (300 * M_PI);
+	float common_factor = 1023.0f * 180.0f / (300.0f * M_PI);
 
 	switch (id) {
 		case 1:
-			return (uint16_t)(511.0f - rad * common_factor + 0.5f);
+			return (uint16_t)(ARM_JOINT1_ORIGIN_OFFSET - rad * common_factor + 0.5f);
 		case 2:
-			return (uint16_t)(818.4f - rad * common_factor + 0.5f);
+			return (uint16_t)(ARM_JOINT2_ORIGIN_OFFSET - rad * common_factor + 0.5f);
 		case 3:
-			return (uint16_t)(818.4f + rad * common_factor + 0.5f);
+			return (uint16_t)(ARM_JOINT3_ORIGIN_OFFSET + rad * common_factor + 0.5f);
 		case 4:
-			return (uint16_t)(511.0f + rad * common_factor + 0.5f);
+			return (uint16_t)(ARM_JOINT4_ORIGIN_OFFSET + rad * common_factor + 0.5f);
 		case 5:
-			return (uint16_t)(511.0f - rad * common_factor + 0.5f);
+			return (uint16_t)(ARM_JOINT5_ORIGIN_OFFSET - rad * common_factor + 0.5f);
 	}
 
 	return 0;
@@ -112,7 +112,7 @@ uint8_t ik_angles_p(coordinate coord, angles *joint_angles) {
 	sin_theta1 -= ARM_LENGTH_LINK_2 * sin_theta2 * coord.x;
 	sin_theta1 /= det_cmatrix;
 
-	joint_angles->t1 = atan2f(sin_theta1, cos_theta1) + ARM_ADJUSTMENT_OF_ANGLE;
+	joint_angles->t1 = atan2f(sin_theta1, cos_theta1);
 	joint_angles->t2 = atan2f(sin_theta2, cos_theta2);
 
 	return 0;

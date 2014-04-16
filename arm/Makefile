@@ -1,6 +1,6 @@
-TARGET = test
+TARGET = arm
 
-SRC = arm.c servo.c ../shared/usart.c
+SRC = arm.c servo.c inverse_kinematics.c ../shared/usart.c ../shared/LCD_interface.c ../shared/bus.c
 OBJ = $(SRC:.c=.o)
 
 MCU = "atmega1284p"
@@ -36,10 +36,10 @@ LDFLAGS=\
 compile: $(TARGET).hex $(TARGET).eep
 
 backup:
-	avrdude $(AVRDUDEFLAGS) -U flash:r:$(TARGET)-backup.bin:i
+	avrdude $(AVRDUDEFLAGS) -U flash:r:$(TARGET)-backup.hex:i
 
 restore:
-	avrdude $(AVRDUDEFLAGS) -U flash:w:$(TARGET)-backup.elf:i
+	avrdude $(AVRDUDEFLAGS) -U flash:w:$(TARGET)-backup.hex:i
 
 flash: compile
 	avrdude $(AVRDUDEFLAGS) -U flash:w:$(TARGET).hex:i
@@ -50,6 +50,7 @@ clean:
 # Pseudorules
 %.eep: %.hex
 	avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" --change-section-lma .eeprom=0 --no-change-warnings -O ihex $< $@
+
 %.hex: %.elf
 	avr-objcopy -O ihex -R .eeprom -R .fuse -R .lock -R .signature $< $@
 

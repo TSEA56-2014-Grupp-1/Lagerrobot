@@ -9,13 +9,18 @@
 #ifndef INVERSE_KINEMATICS_H_
 #define INVERSE_KINEMATICS_H_
 
-// TODO: Update these to reflect reality
 #define ARM_LENGTH_LINK_1 152L
 #define ARM_LENGTH_LINK_2 149L
 #define ARM_LENGTH_LINK_3 152L
+
+#define ARM_JOINT1_ORIGIN_OFFSET 511.0f
+#define ARM_JOINT2_ORIGIN_OFFSET 740.0f
+#define ARM_JOINT3_ORIGIN_OFFSET 765.0f
+#define ARM_JOINT4_ORIGIN_OFFSET 511.0f
+#define ARM_JOINT5_ORIGIN_OFFSET 511.0f
+
 #define ARM_Y_LIMIT 0L
 #define SHORTEST_X_DISTANCE_FROM_ORIGO 140L
-#define ARM_ADJUSTMENT_OF_ANGLE 0.3L	//the faulty angle due to the arm crook
 
 typedef struct {
 	float x;
