@@ -121,6 +121,8 @@ private slots:
 
     void horzScrollBarChanged(int);
 
+    void on_pushButton_stop_pressed();
+
 private:
     Ui::MainWindow *ui;
 

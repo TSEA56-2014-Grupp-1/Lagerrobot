@@ -6,6 +6,7 @@ uint8_t usart_receive_buffer[256];
 uint8_t usart_buffer_read_index = 0;
 uint8_t usart_buffer_write_index = 0;
 
+
 ISR(USART0_RX_vect) {
 	usart_receive_buffer[usart_buffer_write_index++] = UDR0;
 }
@@ -24,7 +25,7 @@ void usart_write_byte(uint8_t data) {
 
 uint8_t usart_read_byte(uint8_t * data) {
 	uint16_t timeout_counter = 0;
-	
+	uint16_t USART_RECEIVE_TIMEOUT_COUNT = 30000;
 	while (!usart_has_bytes()) {
 		if (timeout_counter++ >= USART_RECEIVE_TIMEOUT_COUNT)
 			return 1;
@@ -32,6 +33,11 @@ uint8_t usart_read_byte(uint8_t * data) {
 	
 	*data = usart_receive_buffer[usart_buffer_read_index++];
 	return 0;
+}
+
+void usart_reset_buffer() {
+	usart_buffer_read_index = 0;
+	usart_buffer_write_index = 0;
 }
 
 uint8_t usart_has_bytes() {

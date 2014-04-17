@@ -14,12 +14,14 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdarg.h>
+#include <util/delay.h>
 
 uint8_t process_packet() {
 	uint8_t packet_id;
 	
 	if (usart_read_byte(&packet_id) == 1)
 	return 1;
+	display(0,"%d", packet_id);
 	
 	// 	//if (usart_read_byte(&num_parameters) == 1)
 	// 		return 1;
@@ -30,7 +32,7 @@ uint8_t process_packet() {
 	else if (packet_id == PKT_ARM_COMMAND) {
 		uint8_t command;
 		
-		display(0, "arm command!");
+		//display(0, "arm command!");
 		
 		if (usart_read_byte(&command) == 1)
 		return 1;
@@ -42,7 +44,7 @@ uint8_t process_packet() {
 			if (usart_read_byte(&dir) == 1 ||
 				usart_read_byte(&joint) == 1 ){
 				return 1;}
-			display(1, "Arm move!");
+			//display(1, "Arm move!");
 			// issue arm move command on bus here
 			//display(1, "j%x pos%x", joint, ((uint16_t) pos_h << 8) | (uint16_t) pos_l);
 			//send_packet(PKT_ARM_STATUS, 3, joint, pos_l, pos_h);
@@ -57,10 +59,10 @@ uint8_t process_packet() {
 			// issue arm grip command on bus here
 			
 		}
-		else if (command ==CMD_ARM_RELEASE) {
+		else if (command == CMD_ARM_RELEASE) {
 			// issue arm release command on bus here
 		}
-		else if (command ==CMD_ARM_PREDEFINED_POS) {
+		else if (command == CMD_ARM_PREDEFINED_POS) {
 			uint8_t predefine_id;
 			if (usart_read_byte(&predefine_id) == 1)
 			return 1;
@@ -75,11 +77,12 @@ uint8_t process_packet() {
 			bus_transmit(BUS_ADDRESS_ARM, 3, (uint16_t) joint);
 		}
 	}
-	else if (packet_id ==PKT_CHASSIS_COMMAND) {
+	else if (packet_id == PKT_CHASSIS_COMMAND) {
 		uint8_t command;
 		
 		if (usart_read_byte(&command) == 1)
 		return 1;
+		
 		
 		if (command == CMD_CHASSIS_SPEED) {
 			
@@ -89,7 +92,7 @@ uint8_t process_packet() {
 			
 			// issue chassis set speed command on bus here
 		}
-		else if (command ==CMD_CHASSIS_STEER ) {
+		else if (command == CMD_CHASSIS_STEER ) {
 			
 			uint8_t steering_power;
 			if (usart_read_byte(&steering_power) == 1)
@@ -97,7 +100,7 @@ uint8_t process_packet() {
 			
 			// issue chassis set steering power command on bus here
 		}
-		else if (command ==CMD_CHASSIS_START) {
+		else if (command == CMD_CHASSIS_START) {
 			// issue chassis start line following / competition on bus here
 			
 		}
@@ -108,22 +111,23 @@ uint8_t process_packet() {
 			if (usart_read_byte(&Kp) == 1 ||
 				usart_read_byte(&Kd) == 1)
 				return 1;
-				
-			bus_transmit(BUS_ADDRESS_CHASSIS, 11, (uint16_t) Kp);
+			//display(1,"%d Kp:%d Kd:%d", command, Kp, Kd);
 			bus_transmit(BUS_ADDRESS_CHASSIS, 12, (uint16_t) Kd);
+			_delay_ms(1);
+			bus_transmit(BUS_ADDRESS_CHASSIS, 11, (uint16_t) Kp);
 		}
 	}
-	else if (packet_id ==PKT_CALIBRATION_COMMAND) {
+	else if (packet_id == PKT_CALIBRATION_COMMAND) {
 		uint8_t command;
-		display(0, "Got calibrate");
+		//display(0, "Got calibrate");
 		if (usart_read_byte(&command) == 1)
 		return 1;
 		if (command == CAL_LINE){
 			uint8_t is_on_tape;
-			display(1, "Line...");
+			//display(1, "Line...");
 			if (usart_read_byte(&is_on_tape) == 1)
 			return 1;
-			display(1, "Line, tape=%d", is_on_tape);
+			//display(1, "Line, tape=%d", is_on_tape);
 			bus_transmit(BUS_ADDRESS_SENSOR, 2, is_on_tape);
 		}
 		else if (command ==CAL_RANGE) {
@@ -138,7 +142,7 @@ uint8_t process_packet() {
 	else if (packet_id == PKT_PACKET_REQUEST) {
 		uint8_t req_packet_id;
 		
-		display(0, "Got pkt req");
+		//display(0, "Got pkt req");
 		if (usart_read_byte(&req_packet_id) == 1)
 		return 1;
 		
@@ -147,7 +151,7 @@ uint8_t process_packet() {
 			uint8_t flags;
 			uint8_t center_mass;
 			
-			display(1, "Line data");
+			//display(1, "Line data");
 			
 			uint16_t temp_line_value_pair;
 			for (int i = 0; i < 6; ++i) {
@@ -193,7 +197,7 @@ uint8_t process_packet() {
 		usart_read_byte(&metadata_h) == 1	||
 		usart_read_byte(&metadata_l) == 1)
 		return 1;
-		display(0, "req %d", request_id);
+		//display(0, "req %d", request_id);
 		bus_request(address,
 		request_id,
 		((uint16_t)metadata_h << 8) | (uint16_t) metadata_l,
@@ -202,7 +206,7 @@ uint8_t process_packet() {
 		
 		send_packet(PKT_SPOOFED_RESPONSE, 2, (uint8_t)(response >> 8), (uint8_t) response);
 		
-		display(1, "%x", response);
+		//display(1, "%x", response);
 		
 	}
 	else if (packet_id ==PKT_SPOOFED_TRANSMIT) {
