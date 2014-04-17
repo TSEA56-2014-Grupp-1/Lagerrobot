@@ -215,7 +215,7 @@ int main(void)
 
 	//prescale
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
-	
+
     while(1)
     {
 
