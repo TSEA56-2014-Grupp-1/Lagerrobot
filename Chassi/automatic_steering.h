@@ -7,8 +7,6 @@
 #ifndef AUTOMATIC_STEERING_H_
 #define AUTOMATIC_STEERING_H_
 
-#define STEERING_MAX_SPEED 1999L
-
 #include "engine_control.h"
 
 void steering_algorithm();

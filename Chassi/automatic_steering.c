@@ -9,51 +9,9 @@
 	
 void steering_algorithm ()
 {
-	if(STEERING_MAX_SPEED > control && control > 0)
-	{
-		drive_forward();
-		speed_left = STEERING_MAX_SPEED - abs(control);
-		speed_right = STEERING_MAX_SPEED;
-	}
-	else if (-STEERING_MAX_SPEED < control && control < 0) 
-	{	
-		drive_forward();
-		speed_right = STEERING_MAX_SPEED - abs(control);
-		speed_left = STEERING_MAX_SPEED;
-	}
-	else if (control < -STEERING_MAX_SPEED && control > -2*STEERING_MAX_SPEED)
-	{
-		spin_right();
-		
-		speed_right = abs(control) - STEERING_MAX_SPEED;
-		speed_left = STEERING_MAX_SPEED;
-	}
-	else if (control > STEERING_MAX_SPEED && control < 2*STEERING_MAX_SPEED) {
-		spin_left();
-		speed_right = STEERING_MAX_SPEED;
-		speed_left = abs(control) - STEERING_MAX_SPEED;
-	}
-	else if (control > 0) {
-		spin_left();
-		speed_right = STEERING_MAX_SPEED;
-		speed_left = STEERING_MAX_SPEED;
-	}
-	else if (control < 0) {
-		spin_right();
-		speed_right = STEERING_MAX_SPEED;
-		speed_left = STEERING_MAX_SPEED;
-	}
-	else if (control == 0)
-	{
-		drive_forward();
-		speed_left = STEERING_MAX_SPEED;
-		speed_right = STEERING_MAX_SPEED;
-	}
-	else {
-		stop_wheels();
-	}
-	drive_left_wheels(speed_left);
-	drive_right_wheels(speed_right);	
+	steering_wheel = control;
+	update_steering();
+	
 }
 
 

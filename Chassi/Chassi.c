@@ -14,6 +14,7 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 
+
 //---- Functions----
 uint16_t request_line_data()
 {
@@ -92,7 +93,7 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 //---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {	
-	uint16_t line_data = 0; // request_line_data() Collect line data from sensor unit
+	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
 	uint8_t chassi_switch = 0;
@@ -109,12 +110,13 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	if (!is_station(station_data) && (chassi_switch != 1))	// wheels are on and not on station
 	{
 		pd_update(curr_error);
+		accelerator = STEERING_MAX_SPEED;
 		steering_algorithm();
 		return;
 	}
 	else if (!is_station(station_data) && (chassi_switch == 1)) //wheels are off and not on station
 	{
-		stop_wheels();
+		//stop_wheels();
 		return;
 	}
 	
@@ -200,11 +202,13 @@ int main(void)
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
 	bus_register_receive(1, arm_is_done);
+	
+	
 	//enable_rfid_reader();
-	//sei();
+	sei();
 	//enable timer interrupts for ocie0a
-// 	TIMSK0 |= (1 << OCIE0A);
-// 	TIFR0 |= (1 << OCF0A);
+ 	TIMSK0 |= (1 << OCIE0A);
+ 	TIFR0 |= (1 << OCF0A);
 // 	
 	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
 	OCR0A = 0x80; 
