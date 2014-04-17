@@ -19,7 +19,7 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>437</width>
+      <width>431</width>
       <height>277</height>
      </rect>
     </property>
@@ -125,7 +125,7 @@
       <x>830</x>
       <y>390</y>
       <width>345</width>
-      <height>231</height>
+      <height>191</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -147,13 +147,6 @@
       <widget class="QLabel" name="label_arm_length">
        <property name="text">
         <string>TextLabel</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1" colspan="2">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Tyngpunkt från linjesensor</string>
        </property>
       </widget>
      </item>
@@ -391,7 +384,6 @@
       <height>181</height>
      </rect>
     </property>
-    <zorder>horizontalScrollBar_graphs</zorder>
    </widget>
    <widget class="QScrollBar" name="horizontalScrollBar_graphs">
     <property name="geometry">

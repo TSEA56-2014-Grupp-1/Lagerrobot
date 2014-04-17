@@ -15,7 +15,7 @@
 #include "../shared/packets.h"
 
 /*
- *      Constructor for main window
+ *      @brief Constructor for main window
  *
  *      @param parent Parent for the window
  */
@@ -45,7 +45,7 @@ MainWindow::~MainWindow()
 
 
 /*
- *      Linking w, a, s and d to forward, left, back and right buttons key_pressed_event
+ *      @brief Linking w, a, s and d to forward, left, back and right buttons key_pressed_event
  *
  *      @param key_pressed Key that was currently pressed
  */
@@ -70,7 +70,7 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
 }
 
 /*
- *      Linking w, a, s and d to forward, left, back and right buttons key_released_event
+ *      @brief Linking w, a, s and d to forward, left, back and right buttons key_released_event
  *
  *      @param key_pressed Key that was currently released
  */
@@ -94,7 +94,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
 
 
 /*
- *      Setting new port for program to communicate with robot
+ *      @brief Setting new port for program to communicate with robot
  *
  *      @param new_connection Bluetooth port to robot
  */
@@ -102,15 +102,22 @@ void MainWindow::new_connection(bluetooth *new_connection) {
     port = new_connection;
 }
 
+/*
+ *      @brief Function to connect to new port
+ *
+ *      @param name Name of the port
+ */
 void MainWindow::connect_to_port(QString name) {
     bluetooth *connection = new bluetooth(name, this);
     print_on_log(QObject::tr("Connecting to port: %1").arg(name));
     new_connection(connection);
     if(port->open_port()) {
+        print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
         timer->start();
     }
     else {
+        print_on_log("Error opening bluetooth");
         delete port;
         port = NULL;
     }
@@ -121,7 +128,6 @@ void MainWindow::on_pushButton_forward_pressed()
 {
     port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 1);
 }
-
 
 void MainWindow::on_pushButton_back_pressed()
 {
@@ -166,20 +172,6 @@ void MainWindow::on_pushButton_start_line_clicked()
 void MainWindow::on_pushButton_stop_line_clicked()
 {
     //Stop follwing line
-}
-
-void MainWindow::on_lineEdit_Kd_editingFinished()
-{
-//    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
-//    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
-//    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
-}
-
-void MainWindow::on_lineEdit_Kp_editingFinished()
-{
-//    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
-//    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
-//    port->send_packet(CMD_CHASSIS_PARAMETERS, 2, Kp, Kd);
 }
 
 void MainWindow::on_pushButton_close_gripper_clicked()
@@ -299,7 +291,7 @@ void MainWindow::on_pushButton_calibrate_floor_clicked()
 }
 
 /*
- *      Prints a string in the log window, will be timestamped
+ *      @brief Prints a string in the log window, will be timestamped
  *
  *      @param text Text to be displated on in the log window
  */
@@ -310,7 +302,7 @@ void MainWindow::print_on_log(QString text) {
 }
 
 /*
- *      Open a new Dialog_connect
+ *      @brief Open a new Dialog_connect
  */
 void MainWindow::on_connect_action_triggered()
 {
@@ -324,7 +316,7 @@ void MainWindow::on_connect_action_triggered()
 }
 
 /*
- *      Disable all buttons
+ *      @brief Disable all buttons
  */
 void MainWindow::disable_buttons() {
     ui->pushButton_1_down->setEnabled(false);
@@ -349,10 +341,11 @@ void MainWindow::disable_buttons() {
     ui->pushButton_stop_line->setEnabled(false);
     ui->pushButton_back->setEnabled(false);
     ui->pushButton_send_param->setEnabled(false);
+    ui->pushButton_stop->setEnabled(false);
 }
 
 /*
- *      Enable all buttons
+ *      @brief Enable all buttons
  */
 void MainWindow::enable_buttons() {
     ui->pushButton_1_down->setEnabled(true);
@@ -377,23 +370,33 @@ void MainWindow::enable_buttons() {
     ui->pushButton_stop_line->setEnabled(true);
     ui->pushButton_back->setEnabled(true);
     ui->pushButton_send_param->setEnabled(true);
+    ui->pushButton_stop->setEnabled(true);
 }
 
+/*
+ *      @brief Function that will reqeuset line data from robot.
+ *      @details Function that will request line data from robot, will also reset the timer so that interupt will happen again.
+ */
 void MainWindow::request_data() {
     port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
     timer->start();
 }
 
+/*
+ *      @brief Callback for diconnect button.
+ *      @details Callback for disconnect button, will disconnect and delete the QSerialPort. Will also disable all buttons to aviod calls to nullpointer.
+ */
 void MainWindow::on_actionDisconnect_triggered()
 {
     port->disconnect();
     ui->actionDisconnect->setEnabled(false);
+    disable_buttons();
     delete port;
 }
 
 
 /*
- *      Function to send Kp and Kd to robot
+ *      @brief Function to send Kp and Kd to robot.
  */
 void MainWindow::on_pushButton_send_param_clicked()
 {
@@ -405,7 +408,7 @@ void MainWindow::on_pushButton_send_param_clicked()
 }
 
 /*
- *      Setting up graphs with correct settings and legends
+ *      @brief Setting up graphs with correct settings and legends.
  */
 void MainWindow::set_up_graphs() {
     ui->plot_steering->addGraph();
@@ -416,9 +419,9 @@ void MainWindow::set_up_graphs() {
 }
 
 /*
- *      Add data to steeringvectors, then calls draw_graphs()
+ *      @brief Add data to steeringvectors, then calls draw_graphs().
  *
- *      @param new_data Data that will be added
+ *      @param new_data Data that will be added.
  */
 void MainWindow::add_steering_data(int new_data) {
     times.push_back(time->elapsed()/1000);
@@ -427,24 +430,42 @@ void MainWindow::add_steering_data(int new_data) {
 }
 
 /*
- *      Draw all data on the graphs
+ *      @brief Draw all data on the graphs.
  */
 void MainWindow::draw_graphs() {
     ui->plot_steering->graph(0)->setData(times, value_steering);
     ui->plot_steering->xAxis->setRange(time->elapsed()/1000 - 5, time->elapsed()/1000);
     ui->plot_steering->replot();
-    ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/10); //Setting the scrollbar 100 units above to make scrolling smooth
+    ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/10); //Setting the scrollbar value times 100 to make scrolling smooth
 }
 
-void MainWindow::horzScrollBarChanged(int new_range) {
-    if (qAbs(ui->plot_steering->xAxis->range().center()-new_range/100.0) > 0.01) // if user is dragging plot, we don't want to replot twice
+/*
+ *      @brief Changes the plot when scrollbar is changed.
+ *
+ *      @param value Value of the scrollbar.
+ */
+void MainWindow::horzScrollBarChanged(int value) {
+    if (qAbs(ui->plot_steering->xAxis->range().center()-value/100.0) > 0.01) // if user is dragging plot, we don't want to replot twice
     {
-        ui->plot_steering->xAxis->setRange(new_range/100.0, ui->plot_steering->xAxis->range().size(), Qt::AlignCenter);
+        ui->plot_steering->xAxis->setRange(value/100.0, ui->plot_steering->xAxis->range().size(), Qt::AlignCenter);
         ui->plot_steering->replot();
     }
 }
 
+/*
+ *      @brief Callback for stop button, will send packet to stop the robot.
+ */
 void MainWindow::on_pushButton_stop_pressed()
 {
     port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 0);
+}
+
+/*
+ *      @brief Set new value to RFID label.
+ *
+ *      @param new_RFID Value of the new RFID card.
+ */
+void MainWindow::set_RFID(QString new_RFID) {
+    ui->label_RFID->setText(new_RFID);
+    ui->label_RFID_time->setText(QTime::currentTime().toString("hh:mm:ss"));
 }

@@ -35,6 +35,8 @@ public:
 
     QTime *time = new QTime();
 
+    void set_RFID(QString);
+
 
 private slots:
     void keyPressEvent(QKeyEvent *key_pressed);
@@ -60,10 +62,6 @@ private slots:
     void on_pushButton_start_line_clicked();
 
     void on_pushButton_stop_line_clicked();
-
-    void on_lineEdit_Kd_editingFinished();
-
-    void on_lineEdit_Kp_editingFinished();
 
     void on_pushButton_close_gripper_clicked();
 

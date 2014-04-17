@@ -13,6 +13,16 @@
 
 QT_USE_NAMESPACE
 
+/*
+ *      @brief Splices a QByteArray.
+ *      @details Returns a QByteArray with values between startpos and endpos of the input array.
+ *
+ *      @param array The array that will be spliced.
+ *      @param startpos The start position in the array.
+ *      @param endpos The end position of the array.
+ *
+ *      @return QByteArray with the values between start position and end position from the input array.
+ */
 QByteArray splice(QByteArray array, int startpos, int endpos) {
     QByteArray result;
     result.resize(endpos-startpos);
@@ -28,6 +38,7 @@ void bluetooth::process_packet()
 {
     quint8 packet_id = buffer.at(0);
     QByteArray parameters = splice(buffer, 2, buffer.length());
+    QString RFID = "";
     switch (packet_id) {
     case PKT_ARM_DECISION:
 
@@ -49,7 +60,10 @@ void bluetooth::process_packet()
 
         break;
     case PKT_RFID_DATA:
-
+        for (int i = 1; i < 13; ++i) {
+            RFID.append(parameters.at(i));
+        }
+        window->set_RFID(RFID);
         break;
     case PKT_CALIBRATION_DATA:
         window->print_on_log(QString("Calibration, new tape reference: ").append(QString::number(parameters[0])));
@@ -61,6 +75,13 @@ void bluetooth::process_packet()
     }
 }
 
+/*
+ *      @brief Constructor for the class bluetooth.
+ *      @details Initiates window and serialport pointers and connects readyRead and error signals to their slots.
+ *
+ *      @param name Name of the QSerialPort.
+ *      @param new_window Main window of the program.
+ */
 bluetooth::bluetooth(QString name, MainWindow* new_window)
 {
     window = new_window;
@@ -74,13 +95,13 @@ bluetooth::~bluetooth() {
 }
 
 /*
- *      Will open the bluetooth port and set baudrate
+ *      @brief Will open the bluetooth port with correct settings.
+ *      @details QSerialPort will be connected if possible, and settings will be set. Will return false if unable to connect.
  *
  *      @return True if port was opened successfully, false otherwise
  */
 bool bluetooth::open_port() {
     if (serialport->open(QIODevice::ReadWrite)) {
-        window->print_on_log("Bluetooth connected succesfully.");
         serialport->setBaudRate(QSerialPort::Baud115200);
         serialport->setFlowControl(QSerialPort::NoFlowControl);
         serialport->setDataBits(QSerialPort::Data8);
@@ -89,12 +110,14 @@ bool bluetooth::open_port() {
         return true;
     }
     else {
-        window->print_on_log("Error opening bluetooth");
         return false;
     }
 }
 
-
+/*
+ *      @brief Slot that will be called when bytes have been received from robot.
+ *      @details Slot that will handle data from robot. If the whole message has been received it will call process_packet(). Otherwise it will read all bytes into buffer and return.
+ */
 void bluetooth::handle_ready_read() {
     QByteArray newBytes;
 
@@ -127,7 +150,7 @@ void bluetooth::handle_ready_read() {
 }
 
 /*
- *      Write data to the robot via bluetooth
+ *      @brief Write data to the robot via bluetooth
  *
  *      @param data Data that will be written
  */
@@ -136,11 +159,11 @@ void bluetooth::write(QByteArray data) {
 }
 
 /*
- *      Sends a packet to the robot via bluetooth
+ *      @brief Sends a packet to the robot via bluetooth
  *
  *      @param packet_id ID of the packet
  *      @param num_args Number of arguments in the packet
- *      @param ... Arguments to be sent
+ *      @param ... Bytes to be sent
  */
 void bluetooth::send_packet(char packet_id, int num_args, ...) {
     va_list param_list;
@@ -161,9 +184,9 @@ void bluetooth::send_packet(char packet_id, int num_args, ...) {
 }
 
 /*
- *      SLOT that will be called when an error has occurred
+ *      @brief Slot that will be called when an error has occurred.
  *
- *      @param error Type of error that has occurred
+ *      @param error Type of error that has occurred.
  */
 void bluetooth::handle_error(QSerialPort::SerialPortError error) {
     if (error == QSerialPort::WriteError) {

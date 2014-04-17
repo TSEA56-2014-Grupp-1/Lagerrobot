@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
     QThread::sleep(1);
     w.add_steering_data(50);
 
+    w.set_RFID("3BA00043562F");
+
 //    w.draw_next_point_steering(3);
 //    QThread::sleep(1);
 //    w.draw_next_point_steering(50);
