@@ -37,12 +37,12 @@
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.simulator</avrtool>
+    <avrtool>com.atmel.avrdbg.tool.jtagice3plus</avrtool>
     <com_atmel_avrdbg_tool_jtagice3plus>
       <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-          <JtagDbgClock>0</JtagDbgClock>
+          <JtagDbgClock>200000</JtagDbgClock>
         </InterfaceProperties>
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
@@ -56,7 +56,8 @@
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
         </InterfaceProperties>
-        <InterfaceName>JTAG</InterfaceName>
+        <InterfaceName>
+        </InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.simulator</ToolType>
       <ToolNumber>
