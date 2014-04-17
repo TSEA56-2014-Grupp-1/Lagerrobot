@@ -34,7 +34,7 @@ void arm_init()
 	servo_write(
 		SERVO_BROADCASTING_ID,
 		SERVO_GOAL_SPEED_L,
-		0x20, 0x00);
+		0x40, 0x00);
 }
 
 
@@ -187,9 +187,21 @@ void arm_movement_command(uint8_t callback_id, uint16_t command_data)
 
 uint8_t joint_is_moving(uint8_t joint)
 {
+	uint8_t i;
 	uint8_t data[1];
-	servo_read(joint_get_servo_id(joint), SERVO_MOVING, 1, data);
-	return data[0];
+
+	// Try to detect 5 times if joint is still moving before giving up and
+	// assume it doesn't
+	for (i = 0; i < 5; i++) {
+		if (!servo_read(joint_get_servo_id(joint), SERVO_MOVING, 1, data)) {
+			return data[0];
+		}
+
+		// Retry after 50 ms
+		_delay_ms(50);
+	}
+
+	return 0;
 }
 
 
@@ -227,6 +239,32 @@ void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 	}
 }
 
+uint8_t arm_claw_open(void) {
+	uint8_t servo_id = joint_get_servo_id(6);
+	uint8_t status_code = servo_write(servo_id, SERVO_GOAL_POSITION_L, 0x00, 0x02);
+
+	if (status_code) {
+		return status_code;
+	}
+
+	while (joint_is_moving(6));
+
+	return 0;
+}
+
+uint8_t arm_claw_close(void) {
+	uint8_t servo_id = joint_get_servo_id(6);
+	uint8_t status_code = servo_write(servo_id, SERVO_GOAL_POSITION_L, 0x00, 0x00);
+
+	if (status_code) {
+		return status_code;
+	}
+
+	while (joint_is_moving(6));
+
+	return 0;
+}
+
 int main(void) {
 	servo_init();
 	arm_init();
@@ -239,14 +277,17 @@ int main(void) {
 	//arm_display_read_packet(4, SERVO_PRESENT_POSITION_L, 2);
 
 
-	_delay_ms(2000);
-	arm_move_joint_add(2, ik_rad_to_servo_angle(2, 0.0f));
-	//arm_move_joint_add(2, ik_rad_to_servo_angle(2, M_PI / 2));
+	_delay_ms(1000);
+	//arm_move_joint_add(2, ik_rad_to_servo_angle(2, 0.0f));
+	arm_move_joint_add(2, ik_rad_to_servo_angle(2, M_PI / 2));
 	arm_move_joint_add(3, ik_rad_to_servo_angle(3, 0.0f));
 	arm_move_joint_add(4, ik_rad_to_servo_angle(4, 0.0f));
 	servo_action(SERVO_BROADCASTING_ID);
 
-	for (;;) {}
+	for (;;) {
+		arm_claw_open();
+		arm_claw_close();
+	}
 
 	// id 2 - 754 for 0
 	// id 4 - 757 for 0
