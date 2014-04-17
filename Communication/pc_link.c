@@ -116,6 +116,13 @@ uint8_t process_packet() {
 			_delay_ms(1);
 			bus_transmit(BUS_ADDRESS_CHASSIS, 11, (uint16_t) Kp);
 		}
+		else if (command == CMD_CHASSIS_MOVEMENT) {
+			uint8_t move_command;
+			if (usart_read_byte(&move_command) == 1)
+				return 1;
+			
+			bus_transmit(BUS_ADDRESS_CHASSIS, 8, (uint16_t) move_command);
+		}
 	}
 	else if (packet_id == PKT_CALIBRATION_COMMAND) {
 		uint8_t command;
