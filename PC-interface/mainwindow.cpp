@@ -24,17 +24,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    scene_graph_steering = new QGraphicsScene(this);
-    scene_graph_sensors = new QGraphicsScene(this);
-    ui->graphicsView_graph_1->setScene(scene_graph_steering);
-    ui->graphicsView_graph_2->setScene(scene_graph_sensors);
-
-    pen_steering = new QPen();
-    pen_steering->setColor(Qt::black);
-    pen_steering->setWidth(2);
-
-    last_xpos_steering = 0;
-    last_ypos_steering = 0;
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
@@ -43,6 +32,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     disable_buttons();
     ui->actionDisconnect->setEnabled(false);
+
+    set_up_graphs();
+    connect(ui->horizontalScrollBar_graphs, SIGNAL(valueChanged(int)), this, SLOT(horzScrollBarChanged(int)));
 }
 
 //XXX: TODO:
@@ -304,62 +296,6 @@ void MainWindow::on_pushButton_calibrate_floor_clicked()
 }
 
 /*
- *      Draws next point to steering graph, 1 pixel on y-axis i Y_SCALE_STEERING ms
- *
- *      @param ypos Y-position of next data point
- */
-void MainWindow::draw_next_point_steering(qreal ypos) {
-    qreal current_time = time->elapsed()/X_SCALE_STEERING;
-    scene_graph_steering->addLine(last_xpos_steering, -1*last_ypos_steering, current_time, -1*ypos/Y_SCALE_STEERING, *pen_steering);
-    last_xpos_steering = current_time;
-    last_ypos_steering = ypos/Y_SCALE_STEERING;
-    if (ypos > max_y_steering)
-        max_y_steering = ypos + Y_INTERVAL_STEERING; //Adding y_interval to ypos, will give better axis.
-    draw_x_axis(scene_graph_steering);
-    draw_y_axis_steering();
-    ui->graphicsView_graph_1->centerOn(current_time, -127/Y_SCALE_STEERING);
-}
-
-/*
- *      Paints x-axis from 0 to current time adding numbers every second
- *
- *      @param graph Graph that the axis should be painted in
- */
-void MainWindow::draw_x_axis(QGraphicsScene *graph) {
-    graph->addLine(0,0,time->elapsed()/X_SCALE_STEERING,0);
-
-    QGraphicsTextItem* current_number = new QGraphicsTextItem();
-
-    // XXX: There could be a beter soultion since this will rewrite all the numbers every time.
-    for (int i = 1000/X_SCALE_STEERING; i < qCeil(time->elapsed()/X_SCALE_STEERING) ; i = i + 1000/X_SCALE_STEERING) {
-        current_number = graph->addText(QString::number(i/(1000/X_SCALE_STEERING)));
-        current_number->setPos(i-7,-5);
-        graph->addLine(i,-2,i,2);
-    }
-}
-
-/*
- *      Paints y-axis on the steering graph
- */
-void MainWindow::draw_y_axis_steering() {
-    scene_graph_steering->addLine(0,-1*max_y_steering,0,max_y_steering);
-
-    QGraphicsTextItem* current_number = new QGraphicsTextItem();
-
-    for (int i = -1*qFloor(max_y_steering); i < qCeil(max_y_steering); i = i + Y_INTERVAL_STEERING/Y_SCALE_STEERING) {
-        if (i != 0) {
-            if (i > 0)
-                current_number = scene_graph_steering->addText(QString::number(i*Y_SCALE_STEERING));
-            else
-                current_number = scene_graph_steering->addText(QString::number(-1*i*Y_SCALE_STEERING));
-            current_number->setPos(3,i-15);
-            scene_graph_steering->addLine(-2,i,2,i);
-        }
-    }
-
-}
-
-/*
  *      Prints a string in the log window, will be timestamped
  *
  *      @param text Text to be displated on in the log window
@@ -409,6 +345,7 @@ void MainWindow::disable_buttons() {
     ui->pushButton_start_position_arm->setEnabled(false);
     ui->pushButton_stop_line->setEnabled(false);
     ui->pushButton_back->setEnabled(false);
+    ui->pushButton_send_param->setEnabled(false);
 }
 
 /*
@@ -436,10 +373,11 @@ void MainWindow::enable_buttons() {
     ui->pushButton_start_position_arm->setEnabled(true);
     ui->pushButton_stop_line->setEnabled(true);
     ui->pushButton_back->setEnabled(true);
+    ui->pushButton_send_param->setEnabled(true);
 }
 
 void MainWindow::request_data() {
-    //port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
+    port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
     timer->start();
 }
 
@@ -450,6 +388,10 @@ void MainWindow::on_actionDisconnect_triggered()
     delete port;
 }
 
+
+/*
+ *      Function to send Kp and Kd to robot
+ */
 void MainWindow::on_pushButton_send_param_clicked()
 {
     uint8_t Kp = ui->lineEdit_Kp->text().toInt();
@@ -457,4 +399,44 @@ void MainWindow::on_pushButton_send_param_clicked()
     port->send_packet(PKT_CHASSIS_COMMAND , 3,CMD_CHASSIS_PARAMETERS, Kp, Kd);
     print_on_log(QString::number(PKT_CHASSIS_COMMAND));
     print_on_log(QString::number(CMD_CHASSIS_PARAMETERS));
+}
+
+/*
+ *      Setting up graphs with correct settings and legends
+ */
+void MainWindow::set_up_graphs() {
+    ui->plot_steering->addGraph();
+    ui->plot_steering->xAxis->setLabel("Time");
+    ui->plot_steering->xAxis->setAutoTickStep(false);
+    ui->plot_steering->xAxis->setTickStep(1);
+    ui->plot_steering->yAxis->setRange(-127, 127);
+}
+
+/*
+ *      Add data to steeringvectors, then calls draw_graphs()
+ *
+ *      @param new_data Data that will be added
+ */
+void MainWindow::add_steering_data(int new_data) {
+    times.push_back(time->elapsed()/1000);
+    value_steering.push_back(new_data);
+    draw_graphs();
+}
+
+/*
+ *      Draw all data on the graphs
+ */
+void MainWindow::draw_graphs() {
+    ui->plot_steering->graph(0)->setData(times, value_steering);
+    ui->plot_steering->xAxis->setRange(time->elapsed()/1000 - 5, time->elapsed()/1000);
+    ui->plot_steering->replot();
+    ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/10); //Setting the scrollbar 100 units above to make scrolling smooth
+}
+
+void MainWindow::horzScrollBarChanged(int new_range) {
+    if (qAbs(ui->plot_steering->xAxis->range().center()-new_range/100.0) > 0.01) // if user is dragging plot, we don't want to replot twice
+    {
+        ui->plot_steering->xAxis->setRange(new_range/100.0, ui->plot_steering->xAxis->range().size(), Qt::AlignCenter);
+        ui->plot_steering->replot();
+    }
 }

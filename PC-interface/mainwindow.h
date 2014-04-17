@@ -24,15 +24,16 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    void draw_next_point_steering(qreal);
-
-    QTime *time = new QTime();
 
     void print_on_log(QString);
 
     void new_connection(bluetooth*);
 
     void connect_to_port(QString);
+
+    void add_steering_data(int);
+
+    QTime *time = new QTime();
 
 
 private slots:
@@ -118,40 +119,36 @@ private slots:
 
     void on_pushButton_send_param_clicked();
 
+    void horzScrollBarChanged(int);
+
 private:
     Ui::MainWindow *ui;
 
-    QGraphicsScene *scene_graph_steering;
-    QGraphicsScene *scene_graph_sensors;
-
-    QPen *pen_steering;
-
-    qreal last_xpos_steering;
-    qreal last_ypos_steering;
-
-    void draw_x_axis(QGraphicsScene*);
-    void draw_y_axis_steering();
-    void draw_y_axis_sensors();
-
     void disable_buttons();
     void enable_buttons();
+
+    void set_up_graphs();
+    void draw_graphs();
 
     QTimer *timer = new QTimer();
 
     bluetooth* port = NULL;
 
-    int max_y_steering = 200;
-    int max_y_sensors = 200;
+    QVector<double> times, value_steering;
 
-    //Constants for painting graphs
-    const int X_SCALE_STEERING = 10;
-    const int Y_SCALE_STEERING = 10;
 
-    const int X_SCALE_SENSORS = 10;
-    const int Y_SCALE_SENSORS = 10;
+//    int max_y_steering = 200;
+//    int max_y_sensors = 200;
 
-    const int Y_INTERVAL_STEERING = 1000;
-    const int Y_INTERVAL_SENSOR = 50;
+//    //Constants for painting graphs
+//    const int X_SCALE_STEERING = 10;
+//    const int Y_SCALE_STEERING = 10;
+
+//    const int X_SCALE_SENSORS = 10;
+//    const int Y_SCALE_SENSORS = 10;
+
+//    const int Y_INTERVAL_STEERING = 1000;
+//    const int Y_INTERVAL_SENSOR = 50;
 };
 
 #endif // MAINWINDOW_H

@@ -7,6 +7,7 @@
 QT       += core gui
 QT       += widgets
 QT       += serialport
+QT       += widgets printsupport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -19,12 +20,14 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     bluetooth.cpp \
-    dialog_connect.cpp
+    dialog_connect.cpp \
+    qcustomplot/qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
     bluetooth.h \
     ../shared/packets.h \
-    dialog_connect.h
+    dialog_connect.h \
+    qcustomplot/qcustomplot.h
 
 
 FORMS    += mainwindow.ui \

@@ -42,7 +42,8 @@ void bluetooth::process_packet()
 
         break;
     case PKT_LINE_DATA:
-        window->draw_next_point_steering(parameters[12]);
+        window->add_steering_data(parameters[12]);
+
         break;
     case PKT_RANGE_DATA:
 

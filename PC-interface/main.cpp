@@ -18,6 +18,13 @@ int main(int argc, char *argv[])
     w.raise();
 
     w.time->start();
+    w.add_steering_data(10);
+    QThread::sleep(1);
+    w.add_steering_data(20);
+    QThread::msleep(300);
+    w.add_steering_data(0);
+    QThread::sleep(1);
+    w.add_steering_data(50);
 
 //    w.draw_next_point_steering(3);
 //    QThread::sleep(1);
