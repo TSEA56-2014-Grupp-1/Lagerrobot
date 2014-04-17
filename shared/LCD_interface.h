@@ -3,6 +3,7 @@
 
 #include <avr/io.h>
 #include <stdarg.h>
+#include <stdio.h>
 
 /**
  * @brief The symbols to be displayed.
