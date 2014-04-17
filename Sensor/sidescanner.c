@@ -10,14 +10,16 @@
 #include "sidescanner.h"
 #include "distance_sensors.h"
 
-double distance;
-uint16_t zone_size = 20; 
+double distance = 400;
+uint16_t zone_size = 200; 
 uint8_t angle =0;
 uint8_t max_angle = 180;
 uint8_t object_found;
 uint8_t step = 1;
 uint8_t angle_coordinate;
 uint8_t distance_coordinate;
+
+uint16_t ad_test;
 
 void sidescanner_init()
 {
@@ -40,7 +42,7 @@ void sidescanner_init()
 	//Enable adc, Set ADIF flag, Set ADC Interreupt enable, set prescaler
 	ADCSRA = 0b10001111;
 	//Set left AD-left adjust, set AD-channel 1
-	ADMUX |= 0b00100001;	
+	ADMUX |= 0b00000001;	
 	//Start AD-conversion
 	ADCSRA |= (1 << ADSC);
 	
@@ -67,6 +69,7 @@ uint8_t scanner_right_position(uint8_t angle)
 
 
 void update_distance_sensor_2()	{
+	ad_test = ADC;
 	distance = ad_interpolate(ADC,2);
 	ADCSRA |= (1 << ADSC);
 }
@@ -78,10 +81,12 @@ void update_distance_sensor_3()	{
 
 uint8_t sweep_left()	{
 	//zone_size in volt = 1/distance
-	if(distance>=zone_size)	
+	if(distance<=zone_size)	
 	{
 		object_found = 1;
-		scanner_left_position(0);
+		scanner_left_position(angle);
+		calculate_coordinates();
+		//wait_scanner_servo(5000);
 	}
 	else if(angle == max_angle)	{
 		return 1;
@@ -125,11 +130,11 @@ void wait_scanner_servo(int milli_sec)
 
 void calculate_coordinates()
 {
-	uint8_t x_coord;
-	uint8_t y_coord;
-	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(angle);
-	y_coord = distance*sin(angle);
+	double alfa = (angle - 90)*M_PI/180;
+	uint16_t x_coord;
+	uint16_t y_coord;
+	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(alfa);
+	y_coord = distance*sin(alfa);
 	angle_coordinate = tan(y_coord/x_coord);
 	distance_coordinate = sqrt((x_coord^2) + (y_coord^2));
 }
-
