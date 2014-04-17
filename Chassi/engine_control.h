@@ -19,8 +19,9 @@
 #include <util/delay.h>
 #include <stdlib.h>
 
-#define STEERING_SPEED_INCREASE 150
-#define STEERING_SPIN_SPEED 800
+#define STEERING_THRUST_INCREASE 300
+#define STEERING_TURN_INCREASE 200
+#define STEERING_SPIN_SPEED 500
 
 uint16_t line_weight;
 uint8_t prev_error;

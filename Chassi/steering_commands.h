@@ -12,8 +12,8 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-void drive_left_wheels(int speed);
-void drive_right_wheels(int speed);
+void drive_left_wheels(uint16_t speed);
+void drive_right_wheels(uint16_t speed);
 void drive_forward();
 void drive_backwards();
 void spin_right();
@@ -22,6 +22,10 @@ void stop_wheels();
 void wait_wheels(int tenth_secs);
 void turn_right(int speed);
 void turn_left(int speed);
+uint8_t is_driving();
 uint8_t driving_direction();
+uint8_t is_spinning();
+uint8_t spinning_direction();
+uint8_t is_moving();
 
 #endif

@@ -92,7 +92,7 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 //---Timer interrupt----
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {	
-	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
+	uint16_t line_data = 0; // request_line_data() Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
 	uint8_t chassi_switch = 0;
@@ -203,21 +203,21 @@ int main(void)
 	//enable_rfid_reader();
 	//sei();
 	//enable timer interrupts for ocie0a
-	TIMSK0 |= (1 << OCIE0A);
-	TIFR0 |= (1 << OCF0A);
-	
+// 	TIMSK0 |= (1 << OCIE0A);
+// 	TIFR0 |= (1 << OCF0A);
+// 	
 	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
 	OCR0A = 0x80; 
 	
 	// set to mode 2 (CTC) => clear TCNT0 on compare match
 	TCCR0A |= (1 << WGM01 | 0 << WGM00); 
 	TCCR0B |= (0 << WGM02);
-	
+
 	//prescale
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
 	
     while(1)
     {
-        //TODO:: Please write your application code 
+
     }
 }

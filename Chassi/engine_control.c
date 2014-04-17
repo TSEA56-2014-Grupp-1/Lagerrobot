@@ -59,79 +59,152 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 			break;
 		//Increase speed forwards
 		case 1:
-			if(driving_direction())
+			if(is_driving())
 			{
-				speed_left += STEERING_SPEED_INCREASE;
-				speed_right += STEERING_SPEED_INCREASE;
-			}
-			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_left >= STEERING_SPEED_INCREASE))
-			{
-				speed_left -= STEERING_SPEED_INCREASE;
-				speed_right -= STEERING_SPEED_INCREASE;
+				if(driving_direction())
+				{
+					speed_left += STEERING_THRUST_INCREASE;
+					speed_right += STEERING_THRUST_INCREASE;
+					break;			
+				}
+				else if (is_moving(speed_left, speed_right, STEERING_THRUST_INCREASE))
+				{
+					speed_left -= STEERING_THRUST_INCREASE;
+					speed_right -= STEERING_THRUST_INCREASE;
+					break;			  
+				}
+				else
+				{
+					drive_forward();
+					speed_left = STEERING_THRUST_INCREASE;
+					speed_right = STEERING_THRUST_INCREASE;
+					break;
+				}
 			}
 			else
 			{
 				drive_forward();
-				speed_left = STEERING_SPEED_INCREASE;
-				speed_right = STEERING_SPEED_INCREASE;
+				speed_left = STEERING_THRUST_INCREASE;
+				speed_right = STEERING_THRUST_INCREASE;
+				break;
 			}
 			break;
-		//Increase speed backwards, or break in forwarddirection
+		//Increase speed backwards, or break in forward direction
 		case 2:
-			if(!driving_direction())
+			if(is_driving())
 			{
-				speed_left += STEERING_SPEED_INCREASE;
-				speed_right += STEERING_SPEED_INCREASE;
-			}
-			else if ((speed_right >= STEERING_SPEED_INCREASE) | (speed_left >= STEERING_SPEED_INCREASE))
-			{
-				speed_left -= STEERING_SPEED_INCREASE;
-				speed_right -= STEERING_SPEED_INCREASE;
+				if(!driving_direction())
+				{
+					speed_left += STEERING_THRUST_INCREASE;
+					speed_right += STEERING_THRUST_INCREASE;
+					break;
+				}
+				else if (is_moving(speed_left, speed_right, STEERING_THRUST_INCREASE))
+				{
+					speed_left -= STEERING_THRUST_INCREASE;
+					speed_right -= STEERING_THRUST_INCREASE;
+					break;
+				}
+				else
+				{
+					drive_backwards();
+					speed_left = STEERING_THRUST_INCREASE;
+					speed_right = STEERING_THRUST_INCREASE;
+					break;
+				}
 			}
 			else
 			{
 				drive_backwards();
-				speed_left = STEERING_SPEED_INCREASE;
-				speed_right = STEERING_SPEED_INCREASE;
+				speed_left = STEERING_THRUST_INCREASE;
+				speed_right = STEERING_THRUST_INCREASE;
+				break;
 			}
 			break;
 		//Increase turningspeed to right, spin right if standing still
 		case 3:
-			if((speed_right < STEERING_SPEED_INCREASE) | (speed_left < STEERING_SPEED_INCREASE))
+			if(is_driving())
 			{
-// 				spin_right();
-// 				speed_left = STEERING_SPIN_SPEED;
-// 				speed_right = STEERING_SPIN_SPEED;
+				if(is_moving(speed_left, speed_right, STEERING_THRUST_INCREASE))
+				{
+					speed_left -= STEERING_TURN_INCREASE;
+					break;
+				}
+				else 
+				{
+					spin_right();
+					speed_left = STEERING_SPIN_SPEED;
+					speed_right = STEERING_SPIN_SPEED;
+					break;
+				}
 			}
-			else if(driving_direction())
+			else if(is_moving(speed_left, speed_right, STEERING_THRUST_INCREASE))
 			{
-				speed_right -= STEERING_SPEED_INCREASE;
-				speed_left += STEERING_SPEED_INCREASE;
+				if(spinning_direction())
+				{
+					speed_left += STEERING_THRUST_INCREASE;
+					speed_right += STEERING_THRUST_INCREASE;
+					break;
+				}
+				else
+				{
+					speed_left -= STEERING_THRUST_INCREASE;
+					speed_right -= STEERING_THRUST_INCREASE;
+					break;
+				}
 			}
-			else if(!driving_direction())
+			
+			else
 			{
-				speed_left -= STEERING_SPEED_INCREASE;
+				speed_left = STEERING_SPIN_SPEED;
+				speed_right = STEERING_SPIN_SPEED;
+				break;
 			}
 			break;
+
 		//Increase turningspeed to left, spin left if standing still
-		case 4:
-			if((speed_right < STEERING_SPEED_INCREASE) | (speed_left < STEERING_SPEED_INCREASE))
+		case 4:			
+		
+		if(is_driving())
+		{
+			if(is_moving(speed_left, speed_right, STEERING_THRUST_INCREASE))
 			{
-// 				spin_left();
-// 				speed_left = STEERING_SPIN_SPEED;
-// 				speed_right = STEERING_SPIN_SPEED;
+				speed_right -= STEERING_TURN_INCREASE;
+				break;
 			}
-			else if(driving_direction())
+			else
 			{
-				speed_right += STEERING_SPEED_INCREASE;
-				speed_left -= STEERING_SPEED_INCREASE;
+				spin_right();
+				speed_left = STEERING_SPIN_SPEED;
+				speed_right = STEERING_SPIN_SPEED;
+				break;
 			}
-			else if(!driving_direction())
+		}
+		
+		else if(is_moving(speed_left, speed_right, STEERING_THRUST_INCREASE))
+		{
+			if(spinning_direction())
 			{
-				speed_right -= STEERING_SPEED_INCREASE;
-				speed_left += STEERING_SPEED_INCREASE;
+				speed_left -= STEERING_THRUST_INCREASE;
+				speed_right -= STEERING_THRUST_INCREASE;
+				break;
 			}
+			else
+			{
+				speed_left += STEERING_THRUST_INCREASE;
+				speed_right += STEERING_THRUST_INCREASE;
+				break;
+			}
+		}
+		
+		else
+		{
+			speed_left = STEERING_SPIN_SPEED;
+			speed_right = STEERING_SPIN_SPEED;
 			break;
+		}
+		break;
+		
 		//TODO: Enable automatic steering
 		//case 5:
 

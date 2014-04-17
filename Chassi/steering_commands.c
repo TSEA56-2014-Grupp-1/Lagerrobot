@@ -7,12 +7,12 @@
 
 #include "steering_commands.h"
 
-void drive_left_wheels(int speed)
+void drive_left_wheels(uint16_t speed)
 {
 	OCR1B = speed;
 }
 
-void drive_right_wheels(int speed)
+void drive_right_wheels(uint16_t speed)
 {
 	OCR1A = speed;
 }
@@ -64,7 +64,30 @@ void wait_wheels(int tenth_secs)
 	}
 }
 
+uint8_t is_driving()
+{
+	return (((PORTD & (1<<PORTD0)) & ~(PORTD & (1<<PORTD1))) |
+	(~(PORTD & (1<<PORTD0)) & (PORTD & (1<<PORTD1))));
+}
+
 uint8_t driving_direction()
 {
-	return ((PORTD & (1<<PORTD0)) & !(PORTD & (1<<PORTD1)));
+	return ((PORTD & (1<<PORTD0)) & (~(PORTD & (1<<PORTD1))));
+}
+
+uint8_t is_spinning()
+{
+	return (((PORTD & (1<<PORTD0)) & (PORTD & (1<<PORTD1))) |
+	((~(PORTD & (1<<PORTD0))) & (~(PORTD & (1<<PORTD1)))));
+}
+
+uint8_t spinning_direction()
+{
+	return ((PORTD & (1<<PORTD0)) & (PORTD & (1<<PORTD1)));
+}
+
+uint8_t is_moving(uint16_t speed_left, uint16_t speed_right, uint16_t speed_compare)
+{
+	return (!((speed_right < speed_compare) &
+	(speed_left < speed_compare)));
 }
