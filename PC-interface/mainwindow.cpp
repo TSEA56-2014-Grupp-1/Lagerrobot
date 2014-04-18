@@ -28,8 +28,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-    timer->setInterval(250);
-    connect(timer, SIGNAL(timeout()), this, SLOT(request_data()));
+    timer_req->setInterval(250);
+    connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
+
+    timer_com->setInterval(100);
+    connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
+    ui->lcdTimer->setDigitCount(10);
 
     disable_buttons();
     ui->actionDisconnect->setEnabled(false);
@@ -116,7 +120,7 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
-        timer->start();
+        timer_req->start();
     }
     else {
         print_on_log("Error opening bluetooth");
@@ -381,7 +385,7 @@ void MainWindow::enable_buttons() {
  */
 void MainWindow::request_data() {
     port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
-    timer->start();
+    timer_req->start();
 }
 
 /*
@@ -426,7 +430,7 @@ void MainWindow::set_up_graphs() {
  *      @param new_data Data that will be added.
  */
 void MainWindow::add_steering_data(int new_data) {
-    times.push_back(time->elapsed()/1000);
+    times_steering.push_back(time->elapsed()/1000);
     value_steering.push_back(new_data);
     draw_graphs();
 }
@@ -435,7 +439,7 @@ void MainWindow::add_steering_data(int new_data) {
  *      @brief Draw all data on the graphs.
  */
 void MainWindow::draw_graphs() {
-    ui->plot_steering->graph(0)->setData(times, value_steering);
+    ui->plot_steering->graph(0)->setData(times_steering, value_steering);
     ui->plot_steering->xAxis->setRange(time->elapsed()/1000 - 5, time->elapsed()/1000);
     ui->plot_steering->replot();
     ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
@@ -472,10 +476,21 @@ void MainWindow::set_RFID(QString new_RFID) {
     ui->label_RFID_time->setText(QTime::currentTime().toString("hh:mm:ss"));
 }
 
+/*
+ *      @brief Slot for scrolling with trackpad.
+ *
+ *      @param event The QWheelEvent that triggerd the signal.
+ */
 void MainWindow::wheelevent_steering(QWheelEvent* event) {
     int steps = qCeil(event->delta());
 
     steps += ui->horizontalScrollBar_graphs->value();
 
     ui->horizontalScrollBar_graphs->setValue(steps);
+}
+
+void MainWindow::add_to_lcdtimer() {
+    time_since_start += (double)timer_com->interval()/1000;
+    ui->lcdTimer->display(time_since_start);
+    timer_com->start();
 }

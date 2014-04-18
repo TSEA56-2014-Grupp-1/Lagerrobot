@@ -123,6 +123,8 @@ private slots:
 
     void wheelevent_steering(QWheelEvent*);
 
+    void add_to_lcdtimer();
+
 private:
     Ui::MainWindow *ui;
 
@@ -132,25 +134,15 @@ private:
     void set_up_graphs();
     void draw_graphs();
 
-    QTimer *timer = new QTimer();
+    QTimer *timer_req = new QTimer();
+    QTimer *timer_com = new QTimer();
+
+    double time_since_start = 0;
 
     bluetooth* port = NULL;
 
-    QVector<double> times, value_steering;
+    QVector<double> times_steering, value_steering;
 
-
-//    int max_y_steering = 200;
-//    int max_y_sensors = 200;
-
-//    //Constants for painting graphs
-//    const int X_SCALE_STEERING = 10;
-//    const int Y_SCALE_STEERING = 10;
-
-//    const int X_SCALE_SENSORS = 10;
-//    const int Y_SCALE_SENSORS = 10;
-
-//    const int Y_INTERVAL_STEERING = 1000;
-//    const int Y_INTERVAL_SENSOR = 50;
 };
 
 #endif // MAINWINDOW_H

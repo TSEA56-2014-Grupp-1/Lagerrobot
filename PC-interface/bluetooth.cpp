@@ -54,12 +54,12 @@ void bluetooth::process_packet()
         break;
     case PKT_LINE_DATA:
         window->add_steering_data(parameters[12]);
-
         break;
     case PKT_RANGE_DATA:
 
         break;
     case PKT_RFID_DATA:
+        window->print_on_log("Received new RFID tag");
         for (int i = 1; i < 13; ++i) {
             RFID.append(parameters.at(i));
         }

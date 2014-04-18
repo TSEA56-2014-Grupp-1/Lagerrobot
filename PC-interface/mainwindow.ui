@@ -20,7 +20,7 @@
       <x>0</x>
       <y>0</y>
       <width>437</width>
-      <height>261</height>
+      <height>277</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_chassi">
@@ -54,7 +54,7 @@
      <item row="3" column="1" colspan="3">
       <widget class="QPushButton" name="pushButton_start_line">
        <property name="text">
-        <string>Start linjeföljning</string>
+        <string>Starta linjeföljning</string>
        </property>
       </widget>
      </item>
@@ -208,6 +208,16 @@
         <string>Sidoscanner avstånd</string>
        </property>
       </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Tid</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLCDNumber" name="lcdTimer"/>
      </item>
     </layout>
    </widget>
