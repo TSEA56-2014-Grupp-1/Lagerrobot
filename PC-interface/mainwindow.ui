@@ -414,6 +414,16 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QGraphicsView" name="graphicsView_linesensor">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>590</y>
+      <width>341</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -421,7 +431,7 @@
      <x>0</x>
      <y>0</y>
      <width>1232</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

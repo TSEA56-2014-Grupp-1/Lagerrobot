@@ -28,6 +28,24 @@ int main(int argc, char *argv[])
 
     w.set_RFID("3BA00043562F");
 
+    QByteArray test_array;
+    test_array.resize(11);
+
+    test_array[0] = 10;
+    test_array[1] = 23;
+    test_array[2] = 0;
+    test_array[3] = 240;
+    test_array[4] = 255;
+    test_array[5] = 220;
+    test_array[6] = 0;
+    test_array[7] = 20;
+    test_array[8] = 15;
+    test_array[9] = 18;
+    test_array[10] = 28;
+
+    w.update_linesensor_plot(&test_array);
+
+
 //    w.draw_next_point_steering(3);
 //    QThread::sleep(1);
 //    w.draw_next_point_steering(50);

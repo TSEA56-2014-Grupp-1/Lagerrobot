@@ -422,6 +422,15 @@ void MainWindow::set_up_graphs() {
     ui->plot_steering->xAxis->setAutoTickStep(false);
     ui->plot_steering->xAxis->setTickStep(1);
     ui->plot_steering->yAxis->setRange(-127, 127);
+
+    ui->graphicsView_linesensor->setScene(linesensor_plot);
+    ui->graphicsView_linesensor->show();
+    linesensor_circels.resize(11);
+    for (int i = 0; i < 11; ++i){
+        linesensor_circels[i] = linesensor_plot->addEllipse(30*i,0,13,13);
+        linesensor_circels[i]->setFlag(QGraphicsItem::ItemIgnoresParentOpacity, true);
+        linesensor_circels[i]->setOpacity(1);
+    }
 }
 
 /*
@@ -493,4 +502,13 @@ void MainWindow::add_to_lcdtimer() {
     time_since_start += (double)timer_com->interval()/1000;
     ui->lcdTimer->display(time_since_start);
     timer_com->start();
+}
+
+void MainWindow::update_linesensor_plot(QByteArray* sensor_values) {
+    QBrush* brush = new QBrush(Qt::SolidPattern);
+    for (int i = 0; i < 11; ++i) {
+        brush->setColor(QColor(0,0,0,sensor_values->at(i)));
+        linesensor_circels[i]->setBrush(*brush);
+    }
+    delete brush;
 }

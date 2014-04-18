@@ -10,6 +10,7 @@
 #include <QShortcut>
 #include <QKeySequence>
 #include <QKeyEvent>
+#include <QGraphicsScene>
 
 class bluetooth;
 
@@ -36,6 +37,8 @@ public:
     QTime *time = new QTime();
 
     void set_RFID(QString);
+
+    void update_linesensor_plot(QByteArray*);
 
 
 private slots:
@@ -142,6 +145,10 @@ private:
     bluetooth* port = NULL;
 
     QVector<double> times_steering, value_steering;
+
+    QVector<QGraphicsEllipseItem*> linesensor_circels;
+
+    QGraphicsScene* linesensor_plot = new QGraphicsScene();
 
 };
 
