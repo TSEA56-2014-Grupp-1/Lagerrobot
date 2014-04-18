@@ -121,6 +121,8 @@ private slots:
 
     void on_pushButton_stop_pressed();
 
+    void wheelevent_steering(QWheelEvent*);
+
 private:
     Ui::MainWindow *ui;
 

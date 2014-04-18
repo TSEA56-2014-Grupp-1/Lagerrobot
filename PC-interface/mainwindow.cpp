@@ -11,6 +11,7 @@
 #include <qDebug>
 #include <QtCore/qmath.h>
 #include <dialog_connect.h>
+#include <qmath.h>
 #include "bluetooth.h"
 #include "../shared/packets.h"
 
@@ -35,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     set_up_graphs();
     connect(ui->horizontalScrollBar_graphs, SIGNAL(valueChanged(int)), this, SLOT(horzScrollBarChanged(int)));
+    connect(ui->plot_steering, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(wheelevent_steering(QWheelEvent*)));
 }
 
 //XXX: TODO:
@@ -436,7 +438,7 @@ void MainWindow::draw_graphs() {
     ui->plot_steering->graph(0)->setData(times, value_steering);
     ui->plot_steering->xAxis->setRange(time->elapsed()/1000 - 5, time->elapsed()/1000);
     ui->plot_steering->replot();
-    ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/10); //Setting the scrollbar value times 100 to make scrolling smooth
+    ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
 }
 
 /*
@@ -445,9 +447,9 @@ void MainWindow::draw_graphs() {
  *      @param value Value of the scrollbar.
  */
 void MainWindow::horzScrollBarChanged(int value) {
-    if (qAbs(ui->plot_steering->xAxis->range().center()-value/100.0) > 0.01) // if user is dragging plot, we don't want to replot twice
+    if (qAbs(ui->plot_steering->xAxis->range().center()-value/10) > 0.1) // if user is dragging plot, we don't want to replot twice
     {
-        ui->plot_steering->xAxis->setRange(value/100.0, ui->plot_steering->xAxis->range().size(), Qt::AlignCenter);
+        ui->plot_steering->xAxis->setRange(value/10, ui->plot_steering->xAxis->range().size(), Qt::AlignCenter);
         ui->plot_steering->replot();
     }
 }
@@ -468,4 +470,12 @@ void MainWindow::on_pushButton_stop_pressed()
 void MainWindow::set_RFID(QString new_RFID) {
     ui->label_RFID->setText(new_RFID);
     ui->label_RFID_time->setText(QTime::currentTime().toString("hh:mm:ss"));
+}
+
+void MainWindow::wheelevent_steering(QWheelEvent* event) {
+    int steps = qCeil(event->delta());
+
+    steps += ui->horizontalScrollBar_graphs->value();
+
+    ui->horizontalScrollBar_graphs->setValue(steps);
 }

@@ -19,8 +19,8 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>431</width>
-      <height>277</height>
+      <width>437</width>
+      <height>261</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_chassi">
@@ -36,6 +36,9 @@
      </item>
      <item row="7" column="2">
       <widget class="QLabel" name="label_2">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
        <property name="text">
         <string>Kp-&gt;</string>
        </property>
@@ -96,13 +99,6 @@
      <item row="7" column="1">
       <widget class="QLineEdit" name="lineEdit_Kd"/>
      </item>
-     <item row="5" column="1">
-      <widget class="QPushButton" name="pushButton_calibrate_tape">
-       <property name="text">
-        <string>Kalibrera tejp</string>
-       </property>
-      </widget>
-     </item>
      <item row="8" column="2">
       <widget class="QPushButton" name="pushButton_send_param">
        <property name="text">
@@ -114,6 +110,13 @@
       <widget class="QPushButton" name="pushButton_stop">
        <property name="text">
         <string>STOP</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="pushButton_calibrate_tape">
+       <property name="text">
+        <string>Kalibrera tejp</string>
        </property>
       </widget>
      </item>
@@ -384,6 +387,9 @@
       <height>181</height>
      </rect>
     </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QScrollBar" name="horizontalScrollBar_graphs">
     <property name="geometry">
@@ -447,8 +453,39 @@
    <extends>QWidget</extends>
    <header>qcustomplot.h</header>
    <container>1</container>
+   <slots>
+    <signal>signal1()</signal>
+   </slots>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>pushButton_forward</tabstop>
+  <tabstop>pushButton_left</tabstop>
+  <tabstop>pushButton_stop</tabstop>
+  <tabstop>pushButton_right</tabstop>
+  <tabstop>pushButton_back</tabstop>
+  <tabstop>pushButton_start_line</tabstop>
+  <tabstop>pushButton_stop_line</tabstop>
+  <tabstop>pushButton_calibrate_tape</tabstop>
+  <tabstop>pushButton_calibrate_floor</tabstop>
+  <tabstop>lineEdit_Kd</tabstop>
+  <tabstop>lineEdit_Kp</tabstop>
+  <tabstop>pushButton_send_param</tabstop>
+  <tabstop>pushButton_close_gripper</tabstop>
+  <tabstop>pushButton_open_gripper</tabstop>
+  <tabstop>pushButton_3_upp</tabstop>
+  <tabstop>pushButton_3_down</tabstop>
+  <tabstop>pushButton_2_upp</tabstop>
+  <tabstop>pushButton_2_down</tabstop>
+  <tabstop>pushButton_1_upp</tabstop>
+  <tabstop>pushButton_1_down</tabstop>
+  <tabstop>pushButton_base_left</tabstop>
+  <tabstop>pushButton_base_right</tabstop>
+  <tabstop>pushButton_start_position_arm</tabstop>
+  <tabstop>pushButton_put_down_right</tabstop>
+  <tabstop>pushButton_put_down_left</tabstop>
+  <tabstop>listWidget_log</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
