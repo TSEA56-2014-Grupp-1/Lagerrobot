@@ -138,9 +138,9 @@ private:
     void draw_graphs();
 
     QTimer *timer_req = new QTimer();
-    QTimer *timer_com = new QTimer();
+    QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
 
-    double time_since_start = 0;
+    QTime *start_time;
 
     bluetooth* port = NULL;
 

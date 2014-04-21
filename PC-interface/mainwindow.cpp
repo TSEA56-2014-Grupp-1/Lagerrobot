@@ -172,12 +172,15 @@ void MainWindow::on_pushButton_right_released()
 
 void MainWindow::on_pushButton_start_line_clicked()
 {
-    //Start follwing line
+    port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_START);
+    timer_com->start();
+    start_time = new QTime(QTime::currentTime());
 }
 
 void MainWindow::on_pushButton_stop_line_clicked()
 {
-    //Stop follwing line
+    //XXX: Sending packet to stop robot. Maybe should implement another packet to only stop linefollowing?
+    port->send_packet(PKT_STOP,0);
 }
 
 void MainWindow::on_pushButton_close_gripper_clicked()
@@ -498,9 +501,56 @@ void MainWindow::wheelevent_steering(QWheelEvent* event) {
     ui->horizontalScrollBar_graphs->setValue(steps);
 }
 
+/*
+ *      @brief Subtracts to QTimes.
+ *      @details Subtracts to QTimes, first has to be before second. Can only handle minutes, seconds and mseconds.
+ *
+ *      @param first First QTime, has to be before second.
+ *      @param second Second QTime, has to be after first.
+ *
+ *      @return A QTime with the diffrene of first and second. If second was before first it will return the time 0.
+ */
+inline QTime qtime_subtraction(const QTime& first, const QTime& second) {
+    int min = 0;
+    int sec = 0;
+    int msec = 0;
+
+    msec = first.msec() - second.msec();
+
+    if (msec < 0) {
+        msec += 1000;
+        sec = -1;
+    }
+
+    sec += first.second() - second.second();
+
+    if (sec < 0) {
+        sec += 60;
+        min = -1;
+    }
+    else if (sec/60 > 1) {
+        sec -= 60;
+        min = 1;
+    }
+
+    min += first.minute() - second.minute();
+
+    if (min < 0) {
+        min += 60;
+    }
+    else if (min/60 > 1) {
+        min -= 60;
+    }
+
+    if (min < 0 || sec < 0 || msec < 0)
+        return QTime(0,0);
+    else
+        return QTime(0, min, sec, msec);
+}
+
 void MainWindow::add_to_lcdtimer() {
-    time_since_start += (double)timer_com->interval()/1000;
-    ui->lcdTimer->display(time_since_start);
+    QTime time_to_display = qtime_subtraction(QTime::currentTime(), *start_time);
+    ui->lcdTimer->display(time_to_display.minute()*60 + time_to_display.second());
     timer_com->start();
 }
 
