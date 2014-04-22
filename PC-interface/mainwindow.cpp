@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-    timer_req->setInterval(250);
+    timer_req->setInterval(125);
     connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
 
     timer_com->setInterval(100);
@@ -425,6 +425,7 @@ void MainWindow::set_up_graphs() {
     ui->plot_steering->xAxis->setAutoTickStep(false);
     ui->plot_steering->xAxis->setTickStep(1);
     ui->plot_steering->yAxis->setRange(-127, 127);
+    ui->plot_steering->graph()->setLineStyle(QCPGraph::lsLine);
 
     ui->graphicsView_linesensor->setScene(linesensor_plot);
     ui->graphicsView_linesensor->show();
@@ -443,7 +444,7 @@ void MainWindow::set_up_graphs() {
  */
 void MainWindow::add_steering_data(int new_data) {
     times_steering.push_back(time->elapsed()/1000);
-    value_steering.push_back(new_data);
+    value_steering.push_back((quint8)new_data - 127);
     draw_graphs();
 }
 
@@ -452,7 +453,7 @@ void MainWindow::add_steering_data(int new_data) {
  */
 void MainWindow::draw_graphs() {
     ui->plot_steering->graph(0)->setData(times_steering, value_steering);
-    ui->plot_steering->xAxis->setRange(time->elapsed()/1000 - 5, time->elapsed()/1000);
+    ui->plot_steering->xAxis->setRange(time->elapsed()/1000 - 10, time->elapsed()/1000);
     ui->plot_steering->replot();
     ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
 }
@@ -548,16 +549,24 @@ inline QTime qtime_subtraction(const QTime& first, const QTime& second) {
         return QTime(0, min, sec, msec);
 }
 
+/*
+ *      @brief Update the number on the LCD with the time since start.
+ */
 void MainWindow::add_to_lcdtimer() {
     QTime time_to_display = qtime_subtraction(QTime::currentTime(), *start_time);
-    ui->lcdTimer->display(time_to_display.minute()*60 + time_to_display.second());
+    ui->lcdTimer->display(time_to_display.toString("mm:ss"));
     timer_com->start();
 }
 
+/*
+ *      @brief Update the plot with linesensors, setting the darknes between 0 and 255.
+ *
+ *      @param sensor_values QByteArray with the sensor values.
+ */
 void MainWindow::update_linesensor_plot(QByteArray* sensor_values) {
     QBrush* brush = new QBrush(Qt::SolidPattern);
     for (int i = 0; i < 11; ++i) {
-        brush->setColor(QColor(0,0,0,sensor_values->at(i)));
+        brush->setColor(QColor(0,0,0,(quint8)sensor_values->at(i)));
         linesensor_circels[i]->setBrush(*brush);
     }
     delete brush;
