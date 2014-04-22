@@ -197,11 +197,11 @@ int main(void)
 	_delay_ms(100);
 	engine_init();
 	regulator_init();
-	lcd_interface_init();
+	lcdi_init();
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
-	bus_register_receive(1, arm_is_done);
+	bus_register_receive(2, arm_is_done);
 	
 	
 	//enable_rfid_reader();
