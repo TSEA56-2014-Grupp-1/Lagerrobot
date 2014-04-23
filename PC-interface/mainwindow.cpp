@@ -426,6 +426,7 @@ void MainWindow::set_up_graphs() {
     ui->plot_steering->xAxis->setTickStep(1);
     ui->plot_steering->yAxis->setRange(-127, 127);
     ui->plot_steering->graph()->setLineStyle(QCPGraph::lsLine);
+    ui->plot_steering->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
 
     ui->graphicsView_linesensor->setScene(linesensor_plot);
     ui->graphicsView_linesensor->show();
@@ -443,7 +444,7 @@ void MainWindow::set_up_graphs() {
  *      @param new_data Data that will be added.
  */
 void MainWindow::add_steering_data(int new_data) {
-    times_steering.push_back(time->elapsed()/1000);
+    times_steering.push_back((double)time->elapsed()/1000);
     value_steering.push_back((quint8)new_data - 127);
     draw_graphs();
 }
