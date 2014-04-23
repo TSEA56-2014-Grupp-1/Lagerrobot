@@ -263,7 +263,7 @@ void init_linesensor_calibration()	{
 	sei();
 }
 //should set sensor_scale-values and tape_reference
-uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{	
+void calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{	
 	cli();	
 	uint8_t sensor_scale_temp_floor;
 	uint8_t sensor_scale_temp_tape;
@@ -290,10 +290,9 @@ uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{
 	//calculate tape_reference
 	tape_reference = (total_floor_average + total_tape_average)/2;
 	}
-	line_init();
 	sei();
-	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,tape_reference);
-	return 0;
+	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,(uint16_t)tape_reference);
+	line_init();
 }
 
 void calibrate_tape()	{

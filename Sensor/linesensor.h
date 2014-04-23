@@ -23,6 +23,6 @@ void init_linesensor_calibration();
 uint16_t return_line_weight(uint8_t id, uint16_t metadata);
 uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair);
 uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference);
-uint16_t calibrate_linesensor(uint8_t id, uint16_t calibration_variable);
+void calibrate_linesensor(uint8_t id, uint16_t calibration_variable);
 
 #endif /* LINESENSOR_H_ */
