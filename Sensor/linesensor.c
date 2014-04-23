@@ -73,7 +73,7 @@ uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
 
 uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
 	if (sensor_pair != 5)
-	return ((uint16_t)sensor_values[2*sensor_pair] << 8) | (uint16_t) sensor_values[2*sensor_pair + 1];
+	return ((uint16_t)sensor_values[2*sensor_pair + 1] << 8) | (uint16_t) sensor_values[2*sensor_pair];
 	else
 	return (uint16_t) sensor_values[2*sensor_pair];
 }
