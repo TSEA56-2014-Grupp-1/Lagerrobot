@@ -14,13 +14,6 @@
 #include <util/delay.h>
 //#include "../shared/LCD_interface.h"
 
-//Used for calibration
-uint8_t tape_sensor_references[11][10];
-uint8_t floor_sensor_references[11][10];
-uint16_t tape_average[11];
-uint16_t floor_average[11];
-uint16_t total_tape_average;
-uint16_t total_floor_average;
 
 //Defining different datatypes	
 typedef uint8_t surface_type;
@@ -252,97 +245,61 @@ void update_linesensor()	{
 
 }
 void init_linesensor_calibration()	{
-	cli();
+	
 	//setup ADC for calibration-routine
 	ADCSRA = 0b10000111;
 	ADCSRA |= (1 << ADEN);
 	ADMUX = 0b00100000;
 	DDRB = 0b11111111;
-	total_tape_average = 0;
-	total_floor_average = 0;
-	sei();
 }
 //should set sensor_scale-values and tape_reference
-void calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{	
-	cli();	
-	uint8_t sensor_scale_temp_floor;
-	uint8_t sensor_scale_temp_tape;
-	init_linesensor_calibration();
-	if(calibration_variable == 1)
-		calibrate_tape();
-	else if (calibration_variable == 0)
-		calibrate_floor();
 
-	//code for calculating sensor_scale-needs testing!
-	if((total_floor_average != 0) && (total_tape_average != 0))	{
-		for(uint8_t i = 0; i<=10; i++)	{
-			if(tape_average[i] < total_tape_average)
-				sensor_scale_temp_tape = total_tape_average - tape_average[i];
-			else
-				sensor_scale_temp_tape = 0;//tape_average[i] - total_tape_average;
-			if(floor_average[i] < total_floor_average)
-				sensor_scale_temp_floor = total_floor_average - floor_average[i];
-			else
-				sensor_scale_temp_floor = 0;//floor_average[i] - total_floor_average;
-			
-			sensor_scale[i] = (sensor_scale_temp_floor + sensor_scale_temp_tape)/2;	
+void calculate_average(uint8_t sensor_references[11][10], uint8_t average[11]) {
+	
+	for(uint8_t i = 0; i<=10;i++)	{
+		for(uint8_t j = 0; j<=9;j++)	{
+			average[i] = average[i] + sensor_references[i][j];
+			if(j==9)	{
+				average[i] = average[i]/10;
+			}
+		}
 	}
-	//calculate tape_reference
-	tape_reference = (total_floor_average + total_tape_average)/2;
+}
+
+uint8_t line_read_sensor(uint8_t sensor_id) {
+	uint16_t sensor_references = 0;
+	PORTB = sensor_id;
+	for (uint8_t i = 0; i <= 10; i++) {
+		ADCSRA |= 0b01000000;
+		while (ADCSRA &(1<<ADSC));
+		ADCSRA &= ~(1 << ADIF);
+		sensor_references += ADCH;
 	}
+	return (uint8_t)(sensor_references / 10);	
+}
+
+void calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{	
+	uint8_t sensor_max = 0;
+	uint8_t sensor_min = 0;
+	init_linesensor_calibration();
+	
+	uint8_t sensor_value;
+	for (uint8_t j = 0; j <= 9; j++) {
+		sensor_value = line_read_sensor(j);
+		if (sensor_value > sensor_max) {
+			sensor_max = sensor_value;
+		}
+		else if (sensor_value < sensor_min) {
+			sensor_min = sensor_value;
+		}
+	}
+	
+	cli();
+	tape_reference = (sensor_max + sensor_min) / 2;
 	sei();
+	
 	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,(uint16_t)tape_reference);
 	line_init();
 }
 
-void calibrate_tape()	{
-
-for(uint8_t j = 0; j <= 9; j++)	{	
-		for(uint8_t i = 0; i <= 10; i++)		{
-			PORTB = i;
-			ADCSRA |= 0b01000000;
-			while (ADCSRA &(1<<ADSC)){}
-			tape_sensor_references[i][j] = ADCH;
-		}	
-	}
-	
-	for(uint8_t i = 0; i<=10;i++)	{
-		for(uint8_t j = 0; j<=9;j++)	{
-			tape_average[i] = tape_average[i] + tape_sensor_references[i][j];
-			if(j==9)	{
-				tape_average[i] = tape_average[i]/10;
-			}
-		}
-	}
-	
-	for(uint8_t i = 0; i<=10;i++)	{
-		total_tape_average = total_tape_average + tape_average[i];
-		line_weight = total_tape_average;
-	}
-	total_tape_average = total_tape_average/11;
-}
-
-void calibrate_floor()	{
-	for(uint8_t j = 0; j <= 9; j++)	{	
-		for(uint8_t i = 0; i <= 10; i++)		{
-			PORTB = i;
-			ADCSRA |= 0b01000000;
-			while(ADCSRA &(1<<ADSC)){}
-			floor_sensor_references[i][j] = ADCH;
-		}
-	}
-	for(uint8_t i = 0; i<=10;i++)	{
-		for(uint8_t j = 0; j<=9;j++)	{
-			floor_average[i] = floor_average[i] + floor_sensor_references[i][j];
-			if(j==9)	{
-				floor_average[i] = floor_average[i]/10;
-			}
-		}
-	}
-	for(uint8_t i = 0; i<=10; i++)	{
-		total_floor_average = total_floor_average + floor_average[i];
-		if(i == 10)
-			total_floor_average = total_floor_average/11;
-	}
-}
 
