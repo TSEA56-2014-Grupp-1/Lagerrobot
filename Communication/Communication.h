@@ -3,15 +3,17 @@
  *
  * Created: 2014-04-04 11:01:55
  *  Author: Karl
- */ 
+ */
 
 
 #ifndef COMMUNICATION_H_
 #define COMMUNICATION_H_
 
 #include <avr/io.h>
- 
-#define F_CPU 18432000UL
+
+#ifndef F_CPU
+	#define F_CPU 18432000UL
+ #endif
 
 
 #define COMM 0
@@ -43,7 +45,7 @@ uint8_t lcd_rotation_counter;
 /**
  * @brief Clears the display page of a unit.
  * @details Clears the stored display page of a unit, but does not update the display.
- * 
+ *
  * @param unit The identifier of the module whose page is to be cleared.
  */
 void clear_message(uint8_t unit);
