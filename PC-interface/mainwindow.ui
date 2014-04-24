@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1232</width>
+    <width>1274</width>
     <height>676</height>
    </rect>
   </property>
@@ -125,7 +125,7 @@
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>830</x>
+      <x>920</x>
       <y>390</y>
       <width>345</width>
       <height>191</height>
@@ -224,10 +224,10 @@
    <widget class="QWidget" name="gridLayoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>10</y>
+      <x>450</x>
+      <y>0</y>
       <width>291</width>
-      <height>251</height>
+      <height>281</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -336,13 +336,54 @@
        </property>
       </widget>
      </item>
+     <item row="5" column="1" colspan="3">
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_y_cord"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineEdit_angle"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_x_cord"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>x:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>y:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>vinkel:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButton_send_arm_pos">
+         <property name="text">
+          <string>Skicka parametrar</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>10</y>
+      <x>750</x>
+      <y>20</y>
       <width>160</width>
       <height>223</height>
      </rect>
@@ -381,9 +422,9 @@
    <widget class="QListWidget" name="listWidget_log">
     <property name="geometry">
      <rect>
-      <x>890</x>
+      <x>920</x>
       <y>10</y>
-      <width>331</width>
+      <width>341</width>
       <height>371</height>
      </rect>
     </property>
@@ -417,11 +458,24 @@
    <widget class="QGraphicsView" name="graphicsView_linesensor">
     <property name="geometry">
      <rect>
-      <x>830</x>
+      <x>920</x>
       <y>590</y>
       <width>341</width>
       <height>31</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_pause_graph">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>490</y>
+      <width>281</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Pause graph</string>
     </property>
    </widget>
   </widget>
@@ -430,8 +484,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1232</width>
-     <height>22</height>
+     <width>1274</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

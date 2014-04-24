@@ -16,8 +16,6 @@ int main(int argc, char *argv[])
     w.show();
     w.activateWindow();
     w.raise();
-
-    w.time->start();
 //    w.add_steering_data(10);
 //    QThread::sleep(1);
 //    w.add_steering_data(20);

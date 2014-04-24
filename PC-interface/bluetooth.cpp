@@ -44,7 +44,7 @@ void bluetooth::process_packet()
     QByteArray parameters = splice(buffer, 2, buffer.length());
 
 	if (buffer.at(1) != parameters.length()) {
-		window->print_on_log(QObject::tr("Recived packet with wrong length, was %1 s %2.")
+        window->print_on_log(QObject::tr("Recived packet with wrong length, was %1 expected %2.")
 										.arg(parameters.length()).arg(QString::number(buffer.at(1))));
 		return;
 	}
@@ -54,7 +54,7 @@ void bluetooth::process_packet()
 	}
 
 	if ((quint8)~checksum != (quint8)parameters.at(parameters.length() - 1)) {
-		window->print_on_log(QObject::tr("Wrong checksum, was %1 should have been %2")
+        window->print_on_log(QObject::tr("Wrong checksum, was %1 expected %2")
 							 .arg(QString::number((quint8)parameters.at(parameters.length() - 1))).arg((quint8)~checksum));
 		return;
 	}
@@ -88,10 +88,12 @@ void bluetooth::process_packet()
 		window->set_RFID(RFID);
         break;
 	case PKT_CALIBRATION_DATA:
-		window->print_on_log(QString("Calibration, new tape reference: ").append(QString::number((quint8)parameters[0])));
+        window->print_on_log(QString("Calibration, new tape reference: ")
+                                .append(QString::number((quint8)parameters[0])));
         break;
 	case PKT_SPOOFED_RESPONSE:
-		window->print_on_log(QString::number(parameters[0], 16).append(QString::number(parameters[1], 16)));
+        window->print_on_log(QString::number(parameters[0], 16)
+                                .append(QString::number(parameters[1], 16)));
         break;
 
     }
@@ -114,6 +116,7 @@ bluetooth::bluetooth(QString name, MainWindow* new_window)
 
 bluetooth::~bluetooth() {
     serialport->close();
+    delete serialport;
 }
 
 /*

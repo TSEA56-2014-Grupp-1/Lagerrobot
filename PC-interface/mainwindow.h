@@ -34,8 +34,6 @@ public:
 
     void add_steering_data(int);
 
-    QTime *time = new QTime();
-
     void set_RFID(QString);
 
     void update_linesensor_plot(QByteArray*);
@@ -128,6 +126,10 @@ private slots:
 
     void add_to_lcdtimer();
 
+    void on_pushButton_send_arm_pos_clicked();
+
+    void on_pushButton_pause_graph_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -140,9 +142,12 @@ private:
     QTimer *timer_req = new QTimer();
     QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
 
+    QTime *time_graph = new QTime();
     QTime *start_time;
 
     bluetooth* port = NULL;
+
+    bool update_graph = true;
 
     QVector<double> times_steering, value_steering;
 

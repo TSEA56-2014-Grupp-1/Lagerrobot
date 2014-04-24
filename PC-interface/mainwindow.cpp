@@ -47,6 +47,11 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete port;
+    delete timer_req;
+    delete timer_com;
+    delete start_time;
+    delete time_graph;
 }
 
 
@@ -121,6 +126,7 @@ void MainWindow::connect_to_port(QString name) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
 		//timer_req->start();
+        time_graph->start();
     }
     else {
         print_on_log("Error opening bluetooth");
@@ -470,6 +476,7 @@ void MainWindow::disable_buttons() {
     ui->pushButton_back->setEnabled(false);
     ui->pushButton_send_param->setEnabled(false);
     ui->pushButton_stop->setEnabled(false);
+    ui->pushButton_send_arm_pos->setEnabled(false);
 }
 
 /*
@@ -499,6 +506,7 @@ void MainWindow::enable_buttons() {
     ui->pushButton_back->setEnabled(true);
     ui->pushButton_send_param->setEnabled(true);
     ui->pushButton_stop->setEnabled(true);
+    ui->pushButton_send_arm_pos->setEnabled(true);
 }
 
 /*
@@ -525,6 +533,7 @@ void MainWindow::on_actionDisconnect_triggered()
     ui->actionDisconnect->setEnabled(false);
     disable_buttons();
     delete port;
+    port = NULL;
 }
 
 
@@ -573,9 +582,11 @@ void MainWindow::set_up_graphs() {
  *      @param new_data Data that will be added.
  */
 void MainWindow::add_steering_data(int new_data) {
-    times_steering.push_back((double)time->elapsed()/1000);
+    times_steering.push_back((double)time_graph->elapsed()/1000);
     value_steering.push_back((quint8)new_data - 127);
-    draw_graphs();
+    if (update_graph) { //XXX: Part of bad solution, see on_pushButton_pause_graph()
+        draw_graphs();
+    }
 }
 
 /*
@@ -583,9 +594,11 @@ void MainWindow::add_steering_data(int new_data) {
  */
 void MainWindow::draw_graphs() {
     ui->plot_steering->graph(0)->setData(times_steering, value_steering);
-	ui->plot_steering->xAxis->setRange((double)(time->elapsed()/1000) - 10, (double)time->elapsed()/1000);
+    ui->plot_steering->xAxis->setRange((double)(time_graph->elapsed()/1000) - 10,
+                                       (double)time_graph->elapsed()/1000);
     ui->plot_steering->replot();
-    ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
+    ui->horizontalScrollBar_graphs->setRange(0,(double)time_graph->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
+    ui->horizontalScrollBar_graphs->setValue(time_graph->elapsed()/100);
 }
 
 /*
@@ -705,4 +718,37 @@ void MainWindow::update_linesensor_plot(QByteArray* sensor_values) {
         linesensor_circels[i]->setBrush(*brush);
     }
     delete brush;
+}
+
+/*
+ *      @brief Send position to arm.
+ */
+void MainWindow::on_pushButton_send_arm_pos_clicked()
+{
+    bool x_check;
+    bool y_check;
+    bool angle_check;
+    int x = ui->lineEdit_x_cord->text().toInt(&x_check);
+    int y = ui->lineEdit_y_cord->text().toInt(&y_check);
+    int angle = ui->lineEdit_angle->text().toInt(&angle_check);
+    if (port == NULL) {
+        print_on_log("No port to send to.");
+    }
+    if (x_check && y_check && angle_check){
+        port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE_POS, x, y, angle);
+    }
+    else
+        print_on_log("Invalid arguments to arm position, must be integers.");
+}
+
+//XXX: This is not a good solution... Inplace until better is found
+void MainWindow::on_pushButton_pause_graph_clicked()
+{
+    if (update_graph) {
+        ui->pushButton_pause_graph->setText("Unpause graph");
+    }
+    else {
+        ui->pushButton_pause_graph->setText("Pause graph");
+    }
+    update_graph = !update_graph;
 }
