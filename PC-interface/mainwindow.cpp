@@ -105,7 +105,7 @@ void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
  *      @param new_connection Bluetooth port to robot
  */
 void MainWindow::new_connection(bluetooth *new_connection) {
-    port = new_connection;
+		port = new_connection;
 }
 
 /*
@@ -120,7 +120,7 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
-        timer_req->start();
+		//timer_req->start();
     }
     else {
         print_on_log("Error opening bluetooth");
@@ -132,12 +132,22 @@ void MainWindow::connect_to_port(QString name) {
 
 void MainWindow::on_pushButton_forward_pressed()
 {
-    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 1);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 1);
+	}
 }
 
 void MainWindow::on_pushButton_back_pressed()
 {
-    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 2);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 2);
+	}
 }
 
 void MainWindow::on_pushButton_forward_released()
@@ -152,7 +162,12 @@ void MainWindow::on_pushButton_back_released()
 
 void MainWindow::on_pushButton_left_pressed()
 {
-    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 4);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 4);
+	}
 }
 
 void MainWindow::on_pushButton_left_released()
@@ -162,7 +177,12 @@ void MainWindow::on_pushButton_left_released()
 
 void MainWindow::on_pushButton_right_pressed()
 {
-    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 3);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 3);
+	}
 }
 
 void MainWindow::on_pushButton_right_released()
@@ -172,20 +192,30 @@ void MainWindow::on_pushButton_right_released()
 
 void MainWindow::on_pushButton_start_line_clicked()
 {
-    port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_START);
-    timer_com->start();
-    start_time = new QTime(QTime::currentTime());
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_START);
+		timer_com->start();
+		start_time = new QTime(QTime::currentTime());
+	}
 }
 
 void MainWindow::on_pushButton_stop_line_clicked()
 {
     //XXX: Sending packet to stop robot. Maybe should implement another packet to only stop linefollowing?
-    port->send_packet(PKT_STOP,0);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_STOP,0);
+	}
 }
 
 void MainWindow::on_pushButton_close_gripper_clicked()
 {
-     //port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 6);
+	//port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 6);
 }
 
 void MainWindow::on_pushButton_open_gripper_clicked()
@@ -195,83 +225,162 @@ void MainWindow::on_pushButton_open_gripper_clicked()
 
 void MainWindow::on_pushButton_3_upp_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 4);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 4);
+	}
 }
 
 void MainWindow::on_pushButton_3_upp_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
+	}
 }
 
 void MainWindow::on_pushButton_3_down_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 4);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 4);
+	}
 }
 
 void MainWindow::on_pushButton_3_down_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
+	}
 }
 
 void MainWindow::on_pushButton_2_upp_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 3);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 3);
+	}
 }
 
 void MainWindow::on_pushButton_2_upp_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
+	}
 }
 
 void MainWindow::on_pushButton_2_down_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 3);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 3);
+	}
 }
 
 void MainWindow::on_pushButton_2_down_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
+	}
 }
 
 void MainWindow::on_pushButton_1_upp_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 2);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 2);
+	}
 }
 
 void MainWindow::on_pushButton_1_upp_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
+	}
 }
 
 void MainWindow::on_pushButton_1_down_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 2);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 2);
+	}
 }
 
 void MainWindow::on_pushButton_1_down_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
+	}
 }
 
 void MainWindow::on_pushButton_base_left_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 1);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 1);
+	}
 }
 
 void MainWindow::on_pushButton_base_left_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
+	}
 }
 
 void MainWindow::on_pushButton_base_right_pressed()
 {
-    port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 1);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 1);
+	}
 }
 
 void MainWindow::on_pushButton_base_right_released()
 {
-    port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
-    print_on_log("base right released");
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
+	}
 }
 
 void MainWindow::on_pushButton_start_position_arm_clicked()
@@ -291,12 +400,22 @@ void MainWindow::on_pushButton_put_down_left_clicked()
 
 void MainWindow::on_pushButton_calibrate_tape_clicked()
 {
-    port->send_packet(PKT_CALIBRATION_COMMAND, 2, CAL_LINE, 1);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CALIBRATION_COMMAND, 2, CAL_LINE, 1);
+	}
 }
 
 void MainWindow::on_pushButton_calibrate_floor_clicked()
 {
-    port->send_packet(PKT_CALIBRATION_COMMAND, 2, CAL_LINE, 0);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CALIBRATION_COMMAND, 2, CAL_LINE, 0);
+	}
 }
 
 /*
@@ -387,8 +506,13 @@ void MainWindow::enable_buttons() {
  *      @details Function that will request line data from robot, will also reset the timer so that interupt will happen again.
  */
 void MainWindow::request_data() {
-    port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
-    timer_req->start();
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
+		timer_req->start();
+	}
 }
 
 /*
@@ -409,11 +533,16 @@ void MainWindow::on_actionDisconnect_triggered()
  */
 void MainWindow::on_pushButton_send_param_clicked()
 {
-    uint8_t Kp = ui->lineEdit_Kp->text().toInt();
-    uint8_t Kd = ui->lineEdit_Kd->text().toInt();
-    port->send_packet(PKT_CHASSIS_COMMAND , 3,CMD_CHASSIS_PARAMETERS, Kp, Kd);
-    print_on_log(QString::number(PKT_CHASSIS_COMMAND));
-    print_on_log(QString::number(CMD_CHASSIS_PARAMETERS));
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		uint8_t Kp = ui->lineEdit_Kp->text().toInt();
+		uint8_t Kd = ui->lineEdit_Kd->text().toInt();
+		port->send_packet(PKT_CHASSIS_COMMAND , 3,CMD_CHASSIS_PARAMETERS, Kp, Kd);
+		print_on_log(QString::number(PKT_CHASSIS_COMMAND));
+		print_on_log(QString::number(CMD_CHASSIS_PARAMETERS));
+	}
 }
 
 /*
@@ -454,7 +583,7 @@ void MainWindow::add_steering_data(int new_data) {
  */
 void MainWindow::draw_graphs() {
     ui->plot_steering->graph(0)->setData(times_steering, value_steering);
-    ui->plot_steering->xAxis->setRange(time->elapsed()/1000 - 10, time->elapsed()/1000);
+	ui->plot_steering->xAxis->setRange((double)(time->elapsed()/1000) - 10, (double)time->elapsed()/1000);
     ui->plot_steering->replot();
     ui->horizontalScrollBar_graphs->setRange(0,time->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
 }
@@ -477,7 +606,12 @@ void MainWindow::horzScrollBarChanged(int value) {
  */
 void MainWindow::on_pushButton_stop_pressed()
 {
-    port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 0);
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 0);
+	}
 }
 
 /*

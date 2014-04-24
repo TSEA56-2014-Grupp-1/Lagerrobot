@@ -38,39 +38,52 @@ void bluetooth::process_packet()
 {
     quint8 packet_id = buffer.at(0);
     QByteArray parameters = splice(buffer, 2, buffer.length());
+
+//	quint8 checksum = 0;
+
+//	if (buffer.at(1) == parameters.length()) {
+//		window->print_on_log(QObject::tr("Recived packet with wrong length, was %1 should have been %2.")
+//										.arg(parameters.length()).arg(buffer.at(1)));
+//	}
+
+//	for (int i = 0; i < parameters.length(); ++i) {
+//		checksum += parameters.at(i);
+//	}
+
     QString RFID = "";
     switch (packet_id) {
-    case PKT_ARM_DECISION:
+	case PKT_ARM_DECISION:
 
         break;
-    case PKT_ARM_STATUS:
+	case PKT_ARM_STATUS:
 
         break;
-    case PKT_CHASSIS_DECISION:
+	case PKT_CHASSIS_DECISION:
 
         break;
-    case PKT_CHASSIS_STATUS:
+	case PKT_CHASSIS_STATUS:
 
         break;
-    case PKT_LINE_DATA:
-        window->add_steering_data(parameters[12]);
-        window->update_linesensor_plot(&parameters);
+	case PKT_LINE_DATA:
+		window->print_on_log("Got data");
+		window->add_steering_data(parameters[12]);
+		window->update_linesensor_plot(&parameters);
         break;
-    case PKT_RANGE_DATA:
+	case PKT_RANGE_DATA:
 
         break;
-    case PKT_RFID_DATA:
-        window->print_on_log("Received new RFID tag");
-        for (int i = 1; i < 13; ++i) {
-            RFID.append(parameters.at(i));
-        }
-        window->set_RFID(RFID);
+	case PKT_RFID_DATA:
+		window->print_on_log("Received new RFID tag");
+		for (int i = 1; i < 13; ++i) {
+			RFID.append(parameters.at(i));
+		}
+		window->set_RFID(RFID);
         break;
-    case PKT_CALIBRATION_DATA:
-        window->print_on_log(QString("Calibration, new tape reference: ").append(QString::number(parameters[0])));
+	case PKT_CALIBRATION_DATA:
+		window->print_on_log(QString("Calibration, new tape reference: ").append(QString::number((quint8)parameters[0])));
         break;
-    case PKT_SPOOFED_RESPONSE:
-        window->print_on_log(QString::number(parameters[0], 16).append(QString::number(parameters[1], 16)));
+	case PKT_SPOOFED_RESPONSE:
+		window->print_on_log(QString::number(parameters[0], 16).append(QString::number(parameters[1], 16)));
         break;
 
     }
@@ -160,7 +173,8 @@ void bluetooth::write(QByteArray data) {
 }
 
 /*
- *      @brief Sends a packet to the robot via bluetooth
+ *      @brief Sends a packet to the robot via bluetooth.
+ *      @detailed Sends a packet to the robot, will also add checksum. The checksum is calculated by adding all arguments and then inverting it bitwise.
  *
  *      @param packet_id ID of the packet
  *      @param num_args Number of arguments in the packet
@@ -168,16 +182,23 @@ void bluetooth::write(QByteArray data) {
  */
 void bluetooth::send_packet(char packet_id, int num_args, ...) {
     va_list param_list;
+	quint8 checksum = 0;
 
     QByteArray parameter = QByteArray(num_args + 1, 0);
 
     parameter[0] = packet_id;
+	checksum += (uint8_t)packet_id;
+	parameter[1] = num_args;
+	checksum += (uint8_t)num_args;
 
     va_start(param_list, num_args);
 
-    for (int i = 1; i < num_args + 1; ++i) {
-        parameter[i] = va_arg(param_list, int);
+	for (int i = 2; i < num_args + 2; ++i) {
+		parameter[i] = va_arg(param_list, int);
+		checksum += (uint8_t)parameter[i];
     }
+
+	parameter[num_args + 2] = (quint8)~checksum;
 
     va_end(param_list);
 
