@@ -36,19 +36,29 @@ QByteArray splice(QByteArray array, int startpos, int endpos) {
 
 void bluetooth::process_packet()
 {
+	quint8 checksum = 0;
+
     quint8 packet_id = buffer.at(0);
+	checksum += packet_id;
+	checksum += (quint8)buffer.at(1);
     QByteArray parameters = splice(buffer, 2, buffer.length());
 
-//	quint8 checksum = 0;
+	if (buffer.at(1) != parameters.length()) {
+		window->print_on_log(QObject::tr("Recived packet with wrong length, was %1 s %2.")
+										.arg(parameters.length()).arg(QString::number(buffer.at(1))));
+		return;
+	}
 
-//	if (buffer.at(1) == parameters.length()) {
-//		window->print_on_log(QObject::tr("Recived packet with wrong length, was %1 should have been %2.")
-//										.arg(parameters.length()).arg(buffer.at(1)));
-//	}
+	for (int i = 0; i < parameters.length() - 1; ++i) {
+		checksum += (quint8)parameters.at(i);
+		qDebug() << "in loop: " << checksum;
+	}
 
-//	for (int i = 0; i < parameters.length(); ++i) {
-//		checksum += parameters.at(i);
-//	}
+	if ((quint8)~checksum != (quint8)parameters.at(parameters.length() - 1)) {
+		window->print_on_log(QObject::tr("Wrong checksum, was %1 should have been %2")
+							 .arg(QString::number((quint8)parameters.at(parameters.length() - 1))).arg((quint8)~checksum));
+		return;
+	}
 
     QString RFID = "";
     switch (packet_id) {

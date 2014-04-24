@@ -381,9 +381,9 @@
    <widget class="QListWidget" name="listWidget_log">
     <property name="geometry">
      <rect>
-      <x>900</x>
-      <y>10</y>
-      <width>311</width>
+      <x>890</x>
+      <y>0</y>
+      <width>381</width>
       <height>371</height>
      </rect>
     </property>
@@ -431,7 +431,7 @@
      <x>0</x>
      <y>0</y>
      <width>1232</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
