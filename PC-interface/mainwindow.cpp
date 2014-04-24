@@ -215,7 +215,6 @@ void MainWindow::on_pushButton_stop_line_clicked()
 
 void MainWindow::on_pushButton_close_gripper_clicked()
 {
-	request_data();
 	//port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 6);
 }
 

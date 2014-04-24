@@ -51,7 +51,6 @@ void bluetooth::process_packet()
 
 	for (int i = 0; i < parameters.length() - 1; ++i) {
 		checksum += (quint8)parameters.at(i);
-		qDebug() << "in loop: " << checksum;
 	}
 
 	if ((quint8)~checksum != (quint8)parameters.at(parameters.length() - 1)) {
@@ -75,7 +74,6 @@ void bluetooth::process_packet()
 
         break;
 	case PKT_LINE_DATA:
-		window->print_on_log("Got data");
 		window->add_steering_data(parameters[12]);
 		window->update_linesensor_plot(&parameters);
         break;
