@@ -52,9 +52,9 @@ int main(void)
 	//bus_transmit(5,4,5);
     while(1)
     {
-		update_linesensor_surfaces();
+
 		calculate_line_weight();
-		line_break_detection();
+
         //TODO:: Please write your application code 
     }
 }

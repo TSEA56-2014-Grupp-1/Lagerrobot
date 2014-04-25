@@ -17,7 +17,7 @@
 
 //Defining different datatypes	
 typedef uint8_t surface_type;
-enum {Floor, tape};
+enum {Floor, Tape};
 
 typedef uint8_t station_type;
 enum station_type {Left, No, Right};
@@ -28,30 +28,20 @@ enum line_type {line, interrupt, crossing};
 typedef uint8_t composite_output_type;
 enum composite_output_type {station_Left, station_No, station_Right,No_tape};
 
-//Declaring variables with homemade datatypes
-composite_output_type chassi_output;
-line_type line_status = 1;
-surface_type sensor_surface_types[11] = {0,0,0,0,0,0,0,0,0,0,0};	
 station_type pickup_station = No;
-
-
-uint8_t sensor_channel;
+uint8_t linesensor_channel;
 uint8_t sensor_values[11];
 uint8_t temp_sensor_values[11];
 uint8_t line_weight = 127;
-uint8_t ad_value = 0;
-double sensor_scale[11];
-
 uint16_t pickup_iterator = 0;
 uint8_t previous_pickup_station = No;
-
 uint8_t tape_reference = 150;
 
 
 uint8_t not_on_tape()	{
 	uint8_t not_on_tape = 1;
 	for(uint8_t i = 0; i<=10;i++)	{
-		if(sensor_surface_types[i]==1)	{
+		if(get_sensor_surface(i)==1)	{
 			not_on_tape = 0;
 		}
 	}
@@ -73,7 +63,7 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
 
 //Formats the output to accomodate the chassi and transmits it on the bus
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
-	chassi_output = 1;
+	composite_output_type chassi_output = 1;
 	if(pickup_station == Left)
 		chassi_output = station_Left;
 	else if(pickup_station == No)
@@ -86,49 +76,37 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 }
 
 void line_init(){
-	sensor_channel = 0;
+	linesensor_channel = 0;
 	ADCSRA = 0b10001111;
 	DDRD = 0b11111111;
 	DDRB = 0b11111111;
 	ADMUX = (1 << ADLAR);
 	
-	PORTB = sensor_channel;
+	PORTB = linesensor_channel;
 	ADCSRA |= (1 << ADSC);
 }
 void update_linesensor_values() {
-	temp_sensor_values[sensor_channel] = ADCH;
+	temp_sensor_values[linesensor_channel] = ADCH;
 	
-	if (sensor_channel == 10) {
-		sensor_channel = 0;
+	if (linesensor_channel == 10) {
+		linesensor_channel = 0;
 		for(uint8_t i = 0; i<=10;i++)	{
-//			if(sensor_scale<temp_sensor_values[i])	{
-				sensor_values[i]=temp_sensor_values[i] - sensor_scale[i];
-// 			}
-// 			else
-// 			{
-// 				sensor_values[i] = temp_sensor_values;//sensor_values[i] = sensor_scale - temp_sensor_values[i];
-//  			}
+				sensor_values[i]=temp_sensor_values[i];
 		}
 	}
 	else {
-		sensor_channel = sensor_channel + 1;
+		linesensor_channel = linesensor_channel + 1;
 	}
-	PORTB = sensor_channel;
+	PORTB = linesensor_channel;
 			
 	ADCSRA |= (1 << ADSC);
 	
 }
-void update_linesensor_surfaces()	{
-	uint8_t current_sensor;
-	current_sensor = 0;
-	while(current_sensor <=10)	{
-		if(sensor_values[current_sensor] >= tape_reference)
-			sensor_surface_types[current_sensor] = tape;
-		else
-			sensor_surface_types[current_sensor] = Floor;
-		current_sensor++;
-	}
-	
+uint8_t get_sensor_surface(uint8_t sensor_id)	{
+	if(sensor_values[sensor_id] >= tape_reference)
+		return Tape;
+	else
+		return Floor;
 }
 void calculate_line_weight()	{
 	cli();
@@ -158,7 +136,7 @@ uint8_t get_tape_width()	{
 	current_sensor = 0;
 	
 	while(current_sensor <=10)	{
-		tape_width = tape_width + sensor_surface_types[current_sensor];
+		tape_width = tape_width + get_sensor_surface(current_sensor);
 		current_sensor++;
 	}
 	return tape_width;
@@ -166,7 +144,7 @@ uint8_t get_tape_width()	{
 uint8_t is_tape_right()	{
 	uint8_t number_of_tape_sensors = 0;
 	for(uint8_t i = 7; i<=10; i++)	{
-		if (sensor_surface_types[i] == 1)
+		if (get_sensor_surface(i) == 1)
 		number_of_tape_sensors++;
 	}
 	if(number_of_tape_sensors >= 4)
@@ -177,7 +155,7 @@ uint8_t is_tape_right()	{
 uint8_t is_tape_left()	{
 	uint8_t number_of_tape_sensors = 0;
 	for(uint8_t i = 0; i<5; i++)	{
-		if (sensor_surface_types[i] == 1)
+		if (get_sensor_surface(i) == 1)
 		number_of_tape_sensors++;
 	}
 	if(number_of_tape_sensors >= 4)
@@ -218,31 +196,10 @@ void pickup_station_detection() {
 }
 
 
-void line_break_detection()	{	
-	cli();
-	uint8_t current_sensor;
-	uint8_t total_tape;
-	total_tape = 0;
-	current_sensor = 0;
-	line_status = interrupt;
-	while(current_sensor <= 10)	{
-		if(sensor_surface_types[current_sensor] == tape)	{
-			line_status = line;
-			total_tape++;
-		}
-		current_sensor++;
-	}
-	if(total_tape == 11)
-		line_status = crossing;
-	sei();
-	};
 void update_linesensor()	{
 	update_linesensor_values();
-	update_linesensor_surfaces();
 	calculate_line_weight();
 	pickup_station_detection();
-	line_break_detection();
-
 }
 void init_linesensor_calibration()	{
 	
