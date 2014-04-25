@@ -728,14 +728,16 @@ void MainWindow::on_pushButton_send_arm_pos_clicked()
     bool x_check;
     bool y_check;
     bool angle_check;
-    int x = ui->lineEdit_x_cord->text().toInt(&x_check);
-    int y = ui->lineEdit_y_cord->text().toInt(&y_check);
-    int angle = ui->lineEdit_angle->text().toInt(&angle_check);
+	quint16 x = ui->lineEdit_x_cord->text().toInt(&x_check);
+	quint16 y = ui->lineEdit_y_cord->text().toInt(&y_check);
+	quint16 angle = ui->lineEdit_angle->text().toInt(&angle_check);
     if (port == NULL) {
         print_on_log("No port to send to.");
     }
     if (x_check && y_check && angle_check){
-        port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE_POS, x, y, angle);
+		port->send_packet(PKT_ARM_COMMAND, 6, CMD_ARM_MOVE_POS,
+						  (quint8)(x >> 8), (quint8)x, (quint8)(y >> 8),
+						  (quint8)y, angle);
     }
     else
         print_on_log("Invalid arguments to arm position, must be integers.");

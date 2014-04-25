@@ -26,7 +26,7 @@
 #define CMD_ARM_RELEASE			2	//		none
 #define CMD_ARM_PREDEFINED_POS	3	//		predefine id(1)
 #define CMD_ARM_STOP            4   //      joint(1)
-#define CMD_ARM_MOVE_POS        5   //      x(1), y(2), angle(3)
+#define CMD_ARM_MOVE_POS        5   //      x_h(1), x_l(2), y_h(3), y_l(4), angle(5)
 
 #define CMD_CHASSIS_SPEED		0	//		speed(1)
 #define CMD_CHASSIS_STEER		1	//		steering power(1)
