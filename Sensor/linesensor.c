@@ -279,6 +279,7 @@ uint8_t line_read_sensor(uint8_t sensor_id) {
 }
 
 void calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{	
+	cli();
 	uint8_t sensor_max = 0;
 	uint8_t sensor_min = 0;
 	init_linesensor_calibration();
@@ -293,13 +294,11 @@ void calibrate_linesensor(uint8_t id, uint16_t calibration_variable)	{
 			sensor_min = sensor_value;
 		}
 	}
-	
-	cli();
 	tape_reference = (sensor_max + sensor_min) / 2;
-	sei();
-	
+	ADCSRA &= ~(1 << ADIF);
 	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,(uint16_t)tape_reference);
 	line_init();
+	sei();
 }
 
 
