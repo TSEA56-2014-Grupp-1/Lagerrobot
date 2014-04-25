@@ -2,7 +2,7 @@
 * bluetooth.c
 *
 * Created: 2014-04-01 15:35:48
-*  Author: Karl
+*  Author: Karl, Andreas & Patrik
 */
 
 #include "pc_link.h"
@@ -48,6 +48,41 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 
 			bus_transmit(BUS_ADDRESS_ARM, 3, (uint16_t)data[1]);
 			break;
+		case CMD_ARM_MOVE_POS:
+			if (data_length != 6) {
+				return 1;
+			}
+
+			/*
+			data[1] == x_high
+			data[2] == x_low
+			data[3] == y_high
+			data[4] == y_low
+			data[5] == angle */
+			
+			uint16_t x = (uint16_t)((0x01 & data[1]) << 8) | (uint16_t)data[2];
+			uint16_t y = (uint16_t)((0x01 & data[3]) << 8) | (uint16_t)data[4];
+			uint16_t angle = (uint16_t)data[5];
+			
+			//x = x | 0x0000;
+			y |= (1 << 9);
+			angle |= (2 << 9);
+		
+			uint8_t bus_check = 0;
+			
+			bus_check += bus_transmit(BUS_ADDRESS_ARM, 4, x);
+			_delay_ms(1);
+			bus_check += bus_transmit(BUS_ADDRESS_ARM, 4, y);
+			_delay_ms(1);
+			bus_check += bus_transmit(BUS_ADDRESS_ARM, 4, angle);
+			_delay_ms(1);
+			if (bus_check == 0) {
+				bus_transmit(BUS_ADDRESS_ARM, 4, 0x0600); //Start moving
+			}
+			else {
+				display(0,"E: Arm pos send: %u", bus_check);
+				return 2;
+			}
 	}
 
 	return 0;
