@@ -46,6 +46,5 @@ int main(void)
     while(1)
     {
 		sweep_left();
-	    //TODO:: Please write your application code 
     }
 }

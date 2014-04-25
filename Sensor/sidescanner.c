@@ -11,15 +11,12 @@
 #include "distance_sensors.h"
 
 double distance = 400;
-uint16_t zone_size = 200; 
-uint8_t angle =0;
-uint8_t max_angle = 180;
-uint8_t object_found;
-uint8_t step = 1;
-uint8_t angle_coordinate;
-uint8_t distance_coordinate;
+#define ZONE_SIZE 200
+#define MAX_ANGLE 180 
+#define STEP 1
 
-uint16_t ad_test;
+uint8_t angle = 0;
+uint8_t object_found;
 
 void sidescanner_init()
 {
@@ -69,7 +66,6 @@ uint8_t scanner_right_position(uint8_t angle)
 
 
 void update_distance_sensor_2()	{
-	ad_test = ADC;
 	distance = ad_interpolate(ADC,2);
 	ADCSRA |= (1 << ADSC);
 }
@@ -81,20 +77,19 @@ void update_distance_sensor_3()	{
 
 uint8_t sweep_left()	{
 	//zone_size in volt = 1/distance
-	if(distance<=zone_size)	
+	if(distance<=ZONE_SIZE)	
 	{
 		object_found = 1;
 		scanner_left_position(angle);
-		calculate_coordinates();
 		//wait_scanner_servo(5000);
 	}
-	else if(angle == max_angle)	{
+	else if(angle == MAX_ANGLE)	{
 		return 1;
 	}
 	else
 	{
 		object_found = 0;
-		angle = angle + step;
+		angle = angle + STEP;
 		scanner_left_position(angle);
 		wait_scanner_servo(50); 
 	}
@@ -102,18 +97,18 @@ uint8_t sweep_left()	{
 }
 
 uint8_t sweep_right()	{
-		if(distance>=zone_size)
+		if(distance>=ZONE_SIZE)
 		{
 			object_found = 1;
 			scanner_right_position(0);
 		}
-		else if(angle == max_angle)	{
+		else if(angle == MAX_ANGLE)	{
 			return 1;
 		}
 		else
 		{
 			object_found = 0;
-			angle = angle + step;
+			angle = angle + STEP;
 			scanner_right_position(angle);
 			wait_scanner_servo(50);
 		}
@@ -128,13 +123,20 @@ void wait_scanner_servo(int milli_sec)
 	}
 }
 
-void calculate_coordinates()
-{
+uint8_t calculate_angle_coordinate()	{
 	double alfa = (angle - 90)*M_PI/180;
 	uint16_t x_coord;
 	uint16_t y_coord;
 	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(alfa);
 	y_coord = distance*sin(alfa);
-	angle_coordinate = tan(y_coord/x_coord);
-	distance_coordinate = sqrt((x_coord^2) + (y_coord^2));
+	return tan(y_coord/x_coord);
+}
+
+uint8_t calculate_distance_coordinate()	{
+	double alfa = (angle - 90)*M_PI/180;
+	uint16_t x_coord;
+	uint16_t y_coord;
+	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(alfa);
+	y_coord = distance*sin(alfa);
+	return sqrt((x_coord^2) + (y_coord^2));
 }
