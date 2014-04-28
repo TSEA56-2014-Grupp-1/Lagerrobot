@@ -22,7 +22,8 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>
 
-//------Functions-------
+uint16_t remote_angle = 255;
+coordinate remote_coordinate = {.x = 100, .y = 100};
 
 void arm_init()
 {
@@ -239,15 +240,65 @@ void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 	}
 }
 
+void arm_move_to_angles(angles joint_angles) {
+	arm_move_joint_add(2, ik_rad_to_servo_angle(2, joint_angles.t1));
+	arm_move_joint_add(3, ik_rad_to_servo_angle(3, joint_angles.t2));
+	arm_move_joint_add(4, ik_rad_to_servo_angle(4, joint_angles.t3));
+}
+
+void arm_process_coordinate(uint8_t callback_id, uint16_t data) {
+	uint16_t value = data & 0x1ff;
+	angles joint_angles;
+
+	//display(0, "D: %u/%u/%u", callback_id, data >> 9, data & 0x1ff);
+	//display(1, "Raw: %x", data);
+
+	switch (data >> 9) {
+		case 0:
+			remote_coordinate.x = value;
+			break;
+		case 1:
+			remote_coordinate.y = value;
+			break;
+		case 2:
+			remote_angle = 2 * value;
+			break;
+		case 3:
+			arm_move_joint(1, remote_angle);
+
+			// Calclulate IK
+			// TODO: Calculate ik_calculate_x_limit
+			if (ik_angles(remote_coordinate, 150, &joint_angles) != 0) {
+				return;
+			}
+
+			// while (joint_is_moving(1));
+
+
+
+			arm_move_to_angles(joint_angles);
+			servo_action(SERVO_BROADCASTING_ID);
+			break;
+	}
+}
+
 uint8_t arm_claw_open(void) {
 	uint8_t servo_id = joint_get_servo_id(6);
 	uint8_t status_code = servo_write(servo_id, SERVO_GOAL_POSITION_L, 0x00, 0x02);
+
+	uint16_t load;
 
 	if (status_code) {
 		return status_code;
 	}
 
-	while (joint_is_moving(6));
+	display(0, "test");
+	while (joint_is_moving(6)) {
+		servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load);
+		if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
+			display(0, "%u, %u", (uint8_t)(load >> 8), (uint8_t)load);
+		}
+	}
 
 	return 0;
 }
@@ -256,11 +307,18 @@ uint8_t arm_claw_close(void) {
 	uint8_t servo_id = joint_get_servo_id(6);
 	uint8_t status_code = servo_write(servo_id, SERVO_GOAL_POSITION_L, 0x00, 0x00);
 
+	uint16_t load;
+
 	if (status_code) {
 		return status_code;
 	}
 
-	while (joint_is_moving(6));
+	while (joint_is_moving(6)) {
+		/*if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
+			display(0, "%u, %u", (uint8_t)(load >> 8), (uint8_t)load);
+		}*/
+	}
+	// TODO: Check present load here
 
 	return 0;
 }
@@ -269,25 +327,27 @@ int main(void) {
 	servo_init();
 	arm_init();
 	bus_init(0b0000110);
-	lcd_interface_init();
+	lcdi_init();
 
 	bus_register_receive(2, arm_movement_command);
 	bus_register_receive(3, arm_stop_movement);
+	bus_register_receive(4, arm_process_coordinate);
 
 	//arm_display_read_packet(4, SERVO_PRESENT_POSITION_L, 2);
 
 
 	_delay_ms(1000);
 	//arm_move_joint_add(2, ik_rad_to_servo_angle(2, 0.0f));
-	arm_move_joint_add(2, ik_rad_to_servo_angle(2, M_PI / 2));
-	arm_move_joint_add(3, ik_rad_to_servo_angle(3, 0.0f));
-	arm_move_joint_add(4, ik_rad_to_servo_angle(4, 0.0f));
-	servo_action(SERVO_BROADCASTING_ID);
+	//arm_move_joint_add(2, ik_rad_to_servo_angle(2, M_PI / 2));
+	//arm_move_joint_add(3, ik_rad_to_servo_angle(3, 0.0f));
+	//arm_move_joint_add(4, ik_rad_to_servo_angle(4, 0.0f));
+	//servo_action(SERVO_BROADCASTING_ID);
 
-	for (;;) {
+	display(0, "test");
+	/*for (;;) {
 		arm_claw_open();
 		arm_claw_close();
-	}
+	}*/
 
 	// id 2 - 754 for 0
 	// id 4 - 757 for 0

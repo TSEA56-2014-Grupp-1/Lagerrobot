@@ -36,7 +36,7 @@ void bus_init(uint8_t address) {
 	// Modify bus frequency
 	// 18200000/(16+2*TWBR*(4^TWSR prescaler)) = 8.8 kHz (testing shows 15.5kHz ...)
 	// http://www.avrbeginners.net/architecture/twi/twi.html
-	TWBR = 0xff;
+	TWBR = 0x80;
 	//TWBR = 0x0D; // Works good (~192kHz)
 
 	// Enable internal pull-up for SDA and SCL
@@ -477,6 +477,9 @@ void bus_call_receive(uint8_t id, uint16_t data) {
 	(*receive_callbacks[id])(id, data);
 }
 
+/**
+ *  Returns the address the unit is configured to listen on
+ */
 uint8_t bus_get_address() {
 	return TWAR >> 1;
 }

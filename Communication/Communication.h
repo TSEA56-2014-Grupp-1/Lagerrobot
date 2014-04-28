@@ -3,7 +3,7 @@
  *
  * Created: 2014-04-04 11:01:55
  *  Author: Karl
- */ 
+ */
 
 
 #ifndef COMMUNICATION_H_
@@ -41,9 +41,9 @@ uint8_t lcd_rotation_counter;
 /**
  * @brief Clears the display page of a unit.
  * @details Clears the stored display page of a unit, but does not update the display.
- * 
+ *
  * @param unit The identifier of the module whose page is to be cleared.
  */
-void clear_message(uint8_t unit);
+void clear_message(uint8_t unit, uint8_t line_number);
 
 #endif /* COMMUNICATION_H_ */

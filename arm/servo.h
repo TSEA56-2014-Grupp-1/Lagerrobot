@@ -148,6 +148,8 @@ void servo_init(void);
 
 uint8_t servo_ping(uint8_t);
 uint8_t servo_read(uint8_t, uint8_t, uint8_t, uint8_t*);
+uint8_t servo_read_uint8(uint8_t id, uint8_t address, uint8_t *memory);
+uint8_t servo_read_uint16(uint8_t id, uint8_t address, uint16_t *memory);
 uint8_t _servo_write(uint8_t, uint8_t, ...);
 uint8_t _servo_reg_write(uint8_t, uint8_t, ...);
 uint8_t servo_move_add(uint8_t id, uint16_t angle);

@@ -29,7 +29,7 @@ void display(uint8_t line_number, char* str, ...);
  * 
  * @param module The identifier of the module to be displayed.
  */
-void force_display_update(uint8_t module);
+void lcd_force_display_update(uint8_t module);
 
 /**
  * @brief Sends a single symbol to the display.

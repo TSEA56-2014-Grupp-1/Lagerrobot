@@ -230,10 +230,10 @@ uint8_t servo_ping(uint8_t id) {
 }
 
 /**
- *	Send a ping packet to a servo
+ *	Read an arbitrary number of bytes from the servo
  *
  *	@param[in] id Servo ID to read from
- *	@param[in] address Memory address to read data from
+ *	@param[in] address Memory address to start reading data from
  *	@param[in] length Number of bytes to read
  *	@param[out] data Array to copy read bytes to
  *
@@ -250,6 +250,48 @@ uint8_t servo_read(uint8_t id, uint8_t address, uint8_t length, uint8_t *data) {
 	// TODO: Calcualte optimal delay-time!
 	_delay_us(1200);
 	return servo_receive(id, data);
+}
+
+/**
+ *	Read one byte from a servo
+ *
+ *	@param[in] id Servo ID to read from
+ *	@param[in] address Memory address to start reading data from
+ *	@param[out] memory 8-bit integer to copy memory data to
+ */
+uint8_t servo_read_uint8(uint8_t id, uint8_t address, uint8_t *memory) {
+	uint8_t data[1];
+
+	uint8_t status_code = servo_read(id, address, 1, data);
+	if (status_code != 0) {
+		return status_code;
+	}
+
+	*memory = data[0];
+
+	return 0;
+}
+
+/**
+ *	Read two bytes from a servo. The given address should be the low end of the
+ *	of the integer, for instance #SERVO_PRESENT_LOAD_L.
+ *
+ *	@param[in] id Servo ID to read from
+ *	@param[in] address Memory address to start reading data from
+ *	@param[out] memory 16-bit integer to copy memory data to
+ */
+uint8_t servo_read_uint16(uint8_t id, uint8_t address, uint16_t *memory) {
+	uint8_t data[2];
+
+	uint8_t status_code = servo_read(id, address, 1, data);
+	if (status_code != 0) {
+		return status_code;
+	}
+
+	*memory = data[0];
+	*memory |= (uint16_t)data[1] << 8;
+
+	return 0;
 }
 
 /**
@@ -272,7 +314,7 @@ uint8_t _servo_write(uint8_t id, uint8_t data_length, ...) {
 		return 0;
 	}
 
-	// TODO: Calcualte optimal delay-time!
+	// TODO: Calculate optimal delay-time!
 	_delay_us(1200);
 	return servo_receive(id, 0);
 }
