@@ -20,7 +20,7 @@ ISR(ADC_vect) {
 			update_linesensor();
 		case 1 :
 			//update_distance_sensor_1(); this function should be in the "arm-sensor code"
-			update_distance_sensor_2();
+			update_distance_sensor_3();
 		break;
 		case 2 : 
 			update_distance_sensor_2();
@@ -45,6 +45,6 @@ int main(void)
 	
     while(1)
     {
-		sweep_left();
+		//sweep_left();
     }
 }

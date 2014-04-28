@@ -10,11 +10,12 @@
 #include "sidescanner.h"
 #include "distance_sensors.h"
 
-double distance = 400;
+
 #define ZONE_SIZE 200
 #define MAX_ANGLE 180 
 #define STEP 1
 
+double distance = 400;
 uint8_t angle = 0;
 uint8_t object_found;
 
@@ -37,9 +38,9 @@ void sidescanner_init()
 	TCCR3B |= (0 << CS12 | 1 << CS11 | 1 << CS10);
 	
 	//Enable adc, Set ADIF flag, Set ADC Interreupt enable, set prescaler
-	ADCSRA = 0b10001111;
-	//Set left AD-left adjust, set AD-channel 1
-	ADMUX |= 0b00000001;	
+	ADCSRA = 0b10011111;
+	//set AD-channel 1
+	ADMUX = 0b00000001;	
 	//Start AD-conversion
 	ADCSRA |= (1 << ADSC);
 	
@@ -100,7 +101,7 @@ uint8_t sweep_right()	{
 		if(distance>=ZONE_SIZE)
 		{
 			object_found = 1;
-			scanner_right_position(0);
+			scanner_right_position(angle);
 		}
 		else if(angle == MAX_ANGLE)	{
 			return 1;
