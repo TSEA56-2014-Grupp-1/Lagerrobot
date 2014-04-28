@@ -1,18 +1,22 @@
 /*
-* Communication.c
-*
-* Created: 2014-03-26 09:49:31
-*  Author: Karl
-*/
+ * Communication.c
+ *
+ * Created: 2014-03-26 09:49:31
+ *  Author: Karl
+ */
 #define ROTATE_INTERVAL 100
 
 #include "Communication.h"
 #include "LCD.h"
+
+#include "pc_link.h"
+#include "../shared/usart.h"
 #include "../shared/bus.h"
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <string.h>
 #include <util/delay.h>
-#include <avr/interrupt.h>
+#include "../shared/packets.h"
 
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
@@ -56,6 +60,7 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 		module = 0;
 	}
 
+<<<<<<< HEAD
 	line_number = (uint8_t) (data >> 8);
 
 	if (line_number < 2) {
@@ -130,9 +135,13 @@ void init(){
 	clear_message(ARM, 1);
 }
 
+void forward_calibration_data(uint8_t id, uint16_t metadata)	{
+	send_packet(PKT_CALIBRATION_DATA,1,(uint8_t)metadata);
+}
 
 int main(void)
 {
+	uint8_t pp_status = 0;
 	init();
 	lcd_init();
 
@@ -149,11 +158,15 @@ int main(void)
 	display(0, "Ouroborobot");
 	display(1, "Startup...");
 	_delay_ms(300);
+
 	clear_message(COMM, 0);
 	clear_message(COMM, 1);
-	for(;;)
-	{
+	for(;;)	{
+		while (!usart_has_bytes());
 
+		pp_status = process_packet();
+		display(1, "P-Status: %u", pp_status);
 
+		usart_reset_buffer();
 	}
 }

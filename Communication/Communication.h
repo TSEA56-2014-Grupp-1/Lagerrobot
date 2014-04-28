@@ -11,7 +11,9 @@
 
 #include <avr/io.h>
 
-#define F_CPU 18432000UL
+#ifndef F_CPU
+	#define F_CPU 18432000UL
+ #endif
 
 #define COMM 0
 #define SENS 1
@@ -31,6 +33,7 @@ char message_map_line2[4][17];
 /**
  * Identifier of the unit that is currently being displayed.
  */
+
 uint8_t lcd_current_sender;
 
 /**

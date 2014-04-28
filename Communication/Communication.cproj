@@ -134,6 +134,24 @@
       <SubType>compile</SubType>
       <Link>bus.h</Link>
     </Compile>
+    <Compile Include="..\shared\packets.h">
+      <SubType>compile</SubType>
+      <Link>packets.h</Link>
+    </Compile>
+    <Compile Include="..\shared\usart.c">
+      <SubType>compile</SubType>
+      <Link>usart.c</Link>
+    </Compile>
+    <Compile Include="..\shared\usart.h">
+      <SubType>compile</SubType>
+      <Link>usart.h</Link>
+    </Compile>
+    <Compile Include="pc_link.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="pc_link.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Communication.c">
       <SubType>compile</SubType>
     </Compile>

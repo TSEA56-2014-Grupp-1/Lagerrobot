@@ -6,14 +6,24 @@
  */
 
 #include "usart.h"
+<<<<<<< HEAD
+=======
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
+>>>>>>> PC-interface
 
 uint8_t usart_receive_buffer[256];
 uint8_t usart_buffer_read_index = 0;
 uint8_t usart_buffer_write_index = 0;
 
+<<<<<<< HEAD
 /**
  *	Interrupt vector to add received data to ring buffer
  */
+=======
+
+>>>>>>> PC-interface
 ISR(USART0_RX_vect) {
 	usart_receive_buffer[usart_buffer_write_index++] = UDR0;
 }
@@ -28,6 +38,7 @@ void usart_init(uint16_t baudrate_register_value) {
 	UBRR0L = (uint8_t) baudrate_register_value;
 	UBRR0H = (uint8_t) (baudrate_register_value >> 8);
 
+<<<<<<< HEAD
 	UCSR0B |= (1 << RXCIE0) | (1 << TXEN0) | (1 << RXEN0);
 
 	// Enable pull-up for PD0 and PD1
@@ -36,6 +47,9 @@ void usart_init(uint16_t baudrate_register_value) {
 	usart_clear_buffer();
 
 	sei();
+=======
+	UCSR0B |= (1 << RXCIE0) |  (1 << TXEN0) | (1 << RXEN0);
+>>>>>>> PC-interface
 }
 
 /**
@@ -64,23 +78,38 @@ void usart_write_byte(uint8_t data) {
  *	@return 1 if read timed out or 0 if successful
  */
 uint8_t usart_read_byte(uint8_t * data) {
+<<<<<<< HEAD
 	uint16_t timeout_counter = 0;
+=======
+	uint8_t timeout_counter = 0;
+	uint8_t USART_RECEIVE_TIMEOUT_COUNT = 100;
+>>>>>>> PC-interface
 
 	while (!usart_has_bytes()) {
 		if (timeout_counter++ >= USART_RECEIVE_TIMEOUT_COUNT)
 			return 1;
+		_delay_us(1);
 	}
 
 	*data = usart_receive_buffer[usart_buffer_read_index++];
 	return 0;
 }
 
+<<<<<<< HEAD
 /**
  *	Determines if there are unread bytes in the buffer
  *
  *	@return 1 if there are bytes to be read from buffer else 0
  */
 uint8_t usart_has_bytes(void) {
+=======
+void usart_reset_buffer() {
+	usart_buffer_read_index = 0;
+	usart_buffer_write_index = 0;
+}
+
+uint8_t usart_has_bytes() {
+>>>>>>> PC-interface
 	return usart_buffer_read_index != usart_buffer_write_index;
 }
 
