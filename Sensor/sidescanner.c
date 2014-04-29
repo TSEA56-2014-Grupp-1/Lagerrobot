@@ -15,8 +15,8 @@
 #define MAX_ANGLE 180 
 #define STEP 1
 
-double distance = 400;
-uint8_t angle = 0;
+double distance = 100;
+uint8_t angle = 45;
 uint8_t object_found;
 
 void sidescanner_init()
@@ -98,7 +98,7 @@ uint8_t sweep_left()	{
 }
 
 uint8_t sweep_right()	{
-		if(distance>=ZONE_SIZE)
+		if(distance<=ZONE_SIZE)
 		{
 			object_found = 1;
 			scanner_right_position(angle);
@@ -124,20 +124,20 @@ void wait_scanner_servo(int milli_sec)
 	}
 }
 
-uint8_t calculate_angle_coordinate()	{
+double calculate_angle_coordinate()	{
 	double alfa = (angle - 90)*M_PI/180;
-	uint16_t x_coord;
-	uint16_t y_coord;
+	double x_coord;
+	double y_coord;
 	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(alfa);
 	y_coord = distance*sin(alfa);
 	return tan(y_coord/x_coord);
 }
 
-uint8_t calculate_distance_coordinate()	{
+double calculate_distance_coordinate()	{
 	double alfa = (angle - 90)*M_PI/180;
-	uint16_t x_coord;
-	uint16_t y_coord;
+	double x_coord;
+	double y_coord;
 	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(alfa);
 	y_coord = distance*sin(alfa);
-	return sqrt((x_coord^2) + (y_coord^2));
+	return sqrt((x_coord*x_coord) + (y_coord*y_coord));
 }

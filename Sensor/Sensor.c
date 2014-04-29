@@ -19,21 +19,21 @@ ISR(ADC_vect) {
 		case 0 :
 			update_linesensor();
 		case 1 :
-			//update_distance_sensor_1(); this function should be in the "arm-sensor code"
-			update_distance_sensor_3();
+			update_distance_sensor_2();	//left sensor (adc1)
 		break;
 		case 2 : 
-			update_distance_sensor_2();
+			update_distance_sensor_3(); //right sensor (adc2)
 		break;
 		case 3 :
-			update_distance_sensor_3();
+			//update_distance_sensor_1(); //this function should be in the "arm-sensor code" (adc3)
 		break;
 	}
 }
 
-
+	double temp_coordinate;
 int main(void)
 {
+
 	bus_init(4);
 	bus_register_response(4, return_line_weight);
 	//sidescanner
@@ -42,7 +42,9 @@ int main(void)
 	//calibrate_linesensor();
 	//line_init();
 	sei();
-	
+	temp_coordinate = calculate_angle_coordinate();
+
+
     while(1)
     {
 		//sweep_left();

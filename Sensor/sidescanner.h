@@ -30,7 +30,9 @@ void wait_scanner_servo();
 void update_distance_sensor_1();
 void update_distance_sensor_2();
 void update_distance_sensor_3();
-void calculate_coordinates();
+double calculate_distance_coordinate();
+double calculate_angle_coordinate();
+
 
 
 
