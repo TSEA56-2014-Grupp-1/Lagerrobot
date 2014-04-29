@@ -9,6 +9,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <util/delay.h>
 
 void usart_init(uint16_t baudrate_register_value);
 void usart_clear_buffer(void);

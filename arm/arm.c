@@ -292,12 +292,11 @@ uint8_t arm_claw_open(void) {
 		return status_code;
 	}
 
-	display(0, "test");
+
 	while (joint_is_moving(6)) {
-		servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load);
-		if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
-			display(0, "%u, %u", (uint8_t)(load >> 8), (uint8_t)load);
-		}
+		/*if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
+
+		}*/
 	}
 
 	return 0;
@@ -308,17 +307,31 @@ uint8_t arm_claw_close(void) {
 	uint8_t status_code = servo_write(servo_id, SERVO_GOAL_POSITION_L, 0x00, 0x00);
 
 	uint16_t load;
+	uint16_t current_position;
 
 	if (status_code) {
 		return status_code;
 	}
 
 	while (joint_is_moving(6)) {
-		/*if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
-			display(0, "%u, %u", (uint8_t)(load >> 8), (uint8_t)load);
-		}*/
+		// Continiously check load to stop when somethings is gripped
+		if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
+			if ((load & 0x1ff) > 100) {
+				// Display that limit was reached on servo 4
+				servo_write(4, SERVO_LED, 1);
+
+				// Disable and re-enable torque to stop claw
+				servo_write(servo_id, SERVO_TORQUE_ENABLE, 0);
+				//servo_write(servo_id, SERVO_TORQUE_ENABLE, 1);
+				//servo_write(servo_id, SERVO_TORQUE_ENABLE, 0);
+
+				// Clear display  on servo 4
+				servo_write(4, SERVO_LED, 0);
+
+				return 0;
+			}
+		}
 	}
-	// TODO: Check present load here
 
 	return 0;
 }
@@ -326,56 +339,18 @@ uint8_t arm_claw_close(void) {
 int main(void) {
 	servo_init();
 	arm_init();
-	bus_init(0b0000110);
+	bus_init(BUS_ADDRESS_ARM);
 	lcdi_init();
 
 	bus_register_receive(2, arm_movement_command);
 	bus_register_receive(3, arm_stop_movement);
 	bus_register_receive(4, arm_process_coordinate);
 
-	//arm_display_read_packet(4, SERVO_PRESENT_POSITION_L, 2);
-
-
-	_delay_ms(1000);
-	//arm_move_joint_add(2, ik_rad_to_servo_angle(2, 0.0f));
-	//arm_move_joint_add(2, ik_rad_to_servo_angle(2, M_PI / 2));
-	//arm_move_joint_add(3, ik_rad_to_servo_angle(3, 0.0f));
-	//arm_move_joint_add(4, ik_rad_to_servo_angle(4, 0.0f));
-	//servo_action(SERVO_BROADCASTING_ID);
-
-	display(0, "test");
-	/*for (;;) {
+	servo_write(5, SERVO_LED, 0);
+	for (;;) {
 		arm_claw_open();
+		servo_write(5, SERVO_LED, 1);
 		arm_claw_close();
-	}*/
-
-	// id 2 - 754 for 0
-	// id 4 - 757 for 0
-
-
-// 	arm_move_joint_add(6, 511);
-//   	servo_action(0xfe);
-
-	/*coordinate target = {.x = 360.0f, .y = 0.0f};
-	angles joint_angles;
-
-	ik_angles(target, ik_calculate_x_limit(M_PI / 2), &joint_angles);
-
-	arm_move_joint_add(2, ik_rad_to_servo_angle(2, joint_angles.t1));
-	arm_move_joint_add(3, ik_rad_to_servo_angle(3, joint_angles.t2));
-	arm_move_joint_add(4, ik_rad_to_servo_angle(4, joint_angles.t3));
-
-	servo_action(SERVO_BROADCASTING_ID);
-*/
-	uint8_t i;
-	for (i = 0;; i++) {
-// 		_delay_ms(1000);
-// 		arm_movement_command(0, ((uint16_t)1 | ((uint16_t)i%2 << 8)));
-// 		arm_movement_command(0, ((uint16_t)5 | ((uint16_t)i%2 << 8)));
-// 		arm_movement_command(0, ((uint16_t)6 | ((uint16_t)i%2 << 8)));
-// 		_delay_ms(1000);
-// 		arm_stop_movement(0, 1);
-// 		arm_stop_movement(0, 5);
-// 		arm_stop_movement(0, 6);
+		_delay_ms(1000);
 	}
 }

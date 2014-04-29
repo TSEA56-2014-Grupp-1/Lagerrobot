@@ -60,7 +60,6 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
 		module = 0;
 	}
 
-<<<<<<< HEAD
 	line_number = (uint8_t) (data >> 8);
 
 	if (line_number < 2) {
