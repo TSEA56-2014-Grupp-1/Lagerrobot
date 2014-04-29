@@ -22,9 +22,6 @@ enum {Floor, Tape};
 typedef uint8_t station_type;
 enum station_type {Left, No, Right};
 
-typedef uint8_t line_type;
-enum line_type {line, interrupt, crossing};
-
 typedef uint8_t composite_output_type;
 enum composite_output_type {station_Left, station_No, station_Right,No_tape};
 
@@ -33,9 +30,10 @@ uint8_t linesensor_channel;
 uint8_t sensor_values[11];
 uint8_t temp_sensor_values[11];
 uint8_t line_weight = 127;
-uint16_t pickup_iterator = 0;
 uint8_t previous_pickup_station = No;
 uint8_t tape_reference = 150;
+
+uint16_t pickup_iterator = 0;
 
 
 uint8_t not_on_tape()	{
