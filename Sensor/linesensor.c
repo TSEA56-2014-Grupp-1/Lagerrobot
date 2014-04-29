@@ -100,7 +100,7 @@ void update_linesensor_values() {
 	ADCSRA |= (1 << ADSC);
 	
 }
-uint8_t get_sensor_surface(uint8_t sensor_id)	{
+station_type get_sensor_surface(uint8_t sensor_id)	{
 	if(sensor_values[sensor_id] >= tape_reference)
 		return Tape;
 	else
@@ -171,8 +171,18 @@ void pickup_station_detection() {
 	else if (previous_pickup_station == Right && is_tape_left()) {
 		previous_pickup_station = No;
 	}
-	else if (pickup_iterator > 0)
+	
+	else if (previous_pickup_station == Left && !is_tape_left() && pickup_iterator > 1950) {
+		previous_pickup_station = No;
+		pickup_iterator = 0;
+	}
+	else if (previous_pickup_station == Right && !is_tape_right() && pickup_iterator > 1950) {
+		previous_pickup_station = No;
+		pickup_iterator = 0;
+	}
+	else if (pickup_iterator > 0) {
 		--pickup_iterator;
+	}
 	
 	else if (previous_pickup_station == No) {
 		if (is_tape_right()) {
@@ -200,14 +210,12 @@ void update_linesensor()	{
 	pickup_station_detection();
 }
 void init_linesensor_calibration()	{
-	
 	//setup ADC for calibration-routine
 	ADCSRA = 0b10000111;
 	ADCSRA |= (1 << ADEN);
 	ADMUX = 0b00100000;
 	DDRB = 0b11111111;
 }
-//should set sensor_scale-values and tape_reference
 
 void calculate_average(uint8_t sensor_references[11][10], uint8_t average[11]) {
 	
