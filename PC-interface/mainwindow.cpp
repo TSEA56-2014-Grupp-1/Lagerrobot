@@ -47,11 +47,11 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
-    delete port;
-    delete timer_req;
-    delete timer_com;
-    delete start_time;
-    delete time_graph;
+//    delete port;
+//    delete timer_req;
+//    delete timer_com;
+//    delete start_time;
+//    delete time_graph;
 }
 
 
@@ -133,7 +133,6 @@ void MainWindow::connect_to_port(QString name) {
         delete port;
         port = NULL;
     }
-
 }
 
 void MainWindow::on_pushButton_forward_pressed()
@@ -221,12 +220,12 @@ void MainWindow::on_pushButton_stop_line_clicked()
 
 void MainWindow::on_pushButton_close_gripper_clicked()
 {
-	//port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 6);
+	port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 6);
 }
 
 void MainWindow::on_pushButton_open_gripper_clicked()
 {
-    //port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 6);
+	port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 6);
 }
 
 void MainWindow::on_pushButton_3_upp_pressed()
@@ -416,12 +415,8 @@ void MainWindow::on_pushButton_calibrate_tape_clicked()
 
 void MainWindow::on_pushButton_calibrate_floor_clicked()
 {
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_CALIBRATION_COMMAND, 2, CAL_LINE, 0);
-	}
+	//XXX:
+	station = false;
 }
 
 /*
@@ -464,7 +459,7 @@ void MainWindow::disable_buttons() {
     ui->pushButton_calibrate_floor->setEnabled(false);
     ui->pushButton_calibrate_tape->setEnabled(false);
     ui->pushButton_close_gripper->setEnabled(false);
-    ui->pushButton_forward->setEnabled(false);
+	ui->pushButton_forward->setEnabled(false);
     ui->pushButton_left->setEnabled(false);
     ui->pushButton_open_gripper->setEnabled(false);
     ui->pushButton_put_down_left->setEnabled(false);
@@ -738,9 +733,11 @@ void MainWindow::on_pushButton_send_arm_pos_clicked()
 		port->send_packet(PKT_ARM_COMMAND, 6, CMD_ARM_MOVE_POS,
 						  (quint8)(x >> 8), (quint8)x, (quint8)(y >> 8),
 						  (quint8)y, angle);
+		print_on_log("Sent arm command");
+		print_on_log(QObject::tr("x: %1, y: %2, angle: %3").arg(QString::number(x)).arg(QString::number(y)).arg(QString::number(angle)));
     }
     else
-        print_on_log("Invalid arguments to arm position, must be integers.");
+		print_on_log("Invalid arguments to arm position, must be integers.");
 }
 
 //XXX: This is not a good solution... Inplace until better is found
@@ -753,4 +750,26 @@ void MainWindow::on_pushButton_pause_graph_clicked()
         ui->pushButton_pause_graph->setText("Pause graph");
     }
     update_graph = !update_graph;
+}
+
+/*
+ *		0 station vänster
+ *		1 ingen station
+ *		2 station höger
+ */
+void MainWindow::pickupstation(QByteArray* data) {
+	if (data->at(11) == 0 && !station) {
+		print_on_log(QObject::tr("Station left: %1").arg(QString::number(data->at(11))));
+		for (int i = 0; i < 11; ++i) {
+			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
+		}
+		station = true;
+	}
+	else if (data->at(11) == 2 && !station) {
+		print_on_log("Station right");
+		for (int i = 0; i < 11; ++i) {
+			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
+		}
+		station = true;
+	}
 }

@@ -36,7 +36,9 @@ public:
 
     void set_RFID(QString);
 
-    void update_linesensor_plot(QByteArray*);
+	void update_linesensor_plot(QByteArray*);
+
+	void pickupstation(QByteArray*);
 
 
 private slots:
@@ -154,6 +156,9 @@ private:
     QVector<QGraphicsEllipseItem*> linesensor_circels;
 
     QGraphicsScene* linesensor_plot = new QGraphicsScene();
+
+	//XXX:
+	bool station = false;
 
 };
 
