@@ -42,26 +42,6 @@ void lcd_init() {
 	
 }
 
-/**
- * @brief Forces the display to display the page of a certain module.
- * @details Resets the rotation counter and outputs the page of a certain module to the display.
- * 
- * @param module The identifier of the module to be displayed.
- */
-void lcd_force_display_update(uint8_t module) {
-	lcd_rotation_counter = 0;
-	lcd_current_sender = module;
-	
-	lcd_display(lcd_current_sender,
-				message_map_line1[lcd_current_sender],
-				message_map_line2[lcd_current_sender]);
-	
-	if (lcd_current_sender == 3)
-		lcd_current_sender = 0;
-	else 
-		++lcd_current_sender;
-}
-
 
 /**
  * @brief Sends a single symbol to the display.
