@@ -92,12 +92,18 @@ uint8_t servo_calculate_checksum(uint8_t first_index, uint8_t last_index, uint8_
  *	@return Status code
  */
 uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
-	// 0-START 1-START 2-ID 3-LÄNGD 4-ERROR 5-PARAMETER
 	uint8_t i;
 	uint8_t data[256]; // XXX: This probably doesn't need to be this big
 	uint8_t data_length = 0;
 
 	// Fetch bytes into an array of length data_length
+	// 0:     Start (0xff)
+	// 1:     Start (0xff)
+	// 2:     ID of servo
+	// 3:     Number of data packets (error code + parameters + checksum)
+	// 4:     Error code
+	// 5-...: Parameters
+	// Last:  Checksum
 	for (i = 0; data_length == 0 || i < data_length; i++) {
 		if (usart_read_byte(&data[i]) != 0) {
 			// Read timed out
@@ -147,7 +153,7 @@ uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
 
 	// Read parameters into given array if not null pointer
 	if (data_length > 5 && parameters != 0) {
-		for (i = 5; i < data_length; i++) {
+		for (i = 5; i < data_length - 1; i++) {
 			parameters[i - 5] = data[i];
 		}
 	}
@@ -320,7 +326,7 @@ uint8_t _servo_write(uint8_t id, uint8_t data_length, ...) {
 }
 
 /**
- *	Buffer write data to servo. Should only be call through #servo_reg_write()
+ *	Buffer write data to servo. Should only be called through #servo_reg_write()
  *
  *	@param id Servo ID to write to
  *	@param data_length Number of variable arguments

@@ -24,14 +24,6 @@
 void display(uint8_t line_number, char* str, ...);
 
 /**
- * @brief Forces the display to display the page of a certain module.
- * @details Resets the rotation counter and outputs the page of a certain module to the display.
- * 
- * @param module The identifier of the module to be displayed.
- */
-void lcd_force_display_update(uint8_t module);
-
-/**
  * @brief Sends a single symbol to the display.
  * @details This will send a symbol to the current DDRAM address on the display controller
  * and automatically increment the display cursor.

@@ -2,26 +2,7 @@
 #include "../shared/bus.h"
 #include <avr/io.h>
 
-uint16_t lcdi_symbol_pairs[8];
-/**
- * @brief Registers the symbol request with the bus.
- * @details Masks the bus plumbing from the lcd user.
- */
-void lcdi_init(){
-	bus_register_response(1, lcdi_symbol_request);
-	lcdi_display_clear();
-}
 
-/**
- * @brief Clears the display page of the current unit.
- * @details Sets all display positions to space (' ').
- */
-void lcdi_display_clear() {
-	for (int i = 0; i < 16; ++i) {
-		lcdi_display_symbols[0][i] = 0x20;
-		lcdi_display_symbols[1][i] = 0x20;
-	}
-}
 
 /**
  * @brief Displays a formatted string of text and variables on the display.
@@ -33,43 +14,44 @@ void lcdi_display_clear() {
  * @param ... The variables to display.
  */
 void display(uint8_t line_number, const char* str, ...) {
+	char display_symbols[17];
+	
+	uint8_t status;
+	
+	uint8_t module_identifier = 0;
+	
+	for (uint8_t i = 0; i < 16; ++i){
+		display_symbols[i] = 0x20;
+	}
 	
 	va_list data;
 	va_start(data, str);
-	vsnprintf(lcdi_display_symbols[line_number], 17, str, data);
+	vsnprintf(display_symbols, 17, str, data);
 	va_end(data);
 	
-	uint16_t temp_symbol_pair;
-	
-	for (int i = 0; i < 8; ++i) {
-		temp_symbol_pair = ((uint16_t) lcdi_display_symbols[line_number][(i << 1) & 0b00001111] << 8) |
-					  ((uint16_t) lcdi_display_symbols[line_number][((i << 1) & 0b00001111) + 1]);
-					
-		lcdi_symbol_pairs[i] = temp_symbol_pair;
-		  
-		if ((uint8_t) (temp_symbol_pair >> 8) == 0x00)
-			lcdi_symbol_pairs[i] = ((uint16_t) 0x20) << 8 | (uint8_t) temp_symbol_pair;
-		
-		if ((uint8_t) temp_symbol_pair == 0x00)
-			lcdi_symbol_pairs[i] = temp_symbol_pair & (0xff00 | ((uint16_t) 0x20));
-		
-		
+	switch (bus_get_address()) {
+		case BUS_ADDRESS_SENSOR:
+			module_identifier = 1;
+		break;
+		case BUS_ADDRESS_ARM:
+			module_identifier = 2;
+		break;
+		case BUS_ADDRESS_CHASSIS:
+			module_identifier = 3;
+		break;
 	}
 	
-	bus_transmit(BUS_ADDRESS_COMMUNICATION, 2, ((uint16_t) line_number << 8) | (uint16_t) bus_get_address());
-}
-
-/**
- * @brief Responds to a request för display symbols.
- * @details A standard bus callback for a request from the communication module for symbols to 
- * print on the display. The request is made with a symbol pair index as metadata, and returns 
- * two symbols. Example, the index 0 will return the first and second symbol, index 2 the fifth and sixth.
- * 
- * @param id Standard callback parameter, the id of the request.
- * @param data Standard callback parameter, here it is the index of the symbol pair requested.
- * 
- * @return [description]
- */
-uint16_t lcdi_symbol_request(uint8_t id, uint16_t data) {
-	return	lcdi_symbol_pairs[data];
+	if (module_identifier == 0) // bus has not been initialized correctly!
+		return;
+		
+	for (uint8_t i = 0; i < 16; ++i){
+		
+		do {
+			status = bus_transmit(BUS_ADDRESS_COMMUNICATION, 2*module_identifier + line_number, ((uint16_t) i << 7) | (display_symbols[i] & 0b01111111));
+			
+		} while (status != 0);
+			
+		if (display_symbols[i] == 0x00) 
+			break;
+	}
 }

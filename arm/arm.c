@@ -15,6 +15,7 @@
 #include "inverse_kinematics.h"
 #include "../shared/LCD_interface.h"
 #include "../shared/bus.h"
+#include "../shared/usart.h"
 
 #include <math.h>
 
@@ -313,6 +314,8 @@ uint8_t arm_claw_close(void) {
 		return status_code;
 	}
 
+	servo_write(4, SERVO_LED, 0);
+
 	while (joint_is_moving(6)) {
 		// Continiously check load to stop when somethings is gripped
 		if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
@@ -326,7 +329,7 @@ uint8_t arm_claw_close(void) {
 				//servo_write(servo_id, SERVO_TORQUE_ENABLE, 0);
 
 				// Clear display  on servo 4
-				servo_write(4, SERVO_LED, 0);
+				//servo_write(4, SERVO_LED, 0);
 
 				return 0;
 			}
@@ -340,17 +343,31 @@ int main(void) {
 	servo_init();
 	arm_init();
 	bus_init(BUS_ADDRESS_ARM);
-	lcdi_init();
 
 	bus_register_receive(2, arm_movement_command);
 	bus_register_receive(3, arm_stop_movement);
 	bus_register_receive(4, arm_process_coordinate);
 
-	servo_write(5, SERVO_LED, 0);
-	for (;;) {
-		arm_claw_open();
-		servo_write(5, SERVO_LED, 1);
-		arm_claw_close();
+	//servo_write(5, SERVO_LED, 0);
+	_delay_ms(2000);
+	//display(0, "S: %u Hb: %u", servo_write(5, SERVO_LED, 1), usart_has_bytes());
+
+	uint8_t status;
+	uint8_t delay = 255;
+	uint8_t i;
+	uint8_t servo_id;
+	for (i = 0;; i++) {
 		_delay_ms(1000);
+		servo_id = i % 8 + 1;
+		status = servo_read_uint8(servo_id, SERVO_RETURN_DELAY_TIME, &delay);
+		display(1, "ID:%u,S:%u,D:%u", servo_id, status, delay);
+		//if (status == 0) {
+		//}
+		//arm_claw_open();
+		//arm_claw_close();
+		//_delay_ms(1000);
+		//servo_write(5, SERVO_LED, 1);
+		//arm_claw_open();
+		//arm_claw_close();
 	}
 }
