@@ -32,7 +32,7 @@ ISR(TIMER1_OVF_vect) {
  */
 void lcd_force_display_update(uint8_t module) {
 	lcd_rotation_counter = ROTATE_INTERVAL;
-	lcd_current_sender = module;
+	lcd_next_sender = module;
 }
 
 void lcd_chassi_line1(uint8_t id, uint16_t metadata) {
@@ -133,7 +133,7 @@ void init(){
 	TCCR1A = 0x00; // normal mode
 	TCCR1B = 0b00000010; // normal mode, max prescaler;
 	
-	lcd_current_sender = 0;
+	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;
 	lcd_rotation_flag = 0;
 	clear_message(COMM, 0);
@@ -168,7 +168,7 @@ int main(void)
 	
 	char current_message_map1[17];
 	char current_message_map2[17];
-	
+	uint8_t lcd_current_sender;
 	for(;;)
 	{
 		while(!lcd_rotation_flag) {
@@ -177,7 +177,7 @@ int main(void)
 		
 		cli();
 		lcd_rotation_flag = 0;
-		
+		lcd_current_sender = lcd_next_sender;
 		memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
 		memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
 		sei();
@@ -186,9 +186,7 @@ int main(void)
 					current_message_map1,
 					current_message_map2);
 		
-		if (lcd_current_sender == 3)
-		lcd_current_sender = 0;
-		else
-		++lcd_current_sender;
+		if (!lcd_rotation_flag)
+			lcd_next_sender = (lcd_next_sender + 1) % 4;
 	}
 }
