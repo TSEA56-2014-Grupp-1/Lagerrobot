@@ -174,15 +174,14 @@ int main(void)
 		while(!lcd_rotation_flag) {
 			_delay_us(1);
 		}
-		lcd_rotation_flag = 0;
-		cli();
 		
+		cli();
+		lcd_rotation_flag = 0;
 		
 		memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
 		memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
 		sei();
 		
-			
 		lcd_display(lcd_current_sender,
 					current_message_map1,
 					current_message_map2);
