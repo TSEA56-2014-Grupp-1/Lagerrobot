@@ -116,7 +116,6 @@ uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
 		}
 	}
 
-
 	// Calculate checksum and compare against received one
 	if (data[data_length - 1] != servo_calculate_checksum(2, data_length - 2, data)) {
 		return 2;
@@ -323,6 +322,34 @@ uint8_t _servo_write(uint8_t id, uint8_t data_length, ...) {
 	// TODO: Calculate optimal delay-time!
 	_delay_us(1200);
 	return servo_receive(id, 0);
+}
+
+/**
+ *	Write one byte to a servo.
+ *
+ *	@param id Servo ID to write to
+ *	@param address Memory address to write to
+ *	@param data Data to write to address
+ *
+ *	@return Status code like servo_receive()
+ */
+uint8_t servo_write_uint8(uint8_t id, uint8_t address, uint8_t data) {
+	return _servo_write(id, 2, address, data);
+}
+
+/**
+ *	Write two bytes to a servo. The given address should be the low end of the
+ *	of the integer, for instance #SERVO_PRESENT_LOAD_L. Bit 0 through 7 will be
+ *	written to address and bit 8 through 15 to address + 1.
+ *
+ *	@param id Servo ID to write to
+ *	@param address Starting memory address to write to
+ *	@param data Data to write to address
+ *
+ *	@return Status code like servo_receive()
+ */
+uint8_t servo_write_uint16(uint8_t id, uint8_t address, uint16_t data) {
+	return _servo_write(id, 3, address, (uint8_t)data, (uint8_t)(data >> 8));
 }
 
 /**

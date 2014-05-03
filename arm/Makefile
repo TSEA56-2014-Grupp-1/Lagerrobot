@@ -1,6 +1,6 @@
 TARGET = arm
 
-SRC = arm.c servo.c inverse_kinematics.c ../shared/usart.c ../shared/LCD_interface.c ../shared/bus.c
+SRC = main.c arm.c servo.c inverse_kinematics.c ../shared/usart.c ../shared/LCD_interface.c ../shared/bus.c
 OBJ = $(SRC:.c=.o)
 
 MCU = "atmega1284p"

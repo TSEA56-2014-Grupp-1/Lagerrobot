@@ -1,335 +1,227 @@
-/*
- * Armenhet.c
+/**
+ *	@file arm.c
+ *	@author Andreas Runfalk
  *
- * Created: 3/25/2014 4:23:12 PM
- *  Author: eriny778
+ *	Functions for handling common arm operations such as moving joints
  */
 
-#ifndef F_CPU
-	#define F_CPU 16000000UL
- #endif
-
-#include <avr/io.h>
 #include "arm.h"
-#include "servo.h"
-#include "inverse_kinematics.h"
-#include "../shared/LCD_interface.h"
-#include "../shared/bus.h"
-#include "../shared/usart.h"
 
-#include <math.h>
-
-#include <inttypes.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-
-uint16_t remote_angle = 255;
-coordinate remote_coordinate = {.x = 100, .y = 100};
-
-void arm_init()
+/**
+ *	Setup sane defaults for arm servos regarding speed and compliance margins
+ */
+void arm_init(void)
 {
 	servo_write(
 		SERVO_BROADCASTING_ID,
 		SERVO_CW_COMPLIANCE_MARGIN,
 		0x00, 0x00, 0x40, 0x40);
 
-	servo_write(
-		SERVO_BROADCASTING_ID,
-		SERVO_GOAL_SPEED_L,
-		0x40, 0x00);
+	servo_write_uint16(SERVO_BROADCASTING_ID, SERVO_GOAL_SPEED_L, 0x040);
 }
 
+/**
+ *	Verify that the angle is valid for a given joint.
+ *
+ *	@param joint Joint index. Use ARM_JOINT_* constants.
+ *	@param angle Angle to move joint to
+ *
+ *	@return 1 if valid joint and angle, else 0
+ */
+uint8_t arm_valid_angle(uint8_t joint, uint16_t angle) {
+	switch (joint) {
+		case ARM_JOINT_BASE:
+			return ARM_JOINT_BETWEEN(
+				ARM_JOINT_BASE_ANGLE_MIN, angle, ARM_JOINT_BASE_ANGLE_MAX);
+		case ARM_JOINT_SHOULDER:
+			return ARM_JOINT_BETWEEN(
+				ARM_JOINT_SHOULDER_ANGLE_MIN, angle, ARM_JOINT_SHOULDER_ANGLE_MAX);
+		case ARM_JOINT_ELBOW:
+			return ARM_JOINT_BETWEEN(
+				ARM_JOINT_ELBOW_ANGLE_MIN, angle, ARM_JOINT_ELBOW_ANGLE_MAX);
+		case ARM_JOINT_WRIST:
+			return ARM_JOINT_BETWEEN(
+				ARM_JOINT_WRIST_ANGLE_MIN, angle, ARM_JOINT_WRIST_ANGLE_MAX);
+		case ARM_JOINT_WRIST_ROTATE:
+			return ARM_JOINT_BETWEEN(
+				ARM_JOINT_WRIST_ROTATE_ANGLE_MIN, angle, ARM_JOINT_WRIST_ROTATE_ANGLE_MAX);
+		case ARM_JOINT_CLAW:
+			return ARM_JOINT_BETWEEN(
+				ARM_JOINT_CLAW_ANGLE_MIN, angle, ARM_JOINT_CLAW_ANGLE_MAX);
+		default:
+			// If we got here the received joint was not known
+			return 0;
 
-void arm_move_joint_add(uint8_t joint, uint16_t goal_angle)
-{
-	switch (joint)
-	{
-		case 1:
-			servo_move_add (0x01, goal_angle);
+	}
+}
+
+/**
+ *	Registers a move for the given joint.
+ *
+ *	@param joint Joint index. Use ARM_JOINT_* constants.
+ *	@param angle Angle to move joint to
+ *
+ *	@return 1 if valid joint and angle, else 0
+ */
+uint8_t arm_move_add(uint8_t joint, uint16_t angle) {
+	if (!arm_valid_angle(joint, angle)) {
+		return 0;
+	}
+
+	switch (joint) {
+		case ARM_JOINT_BASE:
+			servo_move_add(ARM_SERVO_BASE, angle);
 			break;
-		case 2:
-			servo_move_add (0x02, goal_angle);
-			servo_move_add (0x03, 1023-goal_angle);
+		case ARM_JOINT_SHOULDER:
+			servo_move_add(ARM_SERVO_SHOULDER_1, angle);
+			servo_move_add(ARM_SERVO_SHOULDER_2, 1023 - angle);
 			break;
-		case 3:
-			servo_move_add (0x04, goal_angle);
-			servo_move_add (0x05, 1023-goal_angle);
+		case ARM_JOINT_ELBOW:
+			servo_move_add(ARM_SERVO_ELBOW_1, angle);
+			servo_move_add(ARM_SERVO_ELBOW_2, 1023 - angle);
 			break;
-		case 4:
-			servo_move_add (0x06, goal_angle);
+		case ARM_JOINT_WRIST:
+			servo_move_add(ARM_SERVO_WRIST, angle);
 			break;
-		case 5:
-			servo_move_add (0x07, goal_angle);
+		case ARM_JOINT_WRIST_ROTATE:
+			servo_move_add(ARM_SERVO_WRIST_ROTATE, angle);
 			break;
-		case 6:
-			servo_move_add (0x08, goal_angle);
+		case ARM_JOINT_CLAW:
+			servo_move_add(ARM_SERVO_CLAW, angle);
 			break;
+		default:
+			// We should never get here
+			return 0;
+	}
+
+	return 1;
+}
+
+/**
+ *	Perform all moves registered with arm_move_add().
+ */
+void arm_move_perform(void) {
+	servo_action(SERVO_BROADCASTING_ID);
+}
+
+/**
+ *	Immediately perform move for the given joint.
+ *
+ *	@param joint Joint index. Use ARM_JOINT_* constants.
+ *	@param angle Angle to move joint to
+ *
+ *	@return 1 if valid joint and angle, else 0
+ */
+uint8_t arm_move(uint8_t joint, uint16_t angle) {
+	if (!arm_move_add(joint, angle)) {
+		return 0;
+	}
+
+	arm_move_perform();
+	return 1;
+}
+
+/**
+ *	Convert joint to servo ID. If joint corresponds to multiple servos this
+ *	function will return first ID for that joint.
+ *
+ *	@return Servo ID if valid joint, else 0
+ */
+uint8_t arm_joint_to_servo(uint8_t joint) {
+	switch (joint) {
+		case ARM_JOINT_BASE:
+			return ARM_SERVO_BASE;
+		case ARM_JOINT_SHOULDER:
+			return ARM_SERVO_SHOULDER_1;
+		case ARM_JOINT_ELBOW:
+			return ARM_SERVO_ELBOW_1;
+		case ARM_JOINT_WRIST:
+			return ARM_SERVO_WRIST;
+		case ARM_JOINT_WRIST_ROTATE:
+			return ARM_SERVO_WRIST_ROTATE;
+		case ARM_JOINT_CLAW:
+			return ARM_SERVO_CLAW;
+		default:
+			return 0;
 	}
 }
 
-void arm_move_joint(uint8_t joint, uint16_t goal_angle)
-{
-	switch (joint)
-	{
-		case 1:
-		servo_move (0x01, goal_angle);
-		break;
-		case 2:
-		servo_move_add (0x02, goal_angle);
-		servo_move_add (0x03, 1023-goal_angle);
-		servo_action(0xfe);
-		break;
-		case 3:
-		servo_move_add (0x04, goal_angle);
-		servo_move_add (0x05, 1023-goal_angle);
-		servo_action(0xfe);
-		break;
-		case 4:
-		servo_move (0x06, goal_angle);
-		break;
-		case 5:
-		servo_move (0x07, goal_angle);
-		break;
-		case 6:
-		servo_move (0x08, goal_angle);
-		break;
-	}
-}
-
-void arm_display_read_packet(uint8_t id, uint8_t adress, uint8_t length)
-{
-	uint8_t data[2];
-	uint16_t int_data;
-	int_data = (uint16_t)servo_read(id, adress, length, data);
-	if (length == 1)
-	{
-		display(1,"%u is %u", id, int_data);
-	}
-	else
-	{
-		int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
-		display(1,"%u is %u", id, int_data);
-	}
-}
-
-uint16_t joint_get_minangle(uint8_t joint)
-{
-	switch(joint)
-	{
-		case 1:
-			return JOINT_1_MINANGLE;
-		case 2:
-			return JOINT_2_MINANGLE;
-		case 3:
-			return JOINT_3_MINANGLE;
-		case 4:
-			return JOINT_4_MINANGLE;
-		case 5:
-			return JOINT_5_MINANGLE;
-		case 6:
-			return JOINT_6_MINANGLE;
-	}
-	return 0;
-}
-
-uint16_t joint_get_maxangle(uint8_t joint)
-{
-	switch(joint)
-	{
-		case 1:
-			return JOINT_1_MAXANGLE;
-		case 2:
-			return JOINT_2_MAXANGLE;
-		case 3:
-			return JOINT_3_MAXANGLE;
-		case 4:
-			return JOINT_4_MAXANGLE;
-		case 5:
-			return JOINT_5_MAXANGLE;
-		case 6:
-			return JOINT_6_MAXANGLE;
-	}
-	return 0;
-}
-
-uint8_t joint_get_servo_id(uint8_t joint)
-{
-		switch(joint)
-		{
-			case 1:
-				return 1;
-			case 2:
-				return 2;
-			case 3:
-				return 4;
-			case 4:
-				return 6;
-			case 5:
-				return 7;
-			case 6:
-				return 8;
-		}
-	return 0;
-}
-
-void arm_movement_command(uint8_t callback_id, uint16_t command_data)
-{
-	uint8_t joint = (uint8_t)(command_data);
-	uint8_t direction = (uint8_t)(command_data >> 8);
-
-	if (direction == 0)
-	{
-		arm_move_joint(joint, joint_get_minangle(joint));
-	}
-	else if(direction == 1)
-	{
-		arm_move_joint(joint, joint_get_maxangle(joint));
-	}
-}
-
-uint8_t joint_is_moving(uint8_t joint)
-{
+/**
+ *	Checks if given joint is moving.
+ *
+ *	@param joint Joint index. Use ARM_JOINT_* constants.
+ *
+ *	@return 1 if joint is currently moving, else 0
+ */
+uint8_t arm_joint_is_moving(uint8_t joint) {
 	uint8_t i;
-	uint8_t data[1];
+	uint8_t moving;
 
 	// Try to detect 5 times if joint is still moving before giving up and
 	// assume it doesn't
 	for (i = 0; i < 5; i++) {
-		if (!servo_read(joint_get_servo_id(joint), SERVO_MOVING, 1, data)) {
-			return data[0];
+		if (!servo_read_uint8(arm_joint_to_servo(joint), SERVO_MOVING, &moving)) {
+			return moving;
 		}
 
 		// Retry after 50 ms
-		_delay_ms(50);
+		_delay_ms(10);
 	}
 
 	return 0;
 }
 
-
-void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
-{
-	usart_clear_buffer();
-	uint8_t data[2];
-	uint16_t int_data;
-	uint8_t status_code;
-	uint8_t joint = (uint8_t)_joint;
-
-	display(0, "%u", joint);
-
-	status_code = (uint16_t)servo_read(
-		joint_get_servo_id(joint),
-		 SERVO_PRESENT_POSITION_L,
-		  2,
-		   data);
-
-	int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
-
-	display(1, "%u %u", int_data, status_code);
-
-	arm_move_joint(joint, int_data);
-	_delay_ms(30);
-
-	while (joint_is_moving(joint) & !(status_code == 0))
-	{
-		usart_clear_buffer();
-		status_code = (uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
-		int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
-
-		arm_move_joint(joint, int_data);
-		_delay_ms(30);
-	}
-}
-
+/**
+ *	Given angles in radians for shoulder, elbow and wrist joint will add move
+ *	commands to related servos.
+ *
+ *	@param joint_angles Angles in radians as provided by the inverse kinematics
+ *	                    library.
+ */
 void arm_move_to_angles(angles joint_angles) {
-	arm_move_joint_add(2, ik_rad_to_servo_angle(2, joint_angles.t1));
-	arm_move_joint_add(3, ik_rad_to_servo_angle(3, joint_angles.t2));
-	arm_move_joint_add(4, ik_rad_to_servo_angle(4, joint_angles.t3));
+	arm_move_add(2, ik_rad_to_servo_angle(2, joint_angles.t1));
+	arm_move_add(3, ik_rad_to_servo_angle(3, joint_angles.t2));
+	arm_move_add(4, ik_rad_to_servo_angle(4, joint_angles.t3));
 }
 
-void arm_process_coordinate(uint8_t callback_id, uint16_t data) {
-	uint16_t value = data & 0x1ff;
-	angles joint_angles;
-
-	//display(0, "D: %u/%u/%u", callback_id, data >> 9, data & 0x1ff);
-	//display(1, "Raw: %x", data);
-
-	switch (data >> 9) {
-		case 0:
-			remote_coordinate.x = value;
-			break;
-		case 1:
-			remote_coordinate.y = value;
-			break;
-		case 2:
-			remote_angle = 2 * value;
-			break;
-		case 3:
-			arm_move_joint(1, remote_angle);
-
-			// Calclulate IK
-			// TODO: Calculate ik_calculate_x_limit
-			if (ik_angles(remote_coordinate, 150, &joint_angles) != 0) {
-				return;
-			}
-
-			// while (joint_is_moving(1));
-
-
-
-			arm_move_to_angles(joint_angles);
-			servo_action(SERVO_BROADCASTING_ID);
-			break;
-	}
-}
-
+/**
+ *	Open claw and block until operation is complete
+ */
 uint8_t arm_claw_open(void) {
-	uint8_t servo_id = joint_get_servo_id(6);
-	uint8_t status_code = servo_write(servo_id, SERVO_GOAL_POSITION_L, 0x00, 0x02);
-
-	uint16_t load;
+	uint8_t status_code = servo_write(
+		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 0x00, 0x02);
 
 	if (status_code) {
 		return status_code;
 	}
 
 
-	while (joint_is_moving(6)) {
-		/*if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
-
-		}*/
-	}
+	while (arm_joint_is_moving(ARM_JOINT_CLAW));
 
 	return 0;
 }
 
+/**
+ *	Close claw and block until complete. If the claw grips something it will
+ *	stop gripping prematurely to prevent overloading the servos.
+ *
+ *	@return status code as provided by servo_receive()
+ */
 uint8_t arm_claw_close(void) {
-	uint8_t servo_id = joint_get_servo_id(6);
-	uint8_t status_code = servo_write(servo_id, SERVO_GOAL_POSITION_L, 0x00, 0x00);
-
+	uint8_t status_code = servo_write(
+		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 0x00, 0x00);
 	uint16_t load;
-	uint16_t current_position;
 
 	if (status_code) {
 		return status_code;
 	}
 
-	servo_write(4, SERVO_LED, 0);
-
-	while (joint_is_moving(6)) {
+	while (arm_joint_is_moving(ARM_JOINT_CLAW)) {
 		// Continiously check load to stop when somethings is gripped
-		if (servo_read_uint16(servo_id, SERVO_PRESENT_LOAD_L, &load) == 0) {
+		if (servo_read_uint16(ARM_SERVO_CLAW, SERVO_PRESENT_LOAD_L, &load) == 0) {
 			if ((load & 0x1ff) > 100) {
-				// Display that limit was reached on servo 4
-				servo_write(4, SERVO_LED, 1);
-
-				// Disable and re-enable torque to stop claw
-				servo_write(servo_id, SERVO_TORQUE_ENABLE, 0);
-				//servo_write(servo_id, SERVO_TORQUE_ENABLE, 1);
-				//servo_write(servo_id, SERVO_TORQUE_ENABLE, 0);
-
-				// Clear display  on servo 4
-				//servo_write(4, SERVO_LED, 0);
+				// Disable torque to stop claw
+				servo_write(ARM_SERVO_CLAW, SERVO_TORQUE_ENABLE, 0);
 
 				return 0;
 			}
@@ -337,37 +229,4 @@ uint8_t arm_claw_close(void) {
 	}
 
 	return 0;
-}
-
-int main(void) {
-	servo_init();
-	arm_init();
-	bus_init(BUS_ADDRESS_ARM);
-
-	bus_register_receive(2, arm_movement_command);
-	bus_register_receive(3, arm_stop_movement);
-	bus_register_receive(4, arm_process_coordinate);
-
-	//servo_write(5, SERVO_LED, 0);
-	_delay_ms(2000);
-	//display(0, "S: %u Hb: %u", servo_write(5, SERVO_LED, 1), usart_has_bytes());
-
-	uint8_t status;
-	uint8_t delay = 255;
-	uint8_t i;
-	uint8_t servo_id;
-	for (i = 0;; i++) {
-		_delay_ms(1000);
-		servo_id = i % 8 + 1;
-		status = servo_read_uint8(servo_id, SERVO_RETURN_DELAY_TIME, &delay);
-		display(1, "ID:%u,S:%u,D:%u", servo_id, status, delay);
-		//if (status == 0) {
-		//}
-		//arm_claw_open();
-		//arm_claw_close();
-		//_delay_ms(1000);
-		//servo_write(5, SERVO_LED, 1);
-		//arm_claw_open();
-		//arm_claw_close();
-	}
 }
