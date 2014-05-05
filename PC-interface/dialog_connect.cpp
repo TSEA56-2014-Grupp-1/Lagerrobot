@@ -13,9 +13,9 @@
 #include "mainwindow.h"
 
 /*
- *      Constructor for Dialog_connect, will create a list of all comports in the listWidget.
+ *      @brief Constructor for Dialog_connect, will create a list of all comports in the listWidget.
  *
- *      @param new_mainwindow The main window that the connection should be forwarded to
+ *      @param new_mainwindow The main window that the connection should be forwarded to.
  */
 Dialog_connect::Dialog_connect(MainWindow* new_mainwindow, QWidget *parent) :
     QDialog(parent),
@@ -37,7 +37,7 @@ Dialog_connect::~Dialog_connect()
 }
 
 /*
- *      Callback for pushButton_cancel, will simply hide the window
+ *      @brief Callback for pushButton_cancel, will simply hide the window.
  */
 void Dialog_connect::on_pushButton_cancel_clicked()
 {
@@ -45,7 +45,7 @@ void Dialog_connect::on_pushButton_cancel_clicked()
 }
 
 /*
- *      Callback for pushButton_connect, will forward the selection to mainwindow
+ *      @brief Callback for pushButton_connect, will forward the selection to mainwindow.
  */
 void Dialog_connect::on_pushButton_connect_clicked()
 {

@@ -1,9 +1,8 @@
-/*
-* Communication.c
-*
-* Created: 2014-03-26 09:49:31
-*  Author: Karl
-*/
+ /* Communication.c
+ *
+ * Created: 2014-03-26 09:49:31
+ *  Author: Karl
+ */
 #define ROTATE_INTERVAL 100
 
 #include "Communication.h"
@@ -25,6 +24,16 @@ ISR(TIMER1_OVF_vect) {
 	else
 	++lcd_rotation_counter;
 	
+}
+
+ISR(TIMER3_OVF_vect) {
+	if (heartbeat_counter > 5){
+		emergency_stop(); // heartbeat has been lost, issue stop command
+		heartbeat_counter = 0;
+	}
+	else {
+		++heartbeat_counter;
+	}
 }
 
 /**
@@ -93,7 +102,6 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) 
 			message_map_line2[module][position] = symbol;
 		}
 	}
-	
 }
 
 
@@ -122,23 +130,29 @@ void clear_message(uint8_t unit, uint8_t line_number) {
 
 
 /**
-* @brief Initializes the communication unit.
-* @details Sets up the ports for the display communication, the timers for
-* page rotation and clears the lcd variables and messages.
-*/
+ * @brief Initializes the communication unit.
+ * @details Sets up the ports for the display communication, the timers for
+ * page rotation and clears the lcd variables and messages.
+ */
 void init(){
 	DDRA = 0xff;
 	DDRB = 0xff;
 	PORTB = 0b00000000;
 	PORTA = 0x0;
-	
+
 	TIMSK1 = (1 << TOIE1);
 	TCCR1A = 0x00; // normal mode
-	TCCR1B = 0b00000010; // normal mode, max prescaler;
+	TCCR1B = 0b00000010; // normal mode, prescaler 1/8;
+	
+	TIMSK3 = (1 << TOIE3);
+	TCCR3A = 0x00;
+	TCCR3B = 0b00000011; // normal mode, prescaler 1/256
 	
 	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;
 	lcd_rotation_flag = 0;
+	heartbeat_counter = 0;
+	
 	clear_message(COMM, 0);
 	clear_message(COMM, 1);
 	clear_message(SENS, 0);
@@ -151,10 +165,16 @@ void init(){
 
 void forward_calibration_data(uint8_t id, uint16_t metadata)	{
 	send_packet(PKT_CALIBRATION_DATA,1,(uint8_t)metadata);
-} 
+}
+
+void emergency_stop() {
+	bus_transmit(0, 0, 0); // general call to stop
+}
+
 
 int main(void)
 {
+	uint8_t pp_status = 0;
 	init();
 	lcd_init();
 	bus_init(BUS_ADDRESS_COMMUNICATION);
@@ -203,10 +223,9 @@ int main(void)
 		
 	
 		
-		if (process_packet() == 1)  {// timeout 
-			display(1, "timed out...");
-		}
+		pp_status = process_packet();
+		display(1, "P-Status: %u", pp_status);
 		usart_reset_buffer();
-		
+		}
 	}
 }

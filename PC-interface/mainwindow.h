@@ -10,6 +10,7 @@
 #include <QShortcut>
 #include <QKeySequence>
 #include <QKeyEvent>
+#include <QGraphicsScene>
 
 class bluetooth;
 
@@ -33,7 +34,9 @@ public:
 
     void add_steering_data(int);
 
-    QTime *time = new QTime();
+    void set_RFID(QString);
+
+    void update_linesensor_plot(QByteArray*);
 
 
 private slots:
@@ -60,10 +63,6 @@ private slots:
     void on_pushButton_start_line_clicked();
 
     void on_pushButton_stop_line_clicked();
-
-    void on_lineEdit_Kd_editingFinished();
-
-    void on_lineEdit_Kp_editingFinished();
 
     void on_pushButton_close_gripper_clicked();
 
@@ -125,6 +124,14 @@ private slots:
 
     void on_pushButton_stop_pressed();
 
+    void wheelevent_steering(QWheelEvent*);
+
+    void add_to_lcdtimer();
+
+    void on_pushButton_send_arm_pos_clicked();
+
+    void on_pushButton_pause_graph_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -134,26 +141,24 @@ private:
     void set_up_graphs();
     void draw_graphs();
 
-    QTimer *sensor_timer = new QTimer();
+
     QTimer *heartbeat_timer = new QTimer();
+    QTimer *timer_req = new QTimer();
+    QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
+
+    QTime *time_graph = new QTime();
+    QTime *start_time;
 
     bluetooth* port = NULL;
 
-    QVector<double> times, value_steering;
+    bool update_graph = true;
 
+    QVector<double> times_steering, value_steering;
 
-//    int max_y_steering = 200;
-//    int max_y_sensors = 200;
+    QVector<QGraphicsEllipseItem*> linesensor_circels;
 
-//    //Constants for painting graphs
-//    const int X_SCALE_STEERING = 10;
-//    const int Y_SCALE_STEERING = 10;
+    QGraphicsScene* linesensor_plot = new QGraphicsScene();
 
-//    const int X_SCALE_SENSORS = 10;
-//    const int Y_SCALE_SENSORS = 10;
-
-//    const int Y_INTERVAL_STEERING = 1000;
-//    const int Y_INTERVAL_SENSOR = 50;
 };
 
 #endif // MAINWINDOW_H

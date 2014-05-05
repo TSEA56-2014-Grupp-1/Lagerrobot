@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1232</width>
+    <width>1274</width>
     <height>676</height>
    </rect>
   </property>
@@ -36,6 +36,9 @@
      </item>
      <item row="7" column="2">
       <widget class="QLabel" name="label_2">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
        <property name="text">
         <string>Kp-&gt;</string>
        </property>
@@ -51,7 +54,7 @@
      <item row="3" column="1" colspan="3">
       <widget class="QPushButton" name="pushButton_start_line">
        <property name="text">
-        <string>Start linjeföljning</string>
+        <string>Starta linjeföljning</string>
        </property>
       </widget>
      </item>
@@ -96,13 +99,6 @@
      <item row="7" column="1">
       <widget class="QLineEdit" name="lineEdit_Kd"/>
      </item>
-     <item row="5" column="1">
-      <widget class="QPushButton" name="pushButton_calibrate_tape">
-       <property name="text">
-        <string>Kalibrera tejp</string>
-       </property>
-      </widget>
-     </item>
      <item row="8" column="2">
       <widget class="QPushButton" name="pushButton_send_param">
        <property name="text">
@@ -117,15 +113,22 @@
        </property>
       </widget>
      </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="pushButton_calibrate_tape">
+       <property name="text">
+        <string>Kalibrera tejp</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>830</x>
+      <x>920</x>
       <y>390</y>
       <width>345</width>
-      <height>231</height>
+      <height>191</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -147,13 +150,6 @@
       <widget class="QLabel" name="label_arm_length">
        <property name="text">
         <string>TextLabel</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1" colspan="2">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Tyngpunkt från linjesensor</string>
        </property>
       </widget>
      </item>
@@ -213,15 +209,25 @@
        </property>
       </widget>
      </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Tid</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLCDNumber" name="lcdTimer"/>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="gridLayoutWidget_3">
     <property name="geometry">
      <rect>
-      <x>440</x>
-      <y>10</y>
+      <x>450</x>
+      <y>0</y>
       <width>291</width>
-      <height>251</height>
+      <height>281</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -330,15 +336,56 @@
        </property>
       </widget>
      </item>
+     <item row="5" column="1" colspan="3">
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_y_cord"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="lineEdit_angle"/>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="lineEdit_x_cord"/>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>x:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_16">
+         <property name="text">
+          <string>y:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_17">
+         <property name="text">
+          <string>vinkel:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QPushButton" name="pushButton_send_arm_pos">
+         <property name="text">
+          <string>Skicka parametrar</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
     </layout>
    </widget>
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>10</y>
+      <x>750</x>
+      <y>20</y>
       <width>160</width>
-      <height>221</height>
+      <height>223</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -375,9 +422,9 @@
    <widget class="QListWidget" name="listWidget_log">
     <property name="geometry">
      <rect>
-      <x>900</x>
+      <x>920</x>
       <y>10</y>
-      <width>311</width>
+      <width>341</width>
       <height>371</height>
      </rect>
     </property>
@@ -391,7 +438,9 @@
       <height>181</height>
      </rect>
     </property>
-    <zorder>horizontalScrollBar_graphs</zorder>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
    </widget>
    <widget class="QScrollBar" name="horizontalScrollBar_graphs">
     <property name="geometry">
@@ -406,14 +455,37 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QGraphicsView" name="graphicsView_linesensor">
+    <property name="geometry">
+     <rect>
+      <x>920</x>
+      <y>590</y>
+      <width>341</width>
+      <height>31</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_pause_graph">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>490</y>
+      <width>281</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Pause graph</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1232</width>
-     <height>22</height>
+     <width>1274</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -455,8 +527,39 @@
    <extends>QWidget</extends>
    <header>qcustomplot.h</header>
    <container>1</container>
+   <slots>
+    <signal>signal1()</signal>
+   </slots>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>pushButton_forward</tabstop>
+  <tabstop>pushButton_left</tabstop>
+  <tabstop>pushButton_stop</tabstop>
+  <tabstop>pushButton_right</tabstop>
+  <tabstop>pushButton_back</tabstop>
+  <tabstop>pushButton_start_line</tabstop>
+  <tabstop>pushButton_stop_line</tabstop>
+  <tabstop>pushButton_calibrate_tape</tabstop>
+  <tabstop>pushButton_calibrate_floor</tabstop>
+  <tabstop>lineEdit_Kd</tabstop>
+  <tabstop>lineEdit_Kp</tabstop>
+  <tabstop>pushButton_send_param</tabstop>
+  <tabstop>pushButton_close_gripper</tabstop>
+  <tabstop>pushButton_open_gripper</tabstop>
+  <tabstop>pushButton_3_upp</tabstop>
+  <tabstop>pushButton_3_down</tabstop>
+  <tabstop>pushButton_2_upp</tabstop>
+  <tabstop>pushButton_2_down</tabstop>
+  <tabstop>pushButton_1_upp</tabstop>
+  <tabstop>pushButton_1_down</tabstop>
+  <tabstop>pushButton_base_left</tabstop>
+  <tabstop>pushButton_base_right</tabstop>
+  <tabstop>pushButton_start_position_arm</tabstop>
+  <tabstop>pushButton_put_down_right</tabstop>
+  <tabstop>pushButton_put_down_left</tabstop>
+  <tabstop>listWidget_log</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>
