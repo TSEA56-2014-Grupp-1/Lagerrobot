@@ -27,8 +27,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-    timer->setInterval(250);
-    connect(timer, SIGNAL(timeout()), this, SLOT(request_data()));
+    sensor_timer->setInterval(250);
+    connect(sensor_timer, SIGNAL(timeout()), this, SLOT(request_data()));
+
+    heartbeat_timer->setInterval(1000);
+    connect(heartbeat_timer, SIGNAL(timeout()), this, SLOT(send_heartbeat()));
 
     disable_buttons();
     ui->actionDisconnect->setEnabled(false);
@@ -108,7 +111,8 @@ void MainWindow::connect_to_port(QString name) {
     new_connection(connection);
     if(port->open_port()) {
         enable_buttons();
-        timer->start();
+        sensor_timer->start();
+        heartbeat_timer->start();
     }
     else {
         delete port;
@@ -381,7 +385,15 @@ void MainWindow::enable_buttons() {
 
 void MainWindow::request_data() {
     port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
-    timer->start();
+    sensor_timer->start();
+}
+
+void MainWindow::send_heartbeat()
+{
+    if (port != nullptr) {
+        port->send_packet(PKT_HEARTBEAT);
+        heartbeat_timer->start();
+    }
 }
 
 void MainWindow::on_actionDisconnect_triggered()

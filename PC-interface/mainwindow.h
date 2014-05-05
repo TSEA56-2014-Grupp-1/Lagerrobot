@@ -115,6 +115,8 @@ private slots:
 
     void request_data();
 
+    void send_heartbeat();
+
     void on_actionDisconnect_triggered();
 
     void on_pushButton_send_param_clicked();
@@ -132,7 +134,8 @@ private:
     void set_up_graphs();
     void draw_graphs();
 
-    QTimer *timer = new QTimer();
+    QTimer *sensor_timer = new QTimer();
+    QTimer *heartbeat_timer = new QTimer();
 
     bluetooth* port = NULL;
 

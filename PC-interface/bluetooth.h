@@ -33,7 +33,7 @@ public:
 
     bool open_port();
 
-    void send_packet(char packet_id, int num_params, ...);
+    void send_packet(char packet_id, int num_params = 0, ...);
 
 private slots:
     void handle_ready_read();
