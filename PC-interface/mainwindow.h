@@ -130,6 +130,10 @@ private slots:
 
     void on_pushButton_pause_graph_clicked();
 
+    void on_request_button_clicked();
+
+    void on_transmit_button_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -155,6 +159,7 @@ private:
 
     QGraphicsScene* linesensor_plot = new QGraphicsScene();
 
+    bool validate_spoof();
 };
 
 #endif // MAINWINDOW_H
