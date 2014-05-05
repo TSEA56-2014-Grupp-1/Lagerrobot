@@ -1,0 +1,462 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1232</width>
+    <height>676</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>437</width>
+      <height>277</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_chassi">
+     <item row="1" column="3">
+      <widget class="QPushButton" name="pushButton_right">
+       <property name="text">
+        <string>Höger</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="3">
+      <widget class="QLineEdit" name="lineEdit_Kp"/>
+     </item>
+     <item row="7" column="2">
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Kp-&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" colspan="3">
+      <widget class="QPushButton" name="pushButton_stop_line">
+       <property name="text">
+        <string>Stoppa linjeföljning</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="3">
+      <widget class="QPushButton" name="pushButton_start_line">
+       <property name="text">
+        <string>Start linjeföljning</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="pushButton_forward">
+       <property name="text">
+        <string>Fram</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pushButton_back">
+       <property name="text">
+        <string>Bak</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QPushButton" name="pushButton_left">
+       <property name="text">
+        <string>Vänster</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QPushButton" name="pushButton_calibrate_floor">
+       <property name="text">
+        <string>Kalibrera golv</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Kd-&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLineEdit" name="lineEdit_Kd"/>
+     </item>
+     <item row="5" column="1">
+      <widget class="QPushButton" name="pushButton_calibrate_tape">
+       <property name="text">
+        <string>Kalibrera tejp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="2">
+      <widget class="QPushButton" name="pushButton_send_param">
+       <property name="text">
+        <string>Send Kp and Kd</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="pushButton_stop">
+       <property name="text">
+        <string>STOP</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget_2">
+    <property name="geometry">
+     <rect>
+      <x>830</x>
+      <y>390</y>
+      <width>345</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="5" column="2">
+      <widget class="QLabel" name="label_engine_right">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Motor vänster</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QLabel" name="label_arm_length">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1" colspan="2">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Tyngpunkt från linjesensor</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QLabel" name="label_engine_left">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Motor höger</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>RFID</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QLabel" name="label_RFID">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>Armsensor avstånd</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QLabel" name="label_sido_length">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2">
+      <widget class="QLabel" name="label_RFID_time">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Sidoscanner avstånd</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>440</x>
+      <y>10</y>
+      <width>291</width>
+      <height>251</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="pushButton_close_gripper">
+       <property name="text">
+        <string>Stäng</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Gripklo</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>2:a led</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>3:a led</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>1:a led</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_14">
+       <property name="text">
+        <string>Basrotation</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QPushButton" name="pushButton_1_upp">
+       <property name="text">
+        <string>Upp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QPushButton" name="pushButton_base_left">
+       <property name="text">
+        <string>Vänster</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pushButton_2_upp">
+       <property name="text">
+        <string>Upp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="pushButton_3_upp">
+       <property name="text">
+        <string>Upp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="pushButton_open_gripper">
+       <property name="text">
+        <string>Öppna</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="pushButton_3_down">
+       <property name="text">
+        <string>Ner</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="pushButton_2_down">
+       <property name="text">
+        <string>Ner</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QPushButton" name="pushButton_1_down">
+       <property name="text">
+        <string>Ner</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
+      <widget class="QPushButton" name="pushButton_base_right">
+       <property name="text">
+        <string>Höger</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>10</y>
+      <width>160</width>
+      <height>221</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="label_15">
+       <property name="text">
+        <string>Fördefinerade lägen</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_start_position_arm">
+       <property name="text">
+        <string>Startläge</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_put_down_right">
+       <property name="text">
+        <string>Lämna höger</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_put_down_left">
+       <property name="text">
+        <string>Lämna vänster</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QListWidget" name="listWidget_log">
+    <property name="geometry">
+     <rect>
+      <x>900</x>
+      <y>10</y>
+      <width>311</width>
+      <height>371</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="plot_steering" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>280</y>
+      <width>811</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <zorder>horizontalScrollBar_graphs</zorder>
+   </widget>
+   <widget class="QScrollBar" name="horizontalScrollBar_graphs">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>460</y>
+      <width>811</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1232</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="connect_action"/>
+    <addaction name="actionDisconnect"/>
+   </widget>
+   <addaction name="menuFile"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="connect_action">
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Connect</string>
+   </property>
+  </action>
+  <action name="actionDisconnect">
+   <property name="text">
+    <string>Disconnect</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

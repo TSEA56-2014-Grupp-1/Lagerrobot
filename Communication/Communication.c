@@ -8,11 +8,14 @@
 
 #include "Communication.h"
 #include "LCD.h"
+#include "pc_link.h"
+#include "../shared/usart.h"
 #include "../shared/bus.h"
 #include <avr/io.h>
+#include <avr/interrupt.h>
 #include <string.h>
 #include <util/delay.h>
-#include <avr/interrupt.h>
+#include "../shared/packets.h"
 
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
@@ -146,14 +149,18 @@ void init(){
 	clear_message(ARM, 1);
 }
 
+void forward_calibration_data(uint8_t id, uint16_t metadata)	{
+	send_packet(PKT_CALIBRATION_DATA,1,(uint8_t)metadata);
+} 
 
 int main(void)
 {
 	init();
 	lcd_init();
 	bus_init(BUS_ADDRESS_COMMUNICATION);
+	usart_init(0x0009);
 	
-	
+	bus_register_receive(10,forward_calibration_data);
 	bus_register_receive(2, lcd_sensor_line1);
 	bus_register_receive(3, lcd_sensor_line2);
 	bus_register_receive(4, lcd_arm_line1);
@@ -171,10 +178,12 @@ int main(void)
 	uint8_t lcd_current_sender;
 	for(;;)
 	{
-		while(!lcd_rotation_flag) {
+		while(!lcd_rotation_flag && !usart_has_bytes()) { 
 			_delay_us(1);
 		}
 		
+		if (lcd_rotation_flag == 1) {
+			
 		cli();
 		lcd_rotation_flag = 0;
 		lcd_current_sender = lcd_next_sender;
@@ -188,5 +197,16 @@ int main(void)
 		
 		if (!lcd_rotation_flag)
 			lcd_next_sender = (lcd_next_sender + 1) % 4;
+		}
+		
+		if (usart_has_bytes()) {
+		
+	
+		
+		if (process_packet() == 1)  {// timeout 
+			display(1, "timed out...");
+		}
+		usart_reset_buffer();
+		
 	}
 }

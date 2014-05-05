@@ -39,6 +39,9 @@ void lcd_send_symbol(char);
  */
 void lcd_send_command(char);
 
+
+void force_display_update(uint8_t module);
+
 /**
  * @brief Checks if the display is busy.
  * @details Queries the display controller if it is able to receive instructions or data.
@@ -52,6 +55,7 @@ int lcd_is_busy();
  * @param text1 The first line of text.
  * @param text2 The second line of text.
  */
+
 void lcd_print(char text1[], char text2[]);
 
 /**

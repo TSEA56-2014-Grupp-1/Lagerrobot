@@ -10,7 +10,7 @@
 #define COMMUNICATION_H_
 
 #include <avr/io.h>
-
+ 
 #define F_CPU 18432000UL
 
 
@@ -30,7 +30,7 @@ char message_map_line1[4][17];
 char message_map_line2[4][17];
 
 /**
- * Identifier of the unit that is currently being displayed.
+ * Identifier of the unit that will be displayed next.
  */
 uint8_t lcd_next_sender;
 

@@ -4,6 +4,7 @@
  * Created: 2014-03-25 17:29:08
  *  Author: Karl Linderhed
  */ 
+
 #include "LCD.h"
 #include "Communication.h"
 #include <util/delay.h>
@@ -179,9 +180,9 @@ void display(uint8_t line_number, char* str, ...) {
 	
 	va_start(data, str);
 	if (line_number == 0)
-		vsnprintf(message_map_line1[COMM], 17, str, data);
+	vsnprintf(message_map_line1[COMM], 17, str, data);
 	else if (line_number == 1)
-		vsnprintf(message_map_line2[COMM], 17, str, data);  
+	vsnprintf(message_map_line2[COMM], 17, str, data);
 	va_end(data);
 	
 	lcd_force_display_update(COMM);
