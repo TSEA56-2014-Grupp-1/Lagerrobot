@@ -20,7 +20,6 @@ void pd_update(int8_t curr_error)
 	double diff;
 	int16_t p_term;
 	double d_term;
-	//double dt = 0.0167;
 	
 	// differentiation
 	diff = (curr_error - prev_error);

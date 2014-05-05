@@ -2,7 +2,7 @@
  * Sensor.c
  *
  * Created: 2014-03-27 08:55:21
- *  Author: Karl
+ *  Author: Karl & Philip
  */ 
 
 
@@ -10,7 +10,6 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
-//#include "../shared/LCD_interface.h"
 #include "../RFID_scanner/RFID_scanner.h"
 #include "../shared/usart.h"
 
@@ -43,18 +42,13 @@ int main(void)
 	bus_register_receive(2, calibrate_linesensor);
 	bus_register_receive(7, RFID_disable_reading);
 	bus_register_receive(8, RFID_enable_reading);
-	//lcd_interface_init();
-	//display(0, "Hej");
-	//calibrate_linesensor();
+	bus_register_receive(9, clear_pickupstation);
+
 	line_init();
-	//init_linesensor_calibration();
 	sei();
-	//bus_transmit(5,4,5);
+
     while(1)
     {
-
 		calculate_line_weight();
-
-        //TODO:: Please write your application code 
     }
 }
