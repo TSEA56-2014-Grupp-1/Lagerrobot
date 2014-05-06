@@ -12,11 +12,11 @@
 
 
 #define ZONE_SIZE 200
-#define MAX_ANGLE 180 
+#define MAX_ANGLE 140 
 #define STEP 1
 
-double distance = 100;
-uint8_t angle = 45;
+double distance = 400;
+uint8_t angle = 40;
 uint8_t object_found;
 
 void sidescanner_init()
@@ -42,27 +42,32 @@ void sidescanner_init()
 	//set AD-channel 1
 	ADMUX = 0b00000001;	
 	//Start AD-conversion
-	ADCSRA |= (1 << ADSC);
 	
+	bus_register_receive(15, left_object_detection);
+	bus_register_receive(16, right_object_detection);
 }
 
 
 uint8_t scanner_left_position(uint8_t angle)
 {
-	if((0<=angle) && (angle<=180))
+	if((0<=angle) && (angle<=180)){
 	OCR3A = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
+	return 0;
+	}
 	else
 	return 1;
-	return 0;
+
 }
 
 uint8_t scanner_right_position(uint8_t angle)
 {
-	if((0<=angle) && (angle<=180))
+	if((0<=angle) && (angle<=180)){
 	OCR3B = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
+	return 0;
+	}
 	else
 	return 1;
-	return 0;
+
 }
 
 
@@ -76,68 +81,99 @@ void update_distance_sensor_3()	{
 	ADCSRA |= (1 << ADSC);
 }
 
-uint8_t sweep_left()	{
-	//zone_size in volt = 1/distance
-	if(distance<=ZONE_SIZE)	
-	{
-		object_found = 1;
-		scanner_left_position(angle);
-		//wait_scanner_servo(5000);
-	}
-	else if(angle == MAX_ANGLE)	{
-		return 1;
+
+void left_object_detection (uint8_t callback_id, uint16_t data_recieved)
+{
+	uint8_t object_distance;
+	uint8_t object_angle;
+	
+	if(sweep_left(object_distance*, object_angle*)){
+		bus_transmit(BUS_ADDRESS_ARM, 12, object_angle);
+		bus_transmit(BUS_ADDRESS_ARM, 13, object_distance);
 	}
 	else
 	{
-		object_found = 0;
-		angle = angle + STEP;
-		scanner_left_position(angle);
-		wait_scanner_servo(50); 
+		bus_transmit(BUS_ADDRESS_ARM, 11, 0);
 	}
-	return 0;
 }
 
-uint8_t sweep_right()	{
-		if(distance<=ZONE_SIZE)
-		{
-			object_found = 1;
-			scanner_right_position(angle);
-		}
-		else if(angle == MAX_ANGLE)	{
+void right_object_detection (uint8_t callback_id, uint16_t data_recieved)
+{
+	uint8_t object_distance;
+	uint8_t object_angle;
+	
+	if(sweep_right(object_distance*, object_angle*)){
+		bus_transmit(BUS_ADDRESS_ARM, 14, object_angle);
+		bus_transmit(BUS_ADDRESS_ARM, 15, object_distance);
+	}
+	else
+	{
+		bus_transmit(BUS_ADDRESS_ARM, 11, 0);
+	}
+}
+
+uint8_t sweep_left(uint16_t object_distance, uint16_t object_angle)
+{
+	ADCSRA |= (1 << ADSC);
+	_delay_ms(1);
+	
+	while (angle <= MAX_ANGLE)
+	{
+		//zone_size in volt = 1/distance
+		if(distance<=ZONE_SIZE){
+			object_distance = (uint16_t)calculate_distance_coordinate();
+			object_angle = (uint16_t)(100*calculate_angle_coordinate());
+			ADCSRA &= (0 << ADSC);
 			return 1;
 		}
-		else
-		{
-			object_found = 0;
-			angle = angle + STEP;
-			scanner_right_position(angle);
-			wait_scanner_servo(50);
+		else {
+			angle += STEP;
+			scanner_left_position(object_angle);
+			_delay_ms(50);
 		}
+	}
+	ADCSRA &= (0 << ADSC);
 	return 0;
 }
 
-void wait_scanner_servo(int milli_sec)
+uint8_t sweep_right(uint16_t object_distance, uint16_t object_angle)
 {
-	for (int i = 0; i < milli_sec; i++)
+	ADCSRA |= (1 << ADSC);
+	_delay_ms(1);
+	while (angle <= MAX_ANGLE)
 	{
-		_delay_ms(1);
+		//zone_size in volt = 1/distance
+		if(distance<=ZONE_SIZE){
+			object_distance = (uint16_t)calculate_distance_coordinate();
+			object_angle = (uint16_t)(100*calculate_angle_coordinate());
+			ADCSRA &= (0 << ADSC);
+			return 1;
+		}
+		else {
+			angle += STEP;
+			scanner_right_position(angle);
+			_delay_ms(50);
+		}
 	}
+	ADCSRA &= (0 << ADSC);
+	return 0;
+	
 }
 
 double calculate_angle_coordinate()	{
-	double alfa = (angle - 90)*M_PI/180;
+	double alfa = angle*M_PI/180;
 	double x_coord;
 	double y_coord;
-	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(alfa);
-	y_coord = distance*sin(alfa);
-	return tan(y_coord/x_coord);
+	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*sin(alfa);
+	y_coord = distance*cos(alfa);
+	return atan2(x_coord,y_coord);
 }
 
 double calculate_distance_coordinate()	{
 	double alfa = (angle - 90)*M_PI/180;
 	double x_coord;
 	double y_coord;
-	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*cos(alfa);
-	y_coord = distance*sin(alfa);
+	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*sin(alfa);
+	y_coord = distance*cos(alfa);
 	return sqrt((x_coord*x_coord) + (y_coord*y_coord));
 }

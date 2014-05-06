@@ -105,7 +105,7 @@ int main(void) {
 	arm_init();
 	bus_init(BUS_ADDRESS_ARM);
 	_delay_ms(1000);
-
+	
 	/*
 	bus_register_receive(2, arm_movement_command);
 	bus_register_receive(3, arm_stop_movement);

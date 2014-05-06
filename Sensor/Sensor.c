@@ -13,7 +13,6 @@
 #include "../shared/bus.h"
 #include "distance_sensors.h"
 
-
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
 		case 0 :
@@ -30,7 +29,6 @@ ISR(ADC_vect) {
 	}
 }
 
-	double temp_coordinate;
 int main(void)
 {
 
@@ -42,7 +40,6 @@ int main(void)
 	//calibrate_linesensor();
 	//line_init();
 	sei();
-	temp_coordinate = calculate_angle_coordinate();
 
 
     while(1)
