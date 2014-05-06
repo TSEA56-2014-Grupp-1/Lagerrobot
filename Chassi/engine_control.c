@@ -6,6 +6,7 @@
 */
 
 #include "engine_control.h"
+#include "Chassi.h"
 #include "../shared/LCD_interface.h"
 #include <stdlib.h>
 
@@ -51,20 +52,21 @@ void engine_init()
 	TCCR1B |= (0 << CS12 | 1 << CS11 | 0 << CS10);
 }
 
-void engine_control_command(uint8_t checkout_id, uint16_t command_data)
+void engine_control_command(uint8_t id, uint16_t command_data)
 {
 	uint8_t command = (uint8_t)command_data;
 
 	switch(command)
 	{
 		//STOP WHEELS
-		case 0:
+		case CMD_STOP:
 		accelerator = 0;
 		steering_wheel = 0;
+		manual_control = 1;
 		stop_wheels();
 		break;
 		//Increase speed forwards
-		case 1:
+		case CMD_SPEED_UP:
 		if (accelerator + STEERING_THRUST_INCREASE > STEERING_MAX_SPEED) {
 			accelerator = STEERING_MAX_SPEED;
 		}
@@ -72,8 +74,8 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 			accelerator += STEERING_THRUST_INCREASE;
 		}
 		break;
-		//Increase speed backwards, or break in forward direction
-		case 2:
+		//Increase speed backwards, or brake in forward direction
+		case CMD_SPEED_DOWN:
 		if (accelerator - STEERING_THRUST_INCREASE < -STEERING_MAX_SPEED) {
 			accelerator = -STEERING_MAX_SPEED;
 		}
@@ -83,7 +85,7 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 		
 		break;
 		//Increase turningspeed to right, spin right if standing still
-		case 3:
+		case CMD_RIGHT:
 		if (steering_wheel - STEERING_TURN_INCREASE < -STEERING_MAX_SPEED) {
 			steering_wheel = -STEERING_MAX_SPEED;
 		}
@@ -94,7 +96,7 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 		break;
 
 		//Increase turningspeed to left, spin left if standing still
-		case 4:
+		case CMD_LEFT:
 		if (steering_wheel + STEERING_TURN_INCREASE > STEERING_MAX_SPEED) {
 			steering_wheel = STEERING_MAX_SPEED;
 		}
@@ -103,10 +105,6 @@ void engine_control_command(uint8_t checkout_id, uint16_t command_data)
 		}
 
 		break;
-		
-		//TODO: Enable automatic steering
-		//case 5:
-
 	}
 
 	update_steering();
@@ -184,10 +182,3 @@ void stop_wheels()
 	drive_right_wheels(1, 0);
 }
 
-void wait_wheels(int tenth_secs)
-{
-	for (int i = 1; i < tenth_secs; i++)
-	{
-		_delay_ms(100);
-	}
-}

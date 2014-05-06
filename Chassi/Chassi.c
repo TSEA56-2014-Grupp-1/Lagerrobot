@@ -15,7 +15,7 @@
 #include "../shared/LCD_interface.h"
 
 
-//---- Functions----
+
 uint16_t request_line_data()
 {
 	uint16_t data;
@@ -96,27 +96,22 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
-	uint8_t chassi_switch = 0;
 	
-	if(PINA & 1) {
-		chassi_switch = 1;
+	if(PINA & PINA1) {
+		manual_control = 1;
 	}
-/*
-	if (no_line(station_data) && (chassi_switch != 1))
-	{
-		return;
-	}
-*/
-	if (!is_station(station_data) && (chassi_switch != 1))	// wheels are on and not on station
+	
+	if (!is_station(station_data) && (manual_control != 1))	// robot is not on station and linefollowing is on
 	{
 		pd_update(curr_error);
 		accelerator = STEERING_MAX_SPEED;
-		steering_algorithm();
+		steering_wheel = control;
+		update_steering();
 		return;
 	}
-	else if (!is_station(station_data) && (chassi_switch == 1)) //wheels are off and not on station
+	else if (!is_station(station_data) && (manual_control == 1)) // robot is not on station and linefollowing is off 
 	{
-		//stop_wheels();
+		
 		return;
 	}
 	
@@ -198,6 +193,12 @@ int main(void)
 	engine_init();
 	regulator_init();
 	lcdi_init();
+	
+	carrying_rfid = 0;
+	first_lap_done = 0;
+	station_count = 0;
+	manual_control = 0;
+	
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);

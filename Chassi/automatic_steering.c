@@ -6,14 +6,6 @@
  */ 
 
 #include "automatic_steering.h"	
-	
-void steering_algorithm ()
-{
-	steering_wheel = control;
-	update_steering();
-	
-}
-
 
 void pd_update(int8_t curr_error)
 {	

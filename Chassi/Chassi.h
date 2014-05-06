@@ -15,20 +15,36 @@
 #include <stdlib.h>
 
 // Decisions
-const uint8_t AT_STATION = 1;
-const uint8_t WRONG_STATION_MEM = 2;
-const uint8_t WRONG_STATION_RFID = 3;
-const uint8_t OBJECT_IS_PUT_DOWN = 4;
-const uint8_t LOOK_FOR_OBJECT = 5;
+#define AT_STATION 1;
+#define WRONG_STATION_MEM 2;
+#define WRONG_STATION_RFID 3;
+#define OBJECT_IS_PUT_DOWN 4;
+#define LOOK_FOR_OBJECT 5;
 
 // Global variables
-uint8_t carrying_rfid = 0;
-uint8_t first_lap_done = 0;
+uint8_t carrying_rfid;
+uint8_t first_lap_done;
 uint8_t station_list[100];
-uint8_t station_count = 0;
-// Functions
-uint16_t request_line_data(); // send command to Sensor
-uint8_t is_station(uint8_t);
+uint8_t station_count;
+uint8_t follow_line;
+
+/**
+ * @brief Requests line data from the sensor unit.
+ * @details Performs a bus request to the sensor unit for data on the center
+ * of mass and station information.
+ * @return The data returned by the Sensor unit. High byte contains station information, 
+ * low byte contains the value of the center of mass for the line sensor.
+ */
+uint16_t request_line_data();
+
+/**
+ * @brief Checks if provided station information indicates a station.
+ * 
+ * @param station_data The station information to be checked. 0 or 2 indicates a station.
+ * @return 1 if the information indicates a station, 0 otherwise.
+ */
+uint8_t is_station(uint8_t station_data);
+
 uint16_t request_rfid_tag();
 void arm_is_done(uint8_t id, uint16_t pickup_data);
 void send_to_arm(uint16_t arm_action);
