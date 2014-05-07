@@ -131,6 +131,14 @@
       <SubType>compile</SubType>
       <Link>bus.h</Link>
     </Compile>
+    <Compile Include="..\shared\LCD_interface.c">
+      <SubType>compile</SubType>
+      <Link>LCD_interface.c</Link>
+    </Compile>
+    <Compile Include="..\shared\LCD_interface.h">
+      <SubType>compile</SubType>
+      <Link>LCD_interface.h</Link>
+    </Compile>
     <Compile Include="distance_sensors.c">
       <SubType>compile</SubType>
     </Compile>

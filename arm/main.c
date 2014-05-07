@@ -100,6 +100,8 @@ void arm_process_coordinate(uint8_t callback_id, uint16_t data) {
 }
 */
 
+void 
+
 int main(void) {
 	servo_init();
 	arm_init();

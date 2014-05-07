@@ -9,11 +9,13 @@
 #include <avr/interrupt.h>
 #include "sidescanner.h"
 #include "distance_sensors.h"
+#include "../shared/LCD_interface.h"
 
 
 #define ZONE_SIZE 200
 #define MAX_ANGLE 140 
 #define STEP 1
+#define BUS_ADDRESS_ARM 2
 
 double distance = 400;
 uint8_t angle = 40;
@@ -43,8 +45,8 @@ void sidescanner_init()
 	ADMUX = 0b00000001;	
 	//Start AD-conversion
 	
-	bus_register_receive(15, left_object_detection);
-	bus_register_receive(16, right_object_detection);
+	//bus_register_receive(15, left_object_detection);
+	//bus_register_receive(16, right_object_detection);
 }
 
 
@@ -84,35 +86,79 @@ void update_distance_sensor_3()	{
 
 void left_object_detection (uint8_t callback_id, uint16_t data_recieved)
 {
-	uint8_t object_distance;
-	uint8_t object_angle;
+	uint16_t object_distance;
+	uint16_t object_angle;
 	
-	if(sweep_left(object_distance*, object_angle*)){
-		bus_transmit(BUS_ADDRESS_ARM, 12, object_angle);
-		bus_transmit(BUS_ADDRESS_ARM, 13, object_distance);
+	if(sweep_left(&object_distance, &object_angle)){
+		//bus_transmit(BUS_ADDRESS_ARM, 12, object_angle);
+		//bus_transmit(BUS_ADDRESS_ARM, 13, object_distance);
+		display(0, "Angle: d%", object_angle);
+		display(1, "Dist: d%", object_distance);
 	}
 	else
 	{
-		bus_transmit(BUS_ADDRESS_ARM, 11, 0);
+		display(0, "No object found!");
+		//bus_transmit(BUS_ADDRESS_ARM, 11, 0);
 	}
 }
 
 void right_object_detection (uint8_t callback_id, uint16_t data_recieved)
 {
-	uint8_t object_distance;
-	uint8_t object_angle;
+	uint16_t object_distance;
+	uint16_t object_angle;
 	
-	if(sweep_right(object_distance*, object_angle*)){
-		bus_transmit(BUS_ADDRESS_ARM, 14, object_angle);
-		bus_transmit(BUS_ADDRESS_ARM, 15, object_distance);
+	if(sweep_right(&object_distance, &object_angle)){
+		//bus_transmit(BUS_ADDRESS_ARM, 14, object_angle);
+		//bus_transmit(BUS_ADDRESS_ARM, 15, object_distance);
 	}
 	else
 	{
-		bus_transmit(BUS_ADDRESS_ARM, 11, 0);
+		//bus_transmit(BUS_ADDRESS_ARM, 11, 0);
 	}
 }
 
-uint8_t sweep_left(uint16_t object_distance, uint16_t object_angle)
+uint8_t check_distance_loop()
+{
+	uint8_t i;
+	uint16_t distance_sum = 0;
+	
+	for(i = 0; i < 5; i++){
+		distance_sum += distance;
+		_delay_us(500);
+	}
+	ADCSRA &= (0 << ADSC);
+	distance = (uint16_t)(distance_sum/5); 
+	
+	if(distance<=ZONE_SIZE){
+		return 1;
+	}
+	else return 0;
+}
+
+void object_mean_angle(){
+	uint16_t first_angle = angle;
+	uint16_t second_angle;
+	
+	while (angle <= MAX_ANGLE){
+		if(distance>=ZONE_SIZE){
+			second_angle = angle;
+			angle = (second_angle + first_angle)/2;
+			scanner_left_position(angle);
+			_delay_ms(50);
+		}
+		else {
+			angle += STEP;
+			scanner_left_position(angle);
+			_delay_ms(50);
+		}
+		second_angle = angle;
+		angle = (second_angle + first_angle)/2;
+		scanner_left_position(angle);
+		_delay_ms(50);
+	}
+}
+
+uint8_t sweep_left(uint16_t *object_distance, uint16_t *object_angle)
 {
 	ADCSRA |= (1 << ADSC);
 	_delay_ms(1);
@@ -121,14 +167,17 @@ uint8_t sweep_left(uint16_t object_distance, uint16_t object_angle)
 	{
 		//zone_size in volt = 1/distance
 		if(distance<=ZONE_SIZE){
-			object_distance = (uint16_t)calculate_distance_coordinate();
-			object_angle = (uint16_t)(100*calculate_angle_coordinate());
+			object_mean_angle();
+			if(check_distance_loop()){
+			*object_distance = (uint16_t)calculate_distance_coordinate();
+			*object_angle = (uint16_t)(100*calculate_angle_coordinate());
 			ADCSRA &= (0 << ADSC);
 			return 1;
+			}
 		}
 		else {
 			angle += STEP;
-			scanner_left_position(object_angle);
+			scanner_left_position(angle);
 			_delay_ms(50);
 		}
 	}
@@ -136,7 +185,7 @@ uint8_t sweep_left(uint16_t object_distance, uint16_t object_angle)
 	return 0;
 }
 
-uint8_t sweep_right(uint16_t object_distance, uint16_t object_angle)
+uint8_t sweep_right(uint16_t *object_distance, uint16_t *object_angle)
 {
 	ADCSRA |= (1 << ADSC);
 	_delay_ms(1);
@@ -144,10 +193,13 @@ uint8_t sweep_right(uint16_t object_distance, uint16_t object_angle)
 	{
 		//zone_size in volt = 1/distance
 		if(distance<=ZONE_SIZE){
-			object_distance = (uint16_t)calculate_distance_coordinate();
-			object_angle = (uint16_t)(100*calculate_angle_coordinate());
-			ADCSRA &= (0 << ADSC);
-			return 1;
+			if(check_distance_loop()){
+				*object_distance = (uint16_t)calculate_distance_coordinate();
+				*object_angle = (uint16_t)(100*calculate_angle_coordinate());
+				ADCSRA &= (0 << ADSC);
+				return 1;
+			}
+			else return 0;
 		}
 		else {
 			angle += STEP;

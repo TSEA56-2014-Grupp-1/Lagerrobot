@@ -29,6 +29,7 @@ ISR(ADC_vect) {
 	}
 }
 
+
 int main(void)
 {
 
@@ -41,6 +42,7 @@ int main(void)
 	//line_init();
 	sei();
 
+	left_object_detection(0, 0);
 
     while(1)
     {
