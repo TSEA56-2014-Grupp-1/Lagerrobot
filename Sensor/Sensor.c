@@ -46,6 +46,6 @@ int main(void)
 
     while(1)
     {
-		//sweep_left();
+
     }
 }

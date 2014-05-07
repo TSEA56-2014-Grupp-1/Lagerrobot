@@ -10,16 +10,25 @@
 #include "sidescanner.h"
 #include "distance_sensors.h"
 #include "../shared/LCD_interface.h"
+/* qsort example */
+#include <stdio.h>      /* printf */
+#include <stdlib.h>     /* qsort */
 
 
 #define ZONE_SIZE 200
 #define MAX_ANGLE 140 
 #define STEP 1
 #define BUS_ADDRESS_ARM 2
+#define DISTANCE_LOOP_COUNT 100
 
 double distance = 400;
 uint16_t angle = 40;
 uint8_t object_found;
+
+int compare (const void * a, const void * b)
+{
+	return ( *(int*)a - *(int*)b );
+}
 
 void sidescanner_init()
 {
@@ -44,6 +53,11 @@ void sidescanner_init()
 	//set AD-channel 1
 	ADMUX = 0b00000001;	
 	//Start AD-conversion
+	
+	scanner_left_position(angle);
+	scanner_right_position(angle);
+	_delay_ms(100);
+	
 	
 	//bus_register_receive(15, left_object_detection);
 	//bus_register_receive(16, right_object_detection);
@@ -84,6 +98,34 @@ void update_distance_sensor_3()	{
 }
 
 
+uint8_t check_distance_loop()
+{
+	uint8_t i;
+	int distance_array[DISTANCE_LOOP_COUNT];
+	//uint16_t distance_sum = 0;
+	_delay_ms(50);
+	
+	for(i = 0; i < DISTANCE_LOOP_COUNT; i++){
+		distance_array[i] = distance;
+		//distance_sum += distance;
+		_delay_us(500);
+	}
+	//ADCSRA &= (0 << ADSC);
+	
+	qsort (distance_array, DISTANCE_LOOP_COUNT, sizeof(int), compare);
+	distance = (uint16_t)distance_array[(uint8_t)(floor(DISTANCE_LOOP_COUNT/2))];
+	//distance = (distance_sum/DISTANCE_LOOP_COUNT);
+	
+	if(distance<=ZONE_SIZE){
+		return 1;
+	}
+	
+	else {
+		ADCSRA |= (1 << ADSC);
+		return 0;
+	}
+}
+
 void left_object_detection (uint8_t callback_id, uint16_t data_recieved)
 {
 	uint16_t object_distance = 0;
@@ -99,6 +141,11 @@ void left_object_detection (uint8_t callback_id, uint16_t data_recieved)
 	{
 		display(0, "No object found!");
 		//bus_transmit(BUS_ADDRESS_ARM, 11, 0);
+	}
+	
+	while(1){
+		display(1, "Dist: %d", (uint16_t)distance);
+		_delay_ms(500);
 	}
 }
 
@@ -117,23 +164,6 @@ void right_object_detection (uint8_t callback_id, uint16_t data_recieved)
 	}
 }
 
-uint8_t check_distance_loop()
-{
-	uint8_t i;
-	uint16_t distance_sum = 0;
-	
-	for(i = 0; i < 5; i++){
-		distance_sum += distance;
-		_delay_us(500);
-	}
-	ADCSRA &= (0 << ADSC);
-	distance = (uint16_t)(distance_sum/5); 
-	
-	if(distance<=ZONE_SIZE){
-		return 1;
-	}
-	else return 0;
-}
 
 void object_mean_angle(){
 	uint16_t first_angle = angle;
@@ -149,12 +179,15 @@ void object_mean_angle(){
 		
 		angle += STEP;
 		scanner_left_position(angle);
-		_delay_ms(50);
+		_delay_ms(40);
+		
 	}
 	angle = (second_angle + first_angle)/2;
 	scanner_left_position(angle);
 	_delay_ms(50);
 }
+
+
 
 uint8_t sweep_left(uint16_t *object_distance, uint16_t *object_angle)
 {
@@ -169,7 +202,7 @@ uint8_t sweep_left(uint16_t *object_distance, uint16_t *object_angle)
 			if(check_distance_loop()){
 			*object_distance = (uint16_t)calculate_distance_coordinate();
 			*object_angle = (uint16_t)(100*calculate_angle_coordinate());
-			ADCSRA &= (0 << ADSC);
+			//ADCSRA &= (0 << ADSC);
 			return 1;
 			}
 		}
@@ -179,7 +212,7 @@ uint8_t sweep_left(uint16_t *object_distance, uint16_t *object_angle)
 			_delay_ms(50);
 		}
 	}
-	ADCSRA &= (0 << ADSC);
+	//ADCSRA &= (0 << ADSC);
 	return 0;
 }
 
