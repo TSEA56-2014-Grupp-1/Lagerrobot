@@ -18,7 +18,7 @@
 #define BUS_ADDRESS_ARM 2
 
 double distance = 400;
-uint8_t angle = 40;
+uint16_t angle = 40;
 uint8_t object_found;
 
 void sidescanner_init()
@@ -86,14 +86,14 @@ void update_distance_sensor_3()	{
 
 void left_object_detection (uint8_t callback_id, uint16_t data_recieved)
 {
-	uint16_t object_distance;
-	uint16_t object_angle;
+	uint16_t object_distance = 0;
+	uint16_t object_angle = 0;
 	
 	if(sweep_left(&object_distance, &object_angle)){
 		//bus_transmit(BUS_ADDRESS_ARM, 12, object_angle);
 		//bus_transmit(BUS_ADDRESS_ARM, 13, object_distance);
-		display(0, "Angle: d%", object_angle);
-		display(1, "Dist: d%", object_distance);
+		display(0, "Angle: %d", object_angle);
+		display(1, "Dist: %d", (uint16_t)distance);
 	}
 	else
 	{
@@ -104,8 +104,8 @@ void left_object_detection (uint8_t callback_id, uint16_t data_recieved)
 
 void right_object_detection (uint8_t callback_id, uint16_t data_recieved)
 {
-	uint16_t object_distance;
-	uint16_t object_angle;
+	uint16_t object_distance = 0;
+	uint16_t object_angle = 0;
 	
 	if(sweep_right(&object_distance, &object_angle)){
 		//bus_transmit(BUS_ADDRESS_ARM, 14, object_angle);
@@ -137,25 +137,23 @@ uint8_t check_distance_loop()
 
 void object_mean_angle(){
 	uint16_t first_angle = angle;
-	uint16_t second_angle;
+	uint16_t second_angle = angle;
 	
 	while (angle <= MAX_ANGLE){
-		if(distance>=ZONE_SIZE){
+		if(distance <= ZONE_SIZE){
 			second_angle = angle;
-			angle = (second_angle + first_angle)/2;
-			scanner_left_position(angle);
-			_delay_ms(50);
 		}
 		else {
-			angle += STEP;
-			scanner_left_position(angle);
-			_delay_ms(50);
+			break;
 		}
-		second_angle = angle;
-		angle = (second_angle + first_angle)/2;
+		
+		angle += STEP;
 		scanner_left_position(angle);
 		_delay_ms(50);
 	}
+	angle = (second_angle + first_angle)/2;
+	scanner_left_position(angle);
+	_delay_ms(50);
 }
 
 uint8_t sweep_left(uint16_t *object_distance, uint16_t *object_angle)
@@ -222,7 +220,7 @@ double calculate_angle_coordinate()	{
 }
 
 double calculate_distance_coordinate()	{
-	double alfa = (angle - 90)*M_PI/180;
+	double alfa = angle*M_PI/180;
 	double x_coord;
 	double y_coord;
 	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*sin(alfa);
