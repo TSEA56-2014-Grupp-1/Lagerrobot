@@ -26,12 +26,7 @@ void engine_set_kd(uint8_t id, uint16_t kd_data)
 
 void engine_init()
 {
-	//OCR1A = 0x0000; // = PD5 = Rightside wheels
-	//OCR1B = 0x0000; // = PD4 = Leftside wheels
-	//PD0 = DIR1, PD1 = DIR2
-	
 	DDRD = 0b00110011;	//Set port direction
-	//drive_forward(); // Initiate drive forward
 	drive_left_wheels(1, 0);
 	drive_right_wheels(1, 0);
 	

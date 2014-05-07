@@ -9,7 +9,6 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
-#include "../RFID_scanner/RFID_scanner.h"
 
 //Defining different datatypes	
 typedef uint8_t surface_type;

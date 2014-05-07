@@ -27,6 +27,7 @@ uint8_t first_lap_done;
 uint8_t station_list[100];
 uint8_t station_count;
 uint8_t follow_line;
+uint8_t	manual_control;
 
 /**
  * @brief Requests line data from the sensor unit.
