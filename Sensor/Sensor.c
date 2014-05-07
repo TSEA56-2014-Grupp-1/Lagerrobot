@@ -10,6 +10,7 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
+#include "../RFID_scanner/RFID_scanner.h"
 
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
@@ -36,6 +37,9 @@ int main(void)
 	bus_register_response(5, set_tape_reference);
 	bus_register_receive(2, calibrate_linesensor);
 	bus_register_receive(9, clear_pickupstation);
+	bus_register_response(6, read_RFID);
+	bus_register_receive(7, RFID_disable_reading);
+	bus_register_receive(8, RFID_enable_reading);
 
 	line_init();
 	sei();
