@@ -45,11 +45,11 @@ uint16_t request_line_data();
  * @return 1 if the information indicates a station, 0 otherwise.
  */
 uint8_t is_station(uint8_t station_data);
-
+void clear_sensor();
 uint16_t request_rfid_tag();
 void arm_is_done(uint8_t id, uint16_t pickup_data);
 void send_to_arm(uint16_t arm_action);
-void display_station_and_rfid(uint8_t station_data, uint8_t station_tag);
+void display_station_and_rfid(uint8_t station_data, uint8_t tag);
 void send_command_to_arm(uint8_t station_data ,uint8_t station_tag);
 void display_command(uint8_t station_tag);
 

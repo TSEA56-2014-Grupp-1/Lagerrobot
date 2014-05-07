@@ -57,33 +57,27 @@ uint8_t RFID_read_usart()
 	uint8_t i = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		if (usart_read_byte(&station_RFID[i]) == 1)
-			return 1;
+		//if (usart_read_byte(&station_RFID[i]) == 1)
+		//return 1;
+		usart_read_byte(&station_RFID[i]);
 	}
 	return 0;
 }
 
 uint16_t read_RFID(uint8_t id, uint16_t metadata)
 {	
-	ADCSRA = ADCSRA & (0 << ADEN); // Disable ADC
-	for(uint8_t i = 0; i <= 100; ++i) // Try larger
+	uint8_t i = 0;
+	for(i= 0; i <= 150; ++i)
 	{
-		if (RFID_read_usart())
+		RFID_read_usart();
+		if(station_RFID[0] == 0x0A) // Correct startbyte found
 		{
-			//PORTD |= (1 << PORTD2); // Disable rfid reading
-			ADCSRA |= (1 << ADEN); // Enable ADC
-			return 2;
-		}
-		else if(station_RFID[0] == 0x0A) 
-		{
-			//PORTD |= (1 << PORTD2); // Disable rfid reading
-			ADCSRA |= (1 << ADEN); // Enable ADC
+			PORTD |= (1 << PORTD2); // Disable rfid reading
 			return identify_station_RFID();
 		}
 	}
-	//PORTD |= (1 << PORTD2); // Disable rfid reading
-	ADCSRA |= (1 << ADEN); // Enable ADC
-	return 0;
+	PORTD |= (1 << PORTD2); // Disable rfid reading
+	return station_RFID[0]; //  time out or wrong startbyte found
 }
 
 
@@ -113,5 +107,5 @@ uint8_t identify_station_RFID()
 	else if (compare_RFID_arrays(RFID_B85))
 	return 85;
 	else
-	return 1;
+	return 1; // no match
 };

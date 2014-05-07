@@ -14,6 +14,11 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 
+void clear_sensor()
+{
+	bus_transmit(BUS_ADDRESS_SENSOR, 9, 0);
+}
+
 uint16_t request_line_data()
 {
 	uint16_t data;
@@ -57,17 +62,17 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 	return (carrying_rfid == current_station);
 }
 
-void display_station_and_rfid(uint8_t station_data, uint8_t station_tag)
+void display_station_and_rfid(uint8_t station_data, uint8_t tag)
 {
 	if (station_data == 2)
 	{
 		display(0, "left");
-		display(1, "rfid: %d", station_tag);
+		display(1, "rfid: %d", tag);
 	}
 	else if (station_data == 0)
 	{
 		display(0, "right");
-		display(1, "rfid: %d", station_tag);
+		display(1, "rfid: %d", tag);
 	}
 	else
 	{
@@ -130,18 +135,19 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	
 	else if (!is_station(station_data) && (manual_control == 1)) // robot is not on station and linefollowing is off 
 	{
+		stop_wheels();
 		return;
 	}
-	
+	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt since waiting for Arm!  reg TIMSK0 bit OCIE0A = 0
 	stop_wheels();
 	
 	uint8_t station_tag = 0;
-	//station_tag = (uint8_t)request_RFID_tag();
+	station_tag = (uint8_t)request_RFID_tag();
 	
 	display_station_and_rfid(station_data, station_tag);
-
 	//send_command_to_arm(station_data, station_tag);
 	//display_command(station_tag);
+	return;
 }
 
 //----- Arm done-----
@@ -160,21 +166,14 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 //---Pin Change Interrupt start-button----
 ISR(PCINT1_vect)
 {
-		//enable timer interrupts for ocie0a
-		TIMSK0 |= (1 << OCIE0A); //Press the blue bottun instead
-		TIFR0 |= (1 << OCF0A);
-		
-		// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
-		OCR0A = 0x80;
-		
-		// set to mode 2 (CTC) => clear TCNT0 on compare match
-		TCCR0A |= (1 << WGM01 | 0 << WGM00);
-		TCCR0B |= (0 << WGM02);
-
-		//prescale
-		TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
-		display(0, "start but");
-		display(1, "pressed");
+	TIMSK0 = (TIMSK0 & (0 << OCIE0A)); // Disable timer-interrupt
+	//display(0, "start but");
+	//display(1, "pressed");
+	enable_rfid_reader();
+	clear_sensor();
+	_delay_ms(200);
+	//enable timer interrupts
+	TIMSK0 |= (1 << OCIE0A);
 }
 
 int main(void)
@@ -194,9 +193,9 @@ int main(void)
 	bus_register_receive(2, arm_is_done);
 
 	sei();
-	/*
+	
 	//enable timer interrupts for ocie0a
- 	TIMSK0 |= (1 << OCIE0A); Press the blue bottun instead
+ 	TIMSK0 |= (1 << OCIE0A); 
  	TIFR0 |= (1 << OCF0A);
 	 
 	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
@@ -208,7 +207,7 @@ int main(void)
 
 	//prescale
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
-	*/
+	
 	
 	//enable start button
 	PCICR = (1 << PCIE1); // enable PCINT1

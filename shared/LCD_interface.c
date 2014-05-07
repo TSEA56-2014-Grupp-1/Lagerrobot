@@ -15,20 +15,20 @@
  */
 void display(uint8_t line_number, const char* str, ...) {
 	char display_symbols[17];
-	
+
 	uint8_t status;
-	
+
 	uint8_t module_identifier = 0;
-	
+
 	for (uint8_t i = 0; i < 16; ++i){
 		display_symbols[i] = 0x20;
 	}
-	
+
 	va_list data;
 	va_start(data, str);
 	vsnprintf(display_symbols, 17, str, data);
 	va_end(data);
-	
+
 	switch (bus_get_address()) {
 		case BUS_ADDRESS_SENSOR:
 			module_identifier = 1;
@@ -40,17 +40,17 @@ void display(uint8_t line_number, const char* str, ...) {
 			module_identifier = 3;
 		break;
 	}
-	
+
 	if (module_identifier == 0) // bus has not been initialized correctly!
 		return;
-		
+
 	for (uint8_t i = 0; i < 16; ++i){
-		
+
 		do {
 			status = bus_transmit(BUS_ADDRESS_COMMUNICATION, 2*module_identifier + line_number, ((uint16_t) i << 7) | (display_symbols[i] & 0b01111111));
-			
+
 		} while (status != 0);
-			
+
 		if (display_symbols[i] == 0x00) 
 			break;
 	}
