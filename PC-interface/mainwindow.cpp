@@ -728,6 +728,7 @@ void MainWindow::on_pushButton_send_arm_pos_clicked()
 	quint16 angle = ui->lineEdit_angle->text().toInt(&angle_check);
     if (port == NULL) {
         print_on_log("No port to send to.");
+        return;
     }
     if (x_check && y_check && angle_check){
 		port->send_packet(PKT_ARM_COMMAND, 6, CMD_ARM_MOVE_POS,
@@ -772,4 +773,61 @@ void MainWindow::pickupstation(QByteArray* data) {
 		}
 		station = true;
 	}
+}
+
+bool MainWindow::validate_spoof() {
+
+    if (ui->callback_lineEdit->text().isEmpty() ||
+        ui->highByte_lineEdit->text().isEmpty() ||
+        ui->lowByte_lineEdit->text().isEmpty() ||
+        ui->address_lineEdit->text().isEmpty()) {
+        print_on_log("Not enough information entered.");
+        return false;
+    }
+    QRegularExpression re("^[0-9]+$");
+    if (!re.match(ui->callback_lineEdit->text()).hasMatch() ||
+        !re.match(ui->highByte_lineEdit->text()).hasMatch() ||
+        !re.match(ui->lowByte_lineEdit->text()).hasMatch() ||
+        !re.match(ui->address_lineEdit->text()).hasMatch()) {
+        print_on_log("Only decimal integers accepted");
+        return false;
+    }
+    return true;
+}
+
+void MainWindow::on_request_button_clicked() {
+    if (!validate_spoof())
+        return;
+    else {
+        if (port == nullptr) {
+            print_on_log("No port to send to.");
+            return;
+        }
+
+        port->send_packet(PKT_SPOOFED_REQUEST,
+                          4,
+                          ui->address_lineEdit->text().toInt(),
+                          ui->callback_lineEdit->text().toInt(),
+                          ui->highByte_lineEdit->text().toInt(),
+                          ui->lowByte_lineEdit->text().toInt());
+    }
+}
+
+void MainWindow::on_transmit_button_clicked()
+{
+    if (!validate_spoof())
+        return;
+    else {
+        if (port == nullptr) {
+            print_on_log("No port to send to.");
+            return;
+        }
+
+        port->send_packet(PKT_SPOOFED_TRANSMIT,
+                          4,
+                          ui->address_lineEdit->text().toInt(),
+                          ui->callback_lineEdit->text().toInt(),
+                          ui->highByte_lineEdit->text().toInt(),
+                          ui->lowByte_lineEdit->text().toInt());
+    }
 }

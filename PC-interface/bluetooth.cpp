@@ -93,8 +93,8 @@ void bluetooth::process_packet()
                                 .append(QString::number((quint8)parameters[0])));
         break;
 	case PKT_SPOOFED_RESPONSE:
-        window->print_on_log(QString::number(parameters[0], 16)
-                                .append(QString::number(parameters[1], 16)));
+        window->print_on_log(QString::number(parameters[0], 16).append(" ")
+                                .append(QString::number(static_cast<char>(parameters[1]), 16)));
         break;
 
     }

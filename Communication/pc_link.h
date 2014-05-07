@@ -9,6 +9,10 @@
 #ifndef PC_LINK_H_
 #define PC_LINK_H_
 
+#ifndef F_CPU
+	#define F_CPU 18432000UL
+#endif
+
 #include <avr/io.h>
 
 uint8_t process_packet();

@@ -132,6 +132,10 @@ private slots:
 
     void on_pushButton_pause_graph_clicked();
 
+    void on_request_button_clicked();
+
+    void on_transmit_button_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -157,9 +161,10 @@ private:
 
     QGraphicsScene* linesensor_plot = new QGraphicsScene();
 
-	//XXX:
+	//XXX: This is not a good soultion, place until better is found
 	bool station = false;
 
+	bool validate_spoof();
 };
 
 #endif // MAINWINDOW_H
