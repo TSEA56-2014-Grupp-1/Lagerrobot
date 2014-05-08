@@ -9,6 +9,9 @@
 #include "Communication.h"
 #include "LCD.h"
 #include "../shared/bus.h"
+#include "pc_link.h"
+#include "../shared/packets.h"
+#include "../shared/usart.h"
 #include <avr/io.h>
 #include <string.h>
 #include <util/delay.h>
@@ -151,6 +154,7 @@ int main(void)
 {
 	init();
 	lcd_init();
+	usart_init(0x0009);
 	bus_init(BUS_ADDRESS_COMMUNICATION);
 	
 	
@@ -169,24 +173,31 @@ int main(void)
 	char current_message_map1[17];
 	char current_message_map2[17];
 	uint8_t lcd_current_sender;
-	for(;;)
+	
+	while(1)
 	{
-		while(!lcd_rotation_flag) {
-			_delay_us(1);
-		}
-		
-		cli();
-		lcd_rotation_flag = 0;
-		lcd_current_sender = lcd_next_sender;
-		memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
-		memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
-		sei();
-		
-		lcd_display(lcd_current_sender,
-					current_message_map1,
-					current_message_map2);
-		
-		if (!lcd_rotation_flag)
+		while(!lcd_rotation_flag && !usart_has_bytes());
+
+		if (lcd_rotation_flag) {
+			cli();
+			lcd_rotation_flag = 0;
+			lcd_current_sender = lcd_next_sender;
+			memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
+			memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
+			sei();
+			
+			lcd_display(lcd_current_sender,
+			current_message_map1,
+			current_message_map2);
+			
+			if (!lcd_rotation_flag)
 			lcd_next_sender = (lcd_next_sender + 1) % 4;
+		}
+	
+		else {
+			process_packet();
+			usart_reset_buffer();
+
+		}
 	}
 }
