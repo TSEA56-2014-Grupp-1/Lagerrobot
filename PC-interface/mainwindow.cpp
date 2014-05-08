@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-    timer_req->setInterval(125);
+	timer_req->setInterval(250);
     connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
 
     timer_com->setInterval(100);
@@ -559,11 +559,20 @@ void MainWindow::set_up_graphs() {
     ui->plot_steering->xAxis->setAutoTickStep(false);
     ui->plot_steering->xAxis->setTickStep(1);
     ui->plot_steering->yAxis->setRange(-127, 127);
+
 	ui->plot_steering->graph(0)->setLineStyle(QCPGraph::lsLine);
 	ui->plot_steering->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+	ui->plot_steering->graph(0)->setName("Center of mass");
+
 	ui->plot_steering->graph(1)->setLineStyle(QCPGraph::lsLine);
 	ui->plot_steering->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
 	ui->plot_steering->graph(1)->setPen(QPen(QColor(204,0,0)));
+	ui->plot_steering->graph(1)->setName("Steering");
+
+	QFont legendFont = font();
+	legendFont.setPointSize(11);
+	ui->plot_steering->legend->setFont(legendFont);
+	ui->plot_steering->legend->setVisible(true);
 
     ui->graphicsView_linesensor->setScene(linesensor_plot);
     ui->graphicsView_linesensor->show();

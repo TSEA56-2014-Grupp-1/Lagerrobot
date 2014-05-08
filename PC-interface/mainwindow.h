@@ -166,7 +166,6 @@ private:
 	QVector<double> times_mass, value_mass;
 	QVector<double> times_steering, value_steering;
 
-
     QGraphicsScene* linesensor_plot = new QGraphicsScene();
 
 	//XXX: This is not a good soultion, place until better is found
