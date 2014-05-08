@@ -13,6 +13,7 @@
 #include "../RFID_scanner/RFID_scanner.h"
 #include "../shared/usart.h"
 #include "../shared/bus.h"
+#include "../Sensor/linesensor.h"
 
 uint8_t station_RFID[12];
 
@@ -57,27 +58,54 @@ uint8_t RFID_read_usart()
 	uint8_t i = 0;
 	for (i = 0; i <= 11; ++i) // Read 12 bytes
 	{
-		//if (usart_read_byte(&station_RFID[i]) == 1)
-		//return 1;
-		usart_read_byte(&station_RFID[i]);
+		if (usart_read_byte(&station_RFID[i]))
+		return 1;
 	}
 	return 0;
 }
 
-uint16_t read_RFID(uint8_t id, uint16_t metadata)
-{	
+void clear_station_RFID()
+{
 	uint8_t i = 0;
-	for(i= 0; i <= 150; ++i)
+	for (i = 0; i <= 11; ++i)
 	{
-		RFID_read_usart();
-		if(station_RFID[0] == 0x0A) // Correct startbyte found
-		{
-			PORTD |= (1 << PORTD2); // Disable rfid reading
-			return identify_station_RFID();
-		}
+		station_RFID[i] = 0;
 	}
-	PORTD |= (1 << PORTD2); // Disable rfid reading
-	return station_RFID[0]; //  time out or wrong startbyte found
+}
+
+void send_rfid(uint8_t station_tag)
+{
+	uint8_t station_data = get_station_data();
+	uint16_t tag_and_station = ((uint16_t)station_data << 8) | (uint16_t)station_tag;
+	uint16_t timeout_counter = 0;
+		while(timeout_counter < 1000) {
+			if (bus_transmit(BUS_ADDRESS_CHASSIS, 4, tag_and_station) == 0) {
+				return;
+			}
+			++timeout_counter;	
+		}
+}
+
+void read_rfid(uint8_t id, uint16_t metadata)
+{
+		ADCSRA = (ADCSRA & (0 << ADEN)); // disable ADC
+		clear_station_RFID();
+		uint8_t i = 0;
+		for(i= 0; i <= 100; ++i)
+		{
+			RFID_read_usart();
+			if(station_RFID[11] == 0x0D) // Correct stopbyte found
+			{
+				PORTD |= (1 << PORTD2); // Disable rfid reading
+				send_rfid(identify_station_RFID());
+				ADCSRA |= (1 << ADEN); // enable ADC
+				return;
+			}
+		}
+		PORTD |= (1 << PORTD2); // Disable rfid reading
+		send_rfid(0); //  time out or wrong stopbyte found
+		ADCSRA |= (1 << ADEN); // enable ADC
+		return;
 }
 
 
@@ -107,5 +135,5 @@ uint8_t identify_station_RFID()
 	else if (compare_RFID_arrays(RFID_B85))
 	return 85;
 	else
-	return 1; // no match
+	return 0; // no match
 };

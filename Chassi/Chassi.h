@@ -52,5 +52,10 @@ void send_to_arm(uint16_t arm_action);
 void display_station_and_rfid(uint8_t station_data, uint8_t tag);
 void send_command_to_arm(uint8_t station_data ,uint8_t station_tag);
 void display_command(uint8_t station_tag);
+void RFID_done(uint8_t id, uint16_t id_and_station);
+void read_rfid();
+void timer_interrupt_init();
+void start_button_init();
+void disable_timer_interrupts();
 
 #endif /* CHASSI_H_ */

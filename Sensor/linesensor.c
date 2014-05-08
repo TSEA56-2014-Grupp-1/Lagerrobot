@@ -66,6 +66,11 @@ uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
 	return 0;
 }
 
+uint8_t get_station_data()
+{
+	return pickup_station;
+}
+
 /*
  *	@brief Will return the values of a pair of sensors, 0 - 5.
  *
@@ -333,6 +338,7 @@ void clear_pickupstation(uint8_t id, uint16_t metadata) {
 	pickup_station = No;
 	previous_pickup_station = No;
 	pickup_iterator = 0;
+	line_init();
 }
 
 

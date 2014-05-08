@@ -122,4 +122,6 @@ void calibrate_linesensor(uint8_t id, uint16_t metadata);
  */
 void clear_pickupstation(uint8_t id, uint16_t metadata);
 
+uint8_t get_station_data();
+
 #endif /* LINESENSOR_H_ */
