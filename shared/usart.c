@@ -1,6 +1,7 @@
 #include "usart.h"
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#define F_CPU 18430000UL  
 #include <util/delay.h>
 
 uint8_t usart_receive_buffer[256];
