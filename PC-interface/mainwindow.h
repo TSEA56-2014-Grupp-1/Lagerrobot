@@ -32,6 +32,8 @@ public:
 
     void connect_to_port(QString);
 
+	void add_mass_data(int);
+
     void add_steering_data(int);
 
     void set_RFID(QString);
@@ -39,6 +41,9 @@ public:
 	void update_linesensor_plot(QByteArray*);
 
 	void pickupstation(QByteArray*);
+
+	//XXX: should be private
+
 
 
 private slots:
@@ -143,7 +148,8 @@ private:
     void enable_buttons();
 
     void set_up_graphs();
-    void draw_graphs();
+
+	void draw_graphs();
 
     QTimer *timer_req = new QTimer();
     QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
@@ -155,9 +161,11 @@ private:
 
     bool update_graph = true;
 
-    QVector<double> times_steering, value_steering;
-
     QVector<QGraphicsEllipseItem*> linesensor_circels;
+
+	QVector<double> times_mass, value_mass;
+	QVector<double> times_steering, value_steering;
+
 
     QGraphicsScene* linesensor_plot = new QGraphicsScene();
 

@@ -125,7 +125,7 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
-		//timer_req->start();
+		timer_req->start();
         time_graph->start();
     }
     else {
@@ -554,12 +554,16 @@ void MainWindow::on_pushButton_send_param_clicked()
  */
 void MainWindow::set_up_graphs() {
     ui->plot_steering->addGraph();
+	ui->plot_steering->addGraph();
     ui->plot_steering->xAxis->setLabel("Time");
     ui->plot_steering->xAxis->setAutoTickStep(false);
     ui->plot_steering->xAxis->setTickStep(1);
     ui->plot_steering->yAxis->setRange(-127, 127);
-    ui->plot_steering->graph()->setLineStyle(QCPGraph::lsLine);
-    ui->plot_steering->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+	ui->plot_steering->graph(0)->setLineStyle(QCPGraph::lsLine);
+	ui->plot_steering->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+	ui->plot_steering->graph(1)->setLineStyle(QCPGraph::lsLine);
+	ui->plot_steering->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+	ui->plot_steering->graph(1)->setPen(QPen(QColor(204,0,0)));
 
     ui->graphicsView_linesensor->setScene(linesensor_plot);
     ui->graphicsView_linesensor->show();
@@ -576,21 +580,31 @@ void MainWindow::set_up_graphs() {
  *
  *      @param new_data Data that will be added.
  */
+void MainWindow::add_mass_data(int new_data) {
+	times_mass.push_back((double)time_graph->elapsed()/1000);
+	value_mass.push_back((quint8)new_data - 127);
+	draw_graphs();
+}
+
 void MainWindow::add_steering_data(int new_data) {
-    times_steering.push_back((double)time_graph->elapsed()/1000);
-    value_steering.push_back((quint8)new_data - 127);
-    if (update_graph) { //XXX: Part of bad solution, see on_pushButton_pause_graph()
-        draw_graphs();
-    }
+	times_steering.push_back((double)time_graph->elapsed()/1000);
+	value_steering.push_back((quint8)(new_data/10)); //XXX: wont handle stuff from the robot.
+	draw_graphs();
 }
 
 /*
  *      @brief Draw all data on the graphs.
  */
 void MainWindow::draw_graphs() {
-    ui->plot_steering->graph(0)->setData(times_steering, value_steering);
-    ui->plot_steering->xAxis->setRange((double)(time_graph->elapsed()/1000) - 10,
-                                       (double)time_graph->elapsed()/1000);
+	if (!update_graph) { //XXX: Part of bad solution, see on_pushButton_pause_graph()
+		return;
+	}
+
+	ui->plot_steering->graph(0)->setData(times_mass, value_mass);
+	ui->plot_steering->graph(1)->setData(times_steering, value_steering);
+
+	ui->plot_steering->xAxis->setRange(qFloor((double)(time_graph->elapsed()/1000) - 10),
+									   qFloor((double)time_graph->elapsed()/1000));
     ui->plot_steering->replot();
     ui->horizontalScrollBar_graphs->setRange(0,(double)time_graph->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
     ui->horizontalScrollBar_graphs->setValue(time_graph->elapsed()/100);
