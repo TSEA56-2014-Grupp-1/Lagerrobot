@@ -9,38 +9,37 @@
 #include <avr/interrupt.h>
 
 
-
 uint16_t get_distance_sensor_1(int8_t index)	{
 	const uint16_t DISTANCE_SENSOR_1[31] = {
 		610, 610, 598, 547, 495, 456, 416, 388, 359, 338,
 		319, 301, 286, 271, 260, 249, 240, 229, 221, 212, 204,
-	195, 187, 183, 175, 171, 167, 160, 156, 153, 149};
+		195, 187, 183, 175, 171, 167, 160, 156, 153, 149};
 	if(index < 0)
-	return DISTANCE_SENSOR_1[sizeof(DISTANCE_SENSOR_1) / sizeof(uint16_t) + index];
+		return DISTANCE_SENSOR_1[sizeof(DISTANCE_SENSOR_1) / sizeof(uint16_t) + index];
 	else
-	return DISTANCE_SENSOR_1[index];
+		return DISTANCE_SENSOR_1[index];
 }
 
 uint16_t get_distance_sensor_2(int8_t index)	{
 	const uint16_t DISTANCE_SENSOR_2[26] = {
 		457, 399, 349, 313, 283, 264, 238, 219, 205, 194,
 		185, 170, 165, 152, 144, 140, 132, 128, 120, 116,
-	115, 107, 103, 100, 96, 92};
+		115, 107, 103, 100, 96, 92};
 	if(index < 0)
-	return DISTANCE_SENSOR_2[sizeof(DISTANCE_SENSOR_2) / sizeof(uint16_t) + index];
+		return DISTANCE_SENSOR_2[sizeof(DISTANCE_SENSOR_2) / sizeof(uint16_t) + index];
 	else
-	return DISTANCE_SENSOR_2[index];
+		return DISTANCE_SENSOR_2[index];
 }
 
 uint16_t get_distance_sensor_3(int8_t index)	{
 	const uint16_t DISTANCE_SENSOR_3[26] =
-	{437, 390, 334, 297, 264, 236, 217, 204, 189, 173,
+		{437, 390, 334, 297, 264, 236, 217, 204, 189, 173,
 		161, 154, 142, 134, 126, 122, 115, 111, 103, 99,
-	95, 92, 87, 84, 83, 79};
+		95, 92, 87, 84, 83, 79};
 	if(index < 0)
-	return DISTANCE_SENSOR_3[sizeof(DISTANCE_SENSOR_3) / sizeof(uint16_t) + index];
+		return DISTANCE_SENSOR_3[sizeof(DISTANCE_SENSOR_3) / sizeof(uint16_t) + index];
 	else
-	return DISTANCE_SENSOR_3[index];
+		return DISTANCE_SENSOR_3[index];
 }
 
 

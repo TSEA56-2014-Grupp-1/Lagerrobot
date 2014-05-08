@@ -10,24 +10,36 @@
 #include "sidescanner.h"
 #include "distance_sensors.h"
 #include "../shared/LCD_interface.h"
-/* qsort example */
-#include <stdio.h>      /* printf */
-#include <stdlib.h>     /* qsort */
-
+#include <stdio.h>
+#include <stdlib.h>
 
 #define ZONE_SIZE 200
 #define MAX_ANGLE 140 
 #define STEP 1
 #define BUS_ADDRESS_ARM 2
 #define DISTANCE_LOOP_COUNT 100
+#define START_ANGLE 40
 
-double distance = 400;
-uint16_t angle = 40;
-uint8_t object_found;
-
+//XXX: uint16_t instead of int?
 int compare (const void * a, const void * b)
 {
 	return ( *(int*)a - *(int*)b );
+}
+
+uint8_t scanner_set_position(uint8_t angle, sensor sensor_id) {
+	if ((angle < 0) || (angle > 180)) {
+		return 1;
+	}
+	else if (sensor_id == sensor_left) {
+		OCR3A = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
+	}
+	else if (sensor_id == sensor_right) {
+		OCR3B = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
+	}
+	else {
+		return 2;
+	}
+	return 0;
 }
 
 void sidescanner_init()
@@ -54,209 +66,131 @@ void sidescanner_init()
 	ADMUX = 0b00000001;	
 	//Start AD-conversion
 	
-	scanner_left_position(angle);
-	scanner_right_position(angle);
+	scanner_set_position(START_ANGLE, sensor_left);
+	scanner_set_position(START_ANGLE, sensor_right);
 	_delay_ms(100);
-	
 	
 	//bus_register_receive(15, left_object_detection);
 	//bus_register_receive(16, right_object_detection);
 }
 
-
-uint8_t scanner_left_position(uint8_t angle)
-{
-	if((0<=angle) && (angle<=180)){
-	OCR3A = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
-	return 0;
-	}
-	else
-	return 1;
-
-}
-
-uint8_t scanner_right_position(uint8_t angle)
-{
-	if((0<=angle) && (angle<=180)){
-	OCR3B = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
-	return 0;
-	}
-	else
-	return 1;
-
-}
-
-
-void update_distance_sensor_2()	{
-	distance = ad_interpolate(ADC,2);
+uint16_t get_distance(sensor sensor_id) {
 	ADCSRA |= (1 << ADSC);
+	while (ADCSRA & (1 << ADSC));
+	ADCSRA &= ~(1 << ADIF);
+	return ad_interpolate(ADC, sensor_id);
 }
 
-void update_distance_sensor_3()	{
-	distance = ad_interpolate(ADC,3);
-	ADCSRA |= (1 << ADSC);
-}
-
-
-uint8_t check_distance_loop()
+uint16_t get_median_distance(uint16_t angle, sensor sensor_id)
 {
+	scanner_set_position(angle,sensor_id);
+	_delay_ms(1000);
+	
 	uint8_t i;
-	int distance_array[DISTANCE_LOOP_COUNT];
-	//uint16_t distance_sum = 0;
-	_delay_ms(50);
+	uint16_t distance_array[DISTANCE_LOOP_COUNT];
 	
 	for(i = 0; i < DISTANCE_LOOP_COUNT; i++){
-		distance_array[i] = distance;
-		//distance_sum += distance;
-		_delay_us(500);
-	}
-	//ADCSRA &= (0 << ADSC);
-	
-	qsort (distance_array, DISTANCE_LOOP_COUNT, sizeof(int), compare);
-	distance = (uint16_t)distance_array[(uint8_t)(floor(DISTANCE_LOOP_COUNT/2))];
-	//distance = (distance_sum/DISTANCE_LOOP_COUNT);
-	
-	if(distance<=ZONE_SIZE){
-		return 1;
+		distance_array[i] = get_distance(sensor_id);
 	}
 	
-	else {
-		ADCSRA |= (1 << ADSC);
-		return 0;
-	}
+	qsort (distance_array, DISTANCE_LOOP_COUNT, sizeof(uint16_t), compare);
+	return (uint16_t)distance_array[(uint8_t)(floor(DISTANCE_LOOP_COUNT/2))];
 }
 
-void left_object_detection (uint8_t callback_id, uint16_t data_recieved)
-{
-	uint16_t object_distance = 0;
-	uint16_t object_angle = 0;
-	
-	if(sweep_left(&object_distance, &object_angle)){
-		//bus_transmit(BUS_ADDRESS_ARM, 12, object_angle);
-		//bus_transmit(BUS_ADDRESS_ARM, 13, object_distance);
-		display(0, "Angle: %d", object_angle);
-		display(1, "Dist: %d", (uint16_t)distance);
-	}
-	else
+uint8_t find_first_distance(uint16_t *object_distance, uint16_t *object_angle, sensor sensor_id)
+{	
+	uint16_t distance = 400;
+	uint16_t angle = 40;
+
+	while (angle <= MAX_ANGLE)
 	{
-		display(0, "No object found!");
-		//bus_transmit(BUS_ADDRESS_ARM, 11, 0);
+		distance = get_distance(sensor_id);
+		if(distance <= ZONE_SIZE) {
+			*object_distance = distance;
+			*object_angle = angle;
+			return 1;
+		}
+		else {
+			angle += STEP;
+			scanner_set_position(angle, sensor_id);
+			_delay_ms(50);
+		}
 	}
-	
-	while(1){
-		display(1, "Dist: %d", (uint16_t)distance);
-		_delay_ms(500);
-	}
+	return 0;
 }
 
-void right_object_detection (uint8_t callback_id, uint16_t data_recieved)
-{
-	uint16_t object_distance = 0;
-	uint16_t object_angle = 0;
+uint8_t find_second_distance(uint16_t *object_distance, uint16_t *object_angle, uint16_t start_angle, sensor sensor_id) {
 	
-	if(sweep_right(&object_distance, &object_angle)){
-		//bus_transmit(BUS_ADDRESS_ARM, 14, object_angle);
-		//bus_transmit(BUS_ADDRESS_ARM, 15, object_distance);
-	}
-	else
-	{
-		//bus_transmit(BUS_ADDRESS_ARM, 11, 0);
-	}
-}
-
-
-void object_mean_angle(){
-	uint16_t first_angle = angle;
-	uint16_t second_angle = angle;
+	uint16_t distance = 400;
+	uint16_t angle = start_angle;
 	
 	while (angle <= MAX_ANGLE){
-		if(distance <= ZONE_SIZE){
-			second_angle = angle;
+		distance = get_distance(sensor_id);
+		if(distance <= ZONE_SIZE) {
+			*object_angle = angle;
+			*object_distance = distance;
 		}
 		else {
-			break;
-		}
-		
-		angle += STEP;
-		scanner_left_position(angle);
-		_delay_ms(40);
-		
-	}
-	angle = (second_angle + first_angle)/2;
-	scanner_left_position(angle);
-	_delay_ms(50);
-}
-
-
-
-uint8_t sweep_left(uint16_t *object_distance, uint16_t *object_angle)
-{
-	ADCSRA |= (1 << ADSC);
-	_delay_ms(1);
-	
-	while (angle <= MAX_ANGLE)
-	{
-		//zone_size in volt = 1/distance
-		if(distance<=ZONE_SIZE){
-			object_mean_angle();
-			if(check_distance_loop()){
-			*object_distance = (uint16_t)calculate_distance_coordinate();
-			*object_angle = (uint16_t)(100*calculate_angle_coordinate());
-			//ADCSRA &= (0 << ADSC);
 			return 1;
-			}
 		}
-		else {
-			angle += STEP;
-			scanner_left_position(angle);
-			_delay_ms(50);
-		}
+		angle += STEP;
+		scanner_set_position(angle, sensor_id);
+		_delay_ms(50);
 	}
-	//ADCSRA &= (0 << ADSC);
 	return 0;
 }
-
-uint8_t sweep_right(uint16_t *object_distance, uint16_t *object_angle)
-{
-	ADCSRA |= (1 << ADSC);
-	_delay_ms(1);
-	while (angle <= MAX_ANGLE)
-	{
-		//zone_size in volt = 1/distance
-		if(distance<=ZONE_SIZE){
-			if(check_distance_loop()){
-				*object_distance = (uint16_t)calculate_distance_coordinate();
-				*object_angle = (uint16_t)(100*calculate_angle_coordinate());
-				ADCSRA &= (0 << ADSC);
-				return 1;
-			}
-			else return 0;
-		}
-		else {
-			angle += STEP;
-			scanner_right_position(angle);
-			_delay_ms(50);
-		}
-	}
-	ADCSRA &= (0 << ADSC);
-	return 0;
-	
-}
-
-double calculate_angle_coordinate()	{
+			
+double calculate_angle_coordinate(uint16_t angle, uint16_t distance)	{
 	double alfa = angle*M_PI/180;
 	double x_coord;
 	double y_coord;
 	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*sin(alfa);
 	y_coord = distance*cos(alfa);
-	return atan2(x_coord,y_coord);
+	return atan2(x_coord, y_coord);
 }
 
-double calculate_distance_coordinate()	{
+double calculate_distance_coordinate(uint16_t angle, uint16_t distance)	{
 	double alfa = angle*M_PI/180;
 	double x_coord;
 	double y_coord;
 	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*sin(alfa);
 	y_coord = distance*cos(alfa);
 	return sqrt((x_coord*x_coord) + (y_coord*y_coord));
+}
+
+void object_detection(uint8_t callback_id, uint16_t meta_data)
+{
+	sidescanner_init();
+	
+	sensor sensor_id = meta_data;
+	
+	uint16_t first_distance = 0;
+	uint16_t first_angle = 0;
+	
+	uint16_t second_distance = 0;
+	uint16_t second_angle = 0;
+	
+	if (!find_first_distance(&first_distance, &first_angle, sensor_id)) {
+		display(0, "No object found!");
+		return;
+	}
+	
+	if (!find_second_distance(&second_distance, &second_angle, first_angle, sensor_id)) {
+		//Setting angle to max since end of the object was outside scanning area.
+		second_angle = MAX_ANGLE;
+		second_distance = first_distance;
+	}
+	
+	//XXX: This should be used, not in use since debugging with display
+//	uint16_t distance = get_median_distance((first_angle + second_angle)/2); 
+// 	double object_angle = calculate_angle_coordinate((first_angle + second_angle)/2, distance);
+// 	double object_distance = calculate_distance_coordinate(distance);
+
+	//XXX: debugging
+	double object_angle = (first_angle + second_angle)/2;
+	double object_distance = get_median_distance((first_angle + second_angle)/2, sensor_id);
+	
+	//XXX: should be bus_transmit to arm
+	display(0,"A: %d",(uint16_t)(object_angle));
+	display(1,"D: %d",(uint16_t)object_distance);
 }

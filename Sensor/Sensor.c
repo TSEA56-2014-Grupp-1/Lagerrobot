@@ -12,16 +12,19 @@
 #include "sidescanner.h"
 #include "../shared/bus.h"
 #include "distance_sensors.h"
+#include "../shared/LCD_interface.h"
 
 ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
 		case 0 :
 			update_linesensor();
+			
+		//XXX: These wont be needed anymore
 		case 1 :
-			update_distance_sensor_2();	//left sensor (adc1)
+			//update_distance_sensor_2();	//left sensor (adc1)
 		break;
 		case 2 : 
-			update_distance_sensor_3(); //right sensor (adc2)
+			//update_distance_sensor_3(); //right sensor (adc2)
 		break;
 		case 3 :
 			//update_distance_sensor_1(); //this function should be in the "arm-sensor code" (adc3)
@@ -34,18 +37,15 @@ int main(void)
 {
 
 	bus_init(4);
-	bus_register_response(4, return_line_weight);
-	//sidescanner
 	sidescanner_init();
 	
-	//calibrate_linesensor();
-	//line_init();
 	sei();
 
-	left_object_detection(0, 0);
+	object_detection(0, sensor_left);
+
 
     while(1)
     {
-
+		
     }
 }
