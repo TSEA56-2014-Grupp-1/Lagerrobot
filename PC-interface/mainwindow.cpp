@@ -782,14 +782,14 @@ void MainWindow::on_pushButton_pause_graph_clicked()
  *		2 station höger
  */
 void MainWindow::pickupstation(QByteArray* data) {
-	if (data->at(11) == 0 && !station) {
+	if (data->at(11) == 2 && !station) {
 		print_on_log(QObject::tr("Station left: %1").arg(QString::number(data->at(11))));
 		for (int i = 0; i < 11; ++i) {
 			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
 		}
 		station = true;
 	}
-	else if (data->at(11) == 2 && !station) {
+	else if (data->at(11) == 0 && !station) {
 		print_on_log("Station right");
 		for (int i = 0; i < 11; ++i) {
 			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
