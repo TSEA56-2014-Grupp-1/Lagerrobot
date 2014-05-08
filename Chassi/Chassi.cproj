@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>6.1</ProjectVersion>
     <ToolchainName>com.Atmel.AVRGCC8.C</ToolchainName>
-    <ProjectGuid>{d8c0d455-6883-451a-abc3-15c8c6e91585}</ProjectGuid>
+    <ProjectGuid>{3101634c-eec1-4e42-9745-ecdd3e023827}</ProjectGuid>
     <avrdevice>ATmega1284P</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>Executable</OutputType>
@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>lcd_test</AssemblyName>
-    <Name>lcd_test</Name>
-    <RootNamespace>lcd_test</RootNamespace>
+    <AssemblyName>Chassi</AssemblyName>
+    <Name>Chassi</Name>
+    <RootNamespace>Chassi</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
@@ -38,6 +38,19 @@
       </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.jtagice3plus</avrtool>
+    <com_atmel_avrdbg_tool_simulator>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+          <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
+        </InterfaceProperties>
+        <InterfaceName>
+        </InterfaceName>
+      </ToolOptions>
+      <ToolType xmlns="">com.atmel.avrdbg.tool.simulator</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Simulator</ToolName>
+    </com_atmel_avrdbg_tool_simulator>
     <com_atmel_avrdbg_tool_jtagice3plus>
       <ToolOptions>
         <InterfaceProperties>
@@ -104,13 +117,11 @@
         <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
         <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
         <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-        <avrgcc.linker.general.UseVprintfLibrary>True</avrgcc.linker.general.UseVprintfLibrary>
         <avrgcc.linker.libraries.Libraries>
           <ListValues>
             <Value>libm</Value>
           </ListValues>
         </avrgcc.linker.libraries.Libraries>
-        <avrgcc.linker.miscellaneous.LinkerFlags>-lprintf_flt</avrgcc.linker.miscellaneous.LinkerFlags>
         <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
       </AvrGcc>
     </ToolchainSettings>
@@ -132,7 +143,22 @@
       <SubType>compile</SubType>
       <Link>LCD_interface.h</Link>
     </Compile>
-    <Compile Include="lcd_test.c">
+    <Compile Include="automatic_steering.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="automatic_steering.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Chassi.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="engine_control.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="engine_control.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Chassi.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

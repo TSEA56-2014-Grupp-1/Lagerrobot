@@ -8,71 +8,91 @@
 
 #include "Communication.h"
 #include "LCD.h"
-#include "pc_link.h"
-#include "../shared/usart.h"
 #include "../shared/bus.h"
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <string.h>
 #include <util/delay.h>
-#include "../shared/packets.h"
+#include <avr/interrupt.h>
 
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
 		lcd_rotation_counter = 0;
-
-		lcd_display(lcd_current_sender,
-				message_map_line1[lcd_current_sender],
-				message_map_line2[lcd_current_sender]);
-		if (lcd_current_sender == 3)
-			lcd_current_sender = 0;
-		else
-			++lcd_current_sender;
+		lcd_rotation_flag = 1;
 	}
 	else
-		++lcd_rotation_counter;
+        ++lcd_rotation_counter;
+	
 }
 
 /**
- * @brief Callback function that indicates a unit is ready to send symbols to the display.
- * @details This is a standard callback for a bus_transmit. It will perform a request for each symbol pair in turn from the unit before it forces a display update.
+ * @brief Forces the display to display the page of a certain module.
+ * @details Resets the rotation counter and outputs the page of a certain module to the display.
  *
- * @param id Standard callback parameter, the id of the transmission.
- * @param data Standard callback parameter, here it is the address of the unit that made the request.
+ * @param module The identifier of the module to be displayed.
  */
-void symbols_are_ready(uint8_t id, uint16_t data) {
-	uint16_t symbol_pair;
-	uint8_t module;
-	switch(data) {
-		case BUS_ADDRESS_ARM:
-		module = ARM;
-		break;
-		case BUS_ADDRESS_CHASSIS:
-		module = CHAS;
-		break;
-		case BUS_ADDRESS_SENSOR:
-		module = SENS;
-		break;
-		default:
-		module = 0;
-	}
-
-	clear_message(module);
-	for (int i = 0; i < 8; ++i) {
-		//loop over the symbol pairs
-		bus_request(data, 1, i, &symbol_pair);
-		message_map_line1[module][2*i] = symbol_pair >> 8;
-		message_map_line1[module][2*i+1] = symbol_pair;
-
-		//fourth bit contains line data
-		bus_request(data, 1, i | 0b00001000, &symbol_pair);
-		message_map_line2[module][2*i] = symbol_pair >> 8;
-		message_map_line2[module][2*i+1] = symbol_pair;
-
-	}
-
-	force_display_update(module);
+void lcd_force_display_update(uint8_t module) {
+	lcd_rotation_counter = ROTATE_INTERVAL;
+	lcd_next_sender = module;
 }
+
+void lcd_chassi_line1(uint8_t id, uint16_t metadata) {
+	lcd_process_symbol(CHAS, 1, metadata);
+}
+
+void lcd_chassi_line2(uint8_t id, uint16_t metadata) {
+	lcd_process_symbol(CHAS, 2, metadata);
+}
+
+void lcd_sensor_line1(uint8_t id, uint16_t metadata) {
+	lcd_process_symbol(SENS, 1, metadata);
+}
+
+void lcd_sensor_line2(uint8_t id, uint16_t metadata) {
+	lcd_process_symbol(SENS, 2, metadata);
+}
+
+void lcd_arm_line1(uint8_t id, uint16_t metadata) {
+	lcd_process_symbol(ARM, 1, metadata);
+}
+
+void lcd_arm_line2(uint8_t id, uint16_t metadata) {
+	lcd_process_symbol(ARM, 2, metadata);
+}
+
+void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) {
+	uint8_t position;
+	uint8_t symbol;
+	
+	position = (uint8_t) (metadata >> 7); // bits 7-10 contains position data
+	symbol = (uint8_t) metadata & 0b01111111; // lowest 7 bits contains ascii symbol
+	
+	// Check for null character. If null then the message is finished and the rest of the line should be cleared
+	// Otherwise simply fill the message map with the character
+	if (line_number == 1){
+		if (symbol == 0x00) {
+			for (uint8_t i =  position; i < 16; ++i) {
+				message_map_line1[module][i] = 0x20;
+			}
+			lcd_force_display_update(module);
+		}
+		else {
+			message_map_line1[module][position] = symbol;
+		}
+	}
+	else if (line_number == 2){
+		if (symbol == 0x00) {
+			for (uint8_t i =  position; i < 16; ++i) {
+				message_map_line2[module][i] = 0x20;
+			}
+			lcd_force_display_update(module);
+		}
+		else {
+			message_map_line2[module][position] = symbol;
+		}
+	}
+	
+}
+
 
 /**
  * @brief Clears the display page of a unit.
@@ -80,13 +100,21 @@ void symbols_are_ready(uint8_t id, uint16_t data) {
  *
  * @param unit The identifier of the module whose page is to be cleared.
  */
-void clear_message(uint8_t unit) {
-	for (int i = 0; i<16; ++i){
-		message_map_line1[unit][i] = 0x20;
-		message_map_line2[unit][i] = 0x20;
+void clear_message(uint8_t unit, uint8_t line_number) {
+	if (line_number == 0) {
+		for (int i = 0; i<16; ++i){
+			message_map_line1[unit][i] = 0x20;
+		}
+		message_map_line1[unit][16] = '\0';
 	}
-	message_map_line1[unit][16] = '\0';
-	message_map_line2[unit][16] = '\0';
+	else if (line_number == 1) {
+		for (int i = 0; i<16; ++i){
+			message_map_line2[unit][i] = 0x20;
+		}
+		message_map_line2[unit][16] = '\0';
+	}
+	
+	
 }
 
 
@@ -100,71 +128,65 @@ void init(){
 	DDRB = 0xff;
 	PORTB = 0b00000000;
 	PORTA = 0x0;
-
+	
 	TIMSK1 = (1 << TOIE1);
 	TCCR1A = 0x00; // normal mode
 	TCCR1B = 0b00000010; // normal mode, max prescaler;
-
-	lcd_current_sender = 0;
+	
+	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;
-	clear_message(COMM);
-	clear_message(SENS);
-	clear_message(CHAS);
-	clear_message(ARM);
+	lcd_rotation_flag = 0;
+	clear_message(COMM, 0);
+	clear_message(COMM, 1);
+	clear_message(SENS, 0);
+	clear_message(SENS, 1);
+	clear_message(CHAS, 0);
+	clear_message(CHAS, 1);
+	clear_message(ARM, 0);
+	clear_message(ARM, 1);
 }
 
-void forward_calibration_data(uint8_t id, uint16_t metadata)	{
-	send_packet(PKT_CALIBRATION_DATA,1,(uint8_t)metadata);
-}
 
 int main(void)
 {
-	uint8_t pp_status = 0;
 	init();
 	lcd_init();
-	usart_init(0x0009);
-	bus_init(0b0000101);
-
-	bus_register_receive(2, symbols_are_ready);
-	bus_register_receive(10,forward_calibration_data);
-
+	bus_init(BUS_ADDRESS_COMMUNICATION);
+	
+	
+	bus_register_receive(2, lcd_sensor_line1);
+	bus_register_receive(3, lcd_sensor_line2);
+	bus_register_receive(4, lcd_arm_line1);
+	bus_register_receive(5, lcd_arm_line2);
+	bus_register_receive(6, lcd_chassi_line1);
+	bus_register_receive(7, lcd_chassi_line2);
+	
+	
+	
 	display(0, "Ouroborobot");
-	display(1, "Startup.");
-	_delay_ms(300);
-	display(0, "Ouroborobot");
-	display(1, "Startup..");
-	_delay_ms(300);
-	display(0, "Ouroborobot");
-	display(1, "Startup...");
-	_delay_ms(300);
-	clear_message(COMM);
-
-    while(1)
-    {
-
-		/*uint8_t data[] = {0,0,0,0,0,0,0,0};
-		display(0, "Got something");
-		for (int i= 0; i<8; ++i){
-			if (usart_read_byte(&data[i]) == 1)
-				break;
-			display(0, "%x %x %x %x", data[0], data[1], data[2], data[3]);
-			display(1, "%x %x %x %x", data[4], data[5], data[6], data[7]);
-		}		*/
-
-		while (!usart_has_bytes());
-
-		pp_status = process_packet();
-		display(1, "P-Status: %u", pp_status);
-
-		usart_reset_buffer();
-
-		/*
-		uint8_t data;
-		usart_read_byte(&data);
-
-		if (data == 0x1B)
-			lcd_clear();
-		lcd_send_symbol(data);*/
-
+	display(1, "Soon...");
+	
+	char current_message_map1[17];
+	char current_message_map2[17];
+	uint8_t lcd_current_sender;
+	for(;;)
+	{
+		while(!lcd_rotation_flag) {
+			_delay_us(1);
+		}
+		
+		cli();
+		lcd_rotation_flag = 0;
+		lcd_current_sender = lcd_next_sender;
+		memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
+		memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
+		sei();
+		
+		lcd_display(lcd_current_sender,
+					current_message_map1,
+					current_message_map2);
+		
+		if (!lcd_rotation_flag)
+			lcd_next_sender = (lcd_next_sender + 1) % 4;
 	}
 }

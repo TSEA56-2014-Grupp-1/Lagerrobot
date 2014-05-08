@@ -20,19 +20,19 @@
 void lcd_init() {
 	
 	//initialize reset in controller
-	PORTB &= ~(1 << 0);
+	PORTB &= ~(1 << PORTB0);
 	PORTA = 0b00110000;
-	PORTB |= 1 << 2;
+	PORTB |= 1 << PORTB2;
 	_delay_ms(4.1);
-	PORTB &= ~(1 << 2);
+	PORTB &= ~(1 << PORTB2);
 	//PORTA = 0b00110000;
-	PORTB |= 1 << 2;
+	PORTB |= 1 << PORTB2;
 	_delay_us(100);
-	PORTB &= ~(1 << 2);
+	PORTB &= ~(1 << PORTB2);
 	//PORTA = 0b00110000;
-	PORTB |= 1 << 2;
+	PORTB |= 1 << PORTB2;
 	_delay_us(100);
-	PORTB &= ~(1 << 2);
+	PORTB &= ~(1 << PORTB2);
 	
 	lcd_send_command(0b00111000); // 8 bit, 2 lines
 	lcd_send_command(0b00001000); // display off
@@ -41,27 +41,6 @@ void lcd_init() {
 	
 	lcd_send_command(0b00001100); // display on
 	
-}
-
-/**
- * @brief Forces the display to display the page of a certain module.
- * @details Resets the rotation counter and outputs the page of a certain module to the display.
- * 
- * @param module The identifier of the module to be displayed.
- */
-
-void force_display_update(uint8_t module) {
-	lcd_rotation_counter = 0;
-	lcd_current_sender = module;
-	
-	lcd_display(lcd_current_sender,
-				message_map_line1[lcd_current_sender],
-				message_map_line2[lcd_current_sender]);
-	
-	if (lcd_current_sender == 3)
-		lcd_current_sender = 0;
-	else 
-		++lcd_current_sender;
 }
 
 /**
@@ -205,5 +184,5 @@ void display(uint8_t line_number, char* str, ...) {
 	vsnprintf(message_map_line2[COMM], 17, str, data);
 	va_end(data);
 	
-	force_display_update(COMM);
+	lcd_force_display_update(COMM);
 }
