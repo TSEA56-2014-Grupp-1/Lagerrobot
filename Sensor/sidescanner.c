@@ -199,7 +199,16 @@ void object_detection(uint8_t callback_id, uint16_t meta_data)
  	double object_angle = calculate_angle_coordinate(angle, distance);
  	double object_distance = calculate_distance_coordinate(angle, distance);
 	
-	object_angle = object_angle*1.05;
+	if (object_angle > 1 && object_angle < 1.6) {
+		object_angle = object_angle*1.05;
+	}
+	else if (object_angle >= 1.6 && object_angle < 1.9) {
+		object_angle = object_angle*1.08;
+	}
+	else if (object_angle >= 1.9) {
+		object_angle = object_angle*1.10;
+	}
+	
 	
 	uint8_t send_status;
 	do {

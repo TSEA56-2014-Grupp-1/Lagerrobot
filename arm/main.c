@@ -17,6 +17,7 @@
  *	1 if arm is currently moving
  */
 uint8_t is_moving = 0;
+uint8_t pickup_item = 0;
 
 arm_coordinate pos_from_sensor;
 
@@ -124,28 +125,25 @@ void arm_receive_coord(uint8_t id, uint16_t data) {
 	}
 	else if (id == 4) {
 		pos_from_sensor.x = data;
+		pos_from_sensor.y = HEIGHT;
 	}
 }
 
 void sensor_done(uint8_t id, uint16_t data) {
-	pos_from_sensor.y = HEIGHT;
-	arm_joint_angles joint_angles;
-	
-	joint_angles.t0 = pos_from_sensor.angle;
 	
 	display(1,"A: %d D: %d",(int16_t)(pos_from_sensor.angle*100),(uint16_t)pos_from_sensor.x);
 	
-	if (ik_angles(pos_from_sensor, &joint_angles)) {
-		display(0, "Cord unable to reach");
-		return;
+	arm_joint_angles joint_angles;
+	joint_angles.t0 = pos_from_sensor.angle;
+	
+	if (!ik_angles(pos_from_sensor, &joint_angles)) {
+		arm_move_to_angles(joint_angles);
+		pickup_item = 1;
 	}
-	
-	//Ska har rad i joint_angles
-	arm_move_to_angles(joint_angles);
-	arm_move_perform();
-	
-// 	_delay_ms(3000);
-// 	arm_claw_close();
+	else {
+		display(0, "Cord unable to reach");
+		pickup_item = 0;
+	}
 }
 
 int main(void) {
@@ -176,13 +174,27 @@ int main(void) {
 	arm_claw_open();
 
 	for (;;) {
+		
+		
+		
+		arm_move_perform();				
+		
+		if (pickup_item) {
+		
+			
+			pickup_item = 0;
+				
+			// 	while(arm_joint_is_moving(ARM_JOINT_SHOULDER));
+			// 	arm_claw_close();
+		}
+		
 		// Continiously check if arm is moving
-		moving = 0;
+		/*moving = 0;
 		for (i = 1; i <= ARM_JOINT_COUNT; ++i) {
 			moving |= arm_joint_is_moving(i);
 		}
 
 		// Update global variable
-		is_moving = moving;
+		is_moving = moving;*/
 	}
 }
