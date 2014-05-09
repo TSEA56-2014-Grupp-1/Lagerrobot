@@ -9,13 +9,13 @@
 #include <avr/interrupt.h>
 #include "sidescanner.h"
 #include "../shared/LCD_interface.h"
+#include "../shared/bus.h"
 #include <stdio.h>
 #include <stdlib.h>
 
 #define ZONE_SIZE 200
 #define MAX_ANGLE 140 
 #define STEP 1
-#define BUS_ADDRESS_ARM 2
 #define DISTANCE_LOOP_COUNT 100
 #define START_ANGLE 40
 #define AD_CONV 20
@@ -199,6 +199,19 @@ void object_detection(uint8_t callback_id, uint16_t meta_data)
  	double object_angle = calculate_angle_coordinate(angle, distance);
  	double object_distance = calculate_distance_coordinate(angle, distance);
 	
-	//XXX: should be bus_transmit to arm
-	display(0,"a: %d d: %d",(uint16_t)(angle),(uint16_t)distance);
+	object_angle = object_angle*1.05;
+	
+	uint8_t send_status;
+	do {
+		send_status = 0;
+		send_status += bus_transmit(BUS_ADDRESS_ARM,3, (uint16_t)(object_angle*100));
+		_delay_ms(100);
+		send_status += bus_transmit(BUS_ADDRESS_ARM,4, (uint16_t)object_distance);
+		_delay_ms(100);
+		if (send_status == 0) {
+			send_status += bus_transmit(BUS_ADDRESS_ARM,5, 0);
+		}
+	} while (send_status != 0);
+	
+	display(0,"a: %d d: %d",(uint16_t)(object_angle*100),(uint16_t)object_distance);
 }

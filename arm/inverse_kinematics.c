@@ -7,6 +7,7 @@
 
 #include "inverse_kinematics.h"
 #include "arm.h"
+#include <stdlib.h>
 
 /**
  *	Given three angles will calculate the target coordinate. This function is
@@ -44,7 +45,7 @@ arm_coordinate ik_calculate_coordinate(arm_joint_angles joint_angles) {
  */
 uint16_t ik_calculate_x_limit(float angle)
 {
-	return ARM_ROBOT_EDGE / sin(angle);
+	return ARM_ROBOT_EDGE / sin((float)abs(angle));
 }
 
 /**

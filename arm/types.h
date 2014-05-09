@@ -24,6 +24,7 @@ typedef struct {
  *	on.
  */
 typedef struct {
+	float t0;
 	float t1;
 	float t2;
 	float t3;

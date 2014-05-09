@@ -45,10 +45,10 @@ int main(void)
 
     while(1)
     {
-		ADCSRA |= (1 << ADSC);
-		while (ADCSRA & (1 << ADSC));
-		ADCSRA &= ~(1 << ADIF);
-		display(1,"ADC: %d",ADC);
-		_delay_ms(400);
+// 		ADCSRA |= (1 << ADSC);
+// 		while (ADCSRA & (1 << ADSC));
+// 		ADCSRA &= ~(1 << ADIF);
+// 		display(1,"ADC: %d",ADC);
+// 		_delay_ms(400);
     }
 }

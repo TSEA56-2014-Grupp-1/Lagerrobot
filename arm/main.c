@@ -11,10 +11,14 @@
 #include "../shared/bus.h"
 #include "../shared/usart.h"
 
+#define HEIGHT -150
+
 /**
  *	1 if arm is currently moving
  */
 uint8_t is_moving = 0;
+
+arm_coordinate pos_from_sensor;
 
 /*
 // TODO: Redesign this
@@ -114,6 +118,35 @@ void arm_process_coordinate(uint8_t callback_id, uint16_t data) {
 // 
 // }
 
+void arm_receive_coord(uint8_t id, uint16_t data) {
+	if (id == 3) {
+		pos_from_sensor.angle = -1*(float)(data)/100;
+	}
+	else if (id == 4) {
+		pos_from_sensor.x = data;
+	}
+}
+
+void sensor_done(uint8_t id, uint16_t data) {
+	pos_from_sensor.y = HEIGHT;
+	arm_joint_angles joint_angles;
+	
+	joint_angles.t0 = pos_from_sensor.angle;
+	
+	display(1,"A: %d D: %d",(int16_t)(pos_from_sensor.angle*100),(uint16_t)pos_from_sensor.x);
+	
+	if (ik_angles(pos_from_sensor, &joint_angles)) {
+		display(0, "Cord unable to reach");
+		return;
+	}
+	
+	//Ska har rad i joint_angles
+	arm_move_to_angles(joint_angles);
+	arm_move_perform();
+	
+// 	_delay_ms(3000);
+// 	arm_claw_close();
+}
 
 int main(void) {
 	uint8_t i;
@@ -133,8 +166,14 @@ int main(void) {
 // 	bus_register_response(1, arm_status);
 // 	bus_register_receive(2, arm_movement_command);
 
-	display(0, "So: %u", arm_claw_open());
-	display(1, "Sc: %u", arm_claw_close());
+// 	display(0, "So: %u", arm_claw_open());
+// 	display(1, "Sc: %u", arm_claw_close());
+
+	bus_register_receive(3, arm_receive_coord);
+	bus_register_receive(4, arm_receive_coord);
+	bus_register_receive(5, sensor_done);
+	
+	arm_claw_open();
 
 	for (;;) {
 		// Continiously check if arm is moving
