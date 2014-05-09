@@ -158,6 +158,10 @@
     <Compile Include="inverse_kinematics.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="main.c">
+      <SubType>compile</SubType>
+      <Link>main.c</Link>
+    </Compile>
     <Compile Include="servo.c">
       <SubType>compile</SubType>
     </Compile>
@@ -166,6 +170,10 @@
     </Compile>
     <Compile Include="servo_memory.h">
       <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="types.h">
+      <SubType>compile</SubType>
+      <Link>types.h</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />

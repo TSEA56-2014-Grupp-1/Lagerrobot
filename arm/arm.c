@@ -6,6 +6,7 @@
  */
 
 #include "arm.h"
+#include "inverse_kinematics.h"
 
 /**
  *	Setup sane defaults for arm servos regarding speed and compliance margins
@@ -178,7 +179,7 @@ uint8_t arm_joint_is_moving(uint8_t joint) {
  *	@param joint_angles Angles in radians as provided by the inverse kinematics
  *	                    library.
  */
-void arm_move_to_angles(angles joint_angles) {
+void arm_move_to_angles(arm_joint_angles joint_angles) {
 	arm_move_add(2, ik_rad_to_servo_angle(2, joint_angles.t1));
 	arm_move_add(3, ik_rad_to_servo_angle(3, joint_angles.t2));
 	arm_move_add(4, ik_rad_to_servo_angle(4, joint_angles.t3));

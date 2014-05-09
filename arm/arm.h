@@ -50,6 +50,11 @@
 // @}
 
 /**
+ *	Number of joints for arm
+ */
+#define ARM_JOINT_COUNT 6
+
+/**
  *	@name Minimum angles for all joints
  *
  *	For servos with multiple joints the first servo is the reference servo.
@@ -89,7 +94,7 @@ void arm_init(void);
 uint8_t arm_move(uint8_t joint, uint16_t angle);
 uint8_t arm_move_add(uint8_t joint, uint16_t angle);
 void arm_move_perform(void);
-void arm_move_to_angles(angles joint_angles);
+void arm_move_to_angles(arm_joint_angles joint_angles);
 
 uint8_t arm_joint_is_moving(uint8_t joint);
 uint8_t arm_claw_open(void);
