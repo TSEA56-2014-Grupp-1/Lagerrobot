@@ -4,7 +4,10 @@
  *
  *	Handles tri-state buffer control and basic servo communications. Many
  *	functions in this file should only be used in conjunction with macros defined
- *	in servo.h
+ *	in servo.h.
+ *
+ *	This library is not thread safe. No servo communication should _ever_ be done
+ *	in interrupts.
  */
 
 #include "servo.h"
@@ -95,6 +98,8 @@ uint8_t servo_receive(uint8_t id, uint8_t *parameters) {
 	uint8_t i;
 	uint8_t data[256]; // XXX: This probably doesn't need to be this big
 	uint8_t data_length = 0;
+
+
 
 	// Fetch bytes into an array of length data_length
 	// 0:     Start (0xff)
@@ -189,6 +194,9 @@ void vservo_send(
 	packet[packet_length - 1] = servo_calculate_checksum(
 		2, packet_length - 2, packet);
 
+	// Disable interrupts while writing data
+	cli();
+
 	servo_enable_write();
 	for (i = 0; i < packet_length; i++) {
 		usart_write_byte(packet[i]);
@@ -200,6 +208,9 @@ void vservo_send(
 
 	// Enable receiving so interrupts can be handled properly
 	servo_enable_read();
+
+	// Re-enable interrupts once write is complete
+	sei();
 }
 
 /**
@@ -229,6 +240,9 @@ uint8_t servo_ping(uint8_t id) {
 	if (id == SERVO_BROADCASTING_ID) {
 		return 13;
 	}
+
+	// Disable interrupts while writing to servos
+	cli();
 
 	servo_send(id, SERVO_INST_PING);
 	return servo_receive(id, 0);

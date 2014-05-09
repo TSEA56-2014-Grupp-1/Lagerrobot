@@ -11,6 +11,11 @@
 #include "../shared/bus.h"
 #include "../shared/usart.h"
 
+/**
+ *	1 if arm is currently moving
+ */
+uint8_t is_moving = 0;
+
 /*
 // TODO: Redesign this
 void arm_movement_command(uint8_t callback_id, uint16_t command_data) {
@@ -100,7 +105,18 @@ void arm_process_coordinate(uint8_t callback_id, uint16_t data) {
 }
 */
 
+uint16_t arm_status(uint8_t id, uint16_t data) {
+
+}
+
+uint16_t arm_move(uint8_t id, uint16_t data) {
+
+}
+
 int main(void) {
+	uint8_t i;
+	uint8_t moving = 0;
+
 	servo_init();
 	arm_init();
 	bus_init(BUS_ADDRESS_ARM);
@@ -112,8 +128,19 @@ int main(void) {
 	bus_register_receive(4, arm_process_coordinate);
 	*/
 
+	bus_register_response(1, arm_status);
+
 	display(0, "So: %u", arm_claw_open());
 	display(1, "Sc: %u", arm_claw_close());
 
-	for (;;) { }
+	for (;;) {
+		// Continiously check if arm is moving
+		moving = 0;
+		for (i = 1; i <= ARM_JOINT_COUNT) {
+			moving |= arm_joint_is_moving(i);
+		}
+
+		// Update global variable
+		is_moving = moving;
+	}
 }

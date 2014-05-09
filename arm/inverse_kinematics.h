@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <math.h>
 
+#include "types.h"
+
 #if !defined(F_CPU)
 	#define F_CPU 16000000UL
 #endif
@@ -36,18 +38,23 @@
  *
  *	@{
  */
-#define ARM_JOINT1_ORIGIN_OFFSET 511.0f
-#define ARM_JOINT2_ORIGIN_OFFSET 740.0f
-#define ARM_JOINT3_ORIGIN_OFFSET 765.0f
-#define ARM_JOINT4_ORIGIN_OFFSET 511.0f
-#define ARM_JOINT5_ORIGIN_OFFSET 511.0f
+#define ARM_JOINT_BASE_ORIGIN_OFFSET         511.0f
+#define ARM_JOINT_SHOULDER_ORIGIN_OFFSET     740.0f
+#define ARM_JOINT_ELBOW_ORIGIN_OFFSET        765.0f
+#define ARM_JOINT_WRIST_ORIGIN_OFFSET        511.0f
+#define ARM_JOINT_WRIST_ROTATE_ORIGIN_OFFSET 511.0f
 // @}
 
 /**
  *	Height in mm from the arm's origin where the robot's bounding box edge is
  *	considered.
  */
-#define ARM_Y_LIMIT 0L
+#define ARM_Y_LIMIT 50L
+
+/**
+ *	Y value to consider as floor
+ */
+#define ARM_FLOOR_LEVEL -150L
 
 /**
  *	Shortest horizontal distance in mm from the arm's origin to the robot's edge.
@@ -55,26 +62,10 @@
  */
 #define ARM_ROBOT_EDGE 140L
 
-/**
- *	Handles two dimensional cartesian coordinates
- */
-typedef struct {
-	float x;
-	float y;
-}  coordinate;
-
-/**
- *	Handles triplets of joint angles in radians. t1 is the first joint.
- */
-typedef struct {
-	float t1;
-	float t2;
-	float t3;
-} angles;
-
-uint16_t ik_rad_to_servo_angle(uint8_t id, float angle);
-coordinate ik_calculate_coordinate(angles joint_angles);
-uint16_t ik_calculate_x_limit(float angle);
-uint8_t ik_angles(coordinate coord, uint16_t x_limit, angles *joint_angles);
+uint16_t ik_joint_rad_to_angle(uint8_t id, float angle);
+uint16_t ik_joint_angle_to_rad(uint8_t id, float angle);
+arm_coordinate ik_calculate_coordinate(arm_joint_angles joint_angles);
+uint8_t ik_angles(arm_coordinate coord, arm_joint_angles *joint_angles);
+uint8_t ik_valid_coordinate(arm_coordinate coord);
 
 #endif /* INVERSE_KINEMATICS_H_ */

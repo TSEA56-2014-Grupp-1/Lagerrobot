@@ -15,8 +15,8 @@
  *
  *	@return Struct of two dimensional cartesian coordinates
  */
-coordinate ik_calculate_coordinate(angles joint_angles) {
-	coordinate coord = {.x = 0, .y = 0};
+arm_coordinate ik_calculate_coordinate(arm_angles joint_angles) {
+	arm_coordinate coord = {.x = 0, .y = 0};
 
 	coord.x += ARM_LENGTH_LINK_1 * cos(joint_angles.t1);
 	coord.y += ARM_LENGTH_LINK_1 * sin(joint_angles.t1);
@@ -37,7 +37,7 @@ coordinate ik_calculate_coordinate(angles joint_angles) {
  *
  *	@param angle Arm's rotation angle in radians. 0 means arm is pointing
  *	             straight ahead. pi/2 means pointing to the left and -pi/2 means
- *	             pointing to the right. 0 and pi are invalid angles.
+ *	             pointing to the right. 0 ± n * pi are invalid angles.
  *
  *	@return Distance to edge in mm
  */
@@ -54,25 +54,56 @@ uint16_t ik_calculate_x_limit(float angle)
  *
  *	@return Value between 0 and 1024 depending on given joint ID and angle
  */
-uint16_t ik_rad_to_servo_angle(uint8_t id, float angle) {
+uint16_t ik_joint_rad_to_angle(uint8_t joint, float angle) {
 	// Converts radians to servo angle
 	float common_factor = 1023.0f * 180.0f / (300.0f * M_PI);
 
-	switch (id) {
-		case 1:
+	switch (joint) {
+		case ARM_JOINT_BASE:
 			return (uint16_t)(ARM_JOINT1_ORIGIN_OFFSET - angle * common_factor + 0.5f);
-		case 2:
+		case ARM_JOINT_SHOULDER:
 			return (uint16_t)(ARM_JOINT2_ORIGIN_OFFSET - angle * common_factor + 0.5f);
-		case 3:
+		case ARM_JOINT_ELBOW:
 			return (uint16_t)(ARM_JOINT3_ORIGIN_OFFSET + angle * common_factor + 0.5f);
-		case 4:
+		case ARM_JOINT_WRIST:
 			return (uint16_t)(ARM_JOINT4_ORIGIN_OFFSET + angle * common_factor + 0.5f);
-		case 5:
+		case ARM_JOINT_WRIST_ROTATE:
 			return (uint16_t)(ARM_JOINT5_ORIGIN_OFFSET - angle * common_factor + 0.5f);
 	}
 
+	// If we get to here an invalid joint was returned
 	return 0;
 }
+
+/**
+ *	Convert servo angle to float angle in radians for given joint.
+ *
+ *	@param id ID of joint to convert angle for
+ *	@param angle Value between 0 and 1024
+ *
+ *	@return Angle in radians where 0 is the reference angle
+ */
+float ik_joint_angle_to_rad(uint8_t joint, uint16_t angle) {
+	// Converts radians to servo angle
+	float common_factor = 300.0f * M_PI / (1023.0f * 180.0f);
+
+	switch (joint) {
+		case ARM_JOINT_BASE:
+			return -(angle - ARM_JOINT_BASE_ORIGIN_OFFSET) * common_factor;
+		case ARM_JOINT_SHOULDER:
+			return -(angle - ARM_JOINT_SHOULDER_ORIGIN_OFFSET) * common_factor;
+		case ARM_JOINT_ELBOW:
+			return +(angle - ARM_JOINT_ELBOW_ORIGIN_OFFSET) * common_factor;
+		case ARM_JOINT_WRIST:
+			return +(angle - ARM_JOINT_WRIST_ORIGIN_OFFSET) * common_factor;
+		case ARM_JOINT_WRIST_ROTATE:
+			return -(angle - ARM_JOINT_WRIST_ROTATE_ORIGIN_OFFSET) * common_factor;
+	}
+
+	// If we get to here an invalid joint was returned
+	return 0;
+}
+
 
 /**
  *	Calculate a point P given coordinates for a target. The point P will always
@@ -80,19 +111,23 @@ uint16_t ik_rad_to_servo_angle(uint8_t id, float angle) {
  *	to the x-limit when y <= ARM_Y_LIMIT. P will shifted upwards.
  *
  *	@param coord Coordinate for target
- *	@param x_limit x-limit in mm when P is considered to be too close
  */
-coordinate ik_find_p(coordinate coord, uint16_t x_limit)
-{
+arm_coordinate ik_find_p(arm_coordinate coord) {
+	uint16_t x_limit = ik_calculate_x_limit(coord);
+
 	// Limit wrist start coordinate when close to robot body
-	if (coord.x - ARM_LENGTH_LINK_3 < x_limit && coord.y <= ARM_Y_LIMIT)
-	{
-		return (coordinate){
+	if (coord.x - ARM_LENGTH_LINK_3 < x_limit && coord.y <= ARM_Y_LIMIT) {
+		return (arm_coordinate){
 			.x = x_limit,
-			.y = coord.y + sqrt(pow(ARM_LENGTH_LINK_3, 2) - pow((coord.x - x_limit), 2))
+			.y = coord.y + sqrt(pow(ARM_LENGTH_LINK_3, 2) - pow((coord.x - x_limit), 2)),
+			.angle = coord.angle
 		};
 	} else {
-		return (coordinate){.x = coord.x - ARM_LENGTH_LINK_3, .y = coord.y};
+		return (arm_coordinate){
+			.x = coord.x - ARM_LENGTH_LINK_3,
+			.y = coord.y,
+			.angle = coord.angle
+		};
 	}
 }
 
@@ -108,7 +143,7 @@ coordinate ik_find_p(coordinate coord, uint16_t x_limit)
  *
  *	@return Status code
  */
-uint8_t ik_angles_p(coordinate coord, angles *joint_angles) {
+uint8_t ik_angles_p(arm_coordinate coord, arm_joint_angles *joint_angles) {
 	float cos_theta2;
 	float sin_theta2;
 
@@ -152,16 +187,15 @@ uint8_t ik_angles_p(coordinate coord, angles *joint_angles) {
  *	- 1 if P was unreachable
  *
  *	@param[in] coord Coordinate for target
- *	@param[in] x_limit x-limit in mm where arm must not be
  *	@param[out] joint_angles Joint angles in radians for each joint
  *
  *	@return Status code
  */
-uint8_t ik_angles(coordinate coord, uint16_t x_limit, angles *joint_angles)
+uint8_t ik_angles(arm_coordinate coord, arm_joint_angles *joint_angles)
 {
-	coordinate p = ik_find_p(coord, x_limit);
+	arm_coordinate p = ik_find_p(coord);
 
-	if (ik_angles_p(p, joint_angles) != 0) {
+	if (!ik_valid_coordinate(coord) || ik_angles_p(p, joint_angles) != 0) {
 		return 1;
 	}
 
@@ -172,4 +206,32 @@ uint8_t ik_angles(coordinate coord, uint16_t x_limit, angles *joint_angles)
 		sin_theta3, cos_theta3) - joint_angles->t2 - joint_angles->t1;
 
 	return 0;
+}
+
+/**
+ *	Validate given coordinates.
+ *
+ *	@param coord Coordinate for a target
+ *
+ *	@return 1 if coordinate is valid, else 0
+ */
+uint8_t ik_valid_coordinate(arm_coordinate coord) {
+	uint16_t x_limit = ik_calculate_x_limit(coord);
+
+	// Check if goal is reachable at all
+	if (sqrt(pow(coord.x, 2) + pow(coord.y, 2)) >= 450) {
+		return 0;
+	}
+
+	// Prevent floor collision
+	if (coord.y < ARM_FLOOR_LEVEL) {
+		return 0;
+	}
+
+	// Prevent collision with chassis
+	if (coord.y <= ARM_Y_LIMIT && coord.x < x_limit) {
+		return 0;
+	}
+
+	return 1;
 }

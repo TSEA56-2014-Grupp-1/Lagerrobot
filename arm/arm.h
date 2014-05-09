@@ -50,6 +50,11 @@
 // @}
 
 /**
+ *	Number of joints for arm
+ */
+#define ARM_JOINT_COUNT 6
+
+/**
  *	@name Minimum angles for all joints
  *
  *	For servos with multiple joints the first servo is the reference servo.
