@@ -8,7 +8,6 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "sidescanner.h"
-#include "distance_sensors.h"
 #include "../shared/LCD_interface.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,11 +18,18 @@
 #define BUS_ADDRESS_ARM 2
 #define DISTANCE_LOOP_COUNT 100
 #define START_ANGLE 40
+#define AD_CONV 20
+#define ANGLE_OFFSET 5
 
 //XXX: uint16_t instead of int?
 int compare (const void * a, const void * b)
 {
 	return ( *(int*)a - *(int*)b );
+}
+
+uint16_t get_median_value(uint16_t array[], uint8_t size) {
+	qsort (array, size, sizeof(uint16_t), compare);
+	return (uint16_t)array[(uint8_t)(floor(size/2))];
 }
 
 uint8_t scanner_set_position(uint8_t angle, sensor sensor_id) {
@@ -75,15 +81,21 @@ void sidescanner_init()
 }
 
 uint16_t get_distance(sensor sensor_id) {
-	ADCSRA |= (1 << ADSC);
-	while (ADCSRA & (1 << ADSC));
-	ADCSRA &= ~(1 << ADIF);
-	return ad_interpolate(ADC, sensor_id);
+	
+	uint16_t distance_array[AD_CONV];
+	
+	for (uint8_t i = 0; i < AD_CONV; ++i) {
+		ADCSRA |= (1 << ADSC);
+		while (ADCSRA & (1 << ADSC));
+		ADCSRA &= ~(1 << ADIF);
+		distance_array[i] = ADC;
+	}
+	return ad_interpolate(get_median_value(distance_array, AD_CONV), sensor_id);
 }
 
 uint16_t get_median_distance(uint16_t angle, sensor sensor_id)
 {
-	scanner_set_position(angle,sensor_id);
+	scanner_set_position(angle + ANGLE_OFFSET,sensor_id);
 	_delay_ms(1000);
 	
 	uint8_t i;
@@ -92,9 +104,8 @@ uint16_t get_median_distance(uint16_t angle, sensor sensor_id)
 	for(i = 0; i < DISTANCE_LOOP_COUNT; i++){
 		distance_array[i] = get_distance(sensor_id);
 	}
-	
-	qsort (distance_array, DISTANCE_LOOP_COUNT, sizeof(uint16_t), compare);
-	return (uint16_t)distance_array[(uint8_t)(floor(DISTANCE_LOOP_COUNT/2))];
+
+	return get_median_value(distance_array, DISTANCE_LOOP_COUNT);
 }
 
 uint8_t find_first_distance(uint16_t *object_distance, uint16_t *object_angle, sensor sensor_id)
@@ -181,16 +192,13 @@ void object_detection(uint8_t callback_id, uint16_t meta_data)
 		second_distance = first_distance;
 	}
 	
+	uint16_t angle = (first_angle + second_angle)/2;
+	
 	//XXX: This should be used, not in use since debugging with display
-//	uint16_t distance = get_median_distance((first_angle + second_angle)/2); 
-// 	double object_angle = calculate_angle_coordinate((first_angle + second_angle)/2, distance);
-// 	double object_distance = calculate_distance_coordinate(distance);
-
-	//XXX: debugging
-	double object_angle = (first_angle + second_angle)/2;
-	double object_distance = get_median_distance((first_angle + second_angle)/2, sensor_id);
+	uint16_t distance = get_median_distance(angle, sensor_id); 
+ 	double object_angle = calculate_angle_coordinate(angle, distance);
+ 	double object_distance = calculate_distance_coordinate(angle, distance);
 	
 	//XXX: should be bus_transmit to arm
-	display(0,"A: %d",(uint16_t)(object_angle));
-	display(1,"D: %d",(uint16_t)object_distance);
+	display(0,"a: %d d: %d",(uint16_t)(angle),(uint16_t)distance);
 }

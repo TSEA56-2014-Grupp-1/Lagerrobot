@@ -9,12 +9,14 @@
 #ifndef DISTANCE_SENSORS_H_
 #define DISTANCE_SENSORS_H_
 
-#include <avr/io.h>	
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
-uint16_t get_distance_sensor_1(int8_t);
-uint16_t get_distance_sensor_2(int8_t);
-uint16_t get_distance_sensor_3(int8_t);
+typedef uint8_t sensor;
+enum sensor {sensor_arm = 1, sensor_left, sensor_right};
 
-uint16_t ad_interpolate(uint16_t ad_in, uint8_t sensor);
+uint16_t get_distance_sensor(int8_t, sensor);
+
+uint16_t ad_interpolate(uint16_t ad_in, sensor sensor_id);
 	
 #endif /* DISTANCE_SENSORS_H_ */

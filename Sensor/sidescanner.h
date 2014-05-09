@@ -9,6 +9,8 @@
 #ifndef SIDESCANNER_H_
 #define SIDESCANNER_H_
 
+#include "distance_sensors.h"
+
 #define SENSOR_SCANNER_ANGLE_START 156
 #define SENSOR_SCANNER_ANGLE_END 780
 #define SENSOR_SCANNER_ANGLE_STEP (SENSOR_SCANNER_ANGLE_END - SENSOR_SCANNER_ANGLE_START) / 180
@@ -18,11 +20,8 @@
 #endif
 #include <util/delay.h>
 
-typedef uint8_t sensor;
-enum sensor {sensor_arm, sensor_left, sensor_right};
-
 void object_detection(uint8_t callback_id, uint16_t meta_data);
 void sidescanner_init();
-
+uint8_t scanner_set_position(uint8_t angle, sensor sensor_id);
 
 #endif /* SIDESCANNER_H_ */

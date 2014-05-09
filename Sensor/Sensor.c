@@ -43,9 +43,12 @@ int main(void)
 
 	object_detection(0, sensor_left);
 
-
     while(1)
     {
-		
+		ADCSRA |= (1 << ADSC);
+		while (ADCSRA & (1 << ADSC));
+		ADCSRA &= ~(1 << ADIF);
+		display(1,"ADC: %d",ADC);
+		_delay_ms(400);
     }
 }
