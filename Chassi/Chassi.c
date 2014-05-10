@@ -17,7 +17,7 @@
 void clear_sensor()
 {
 		uint8_t timeout_counter = 0;
-		while(timeout_counter < 100) {
+		while(timeout_counter < 1000) {
 			if (bus_transmit(BUS_ADDRESS_SENSOR, 9, 0) == 0) {
 				display(0, "timeout");
 				display(1, "clear sensor");
@@ -49,7 +49,7 @@ void disable_rfid_reader()
 void enable_rfid_reader()
 {
 		uint8_t timeout_counter = 0;
-		while(timeout_counter < 100) {
+		while(timeout_counter < 1000) {
 			if (bus_transmit(BUS_ADDRESS_SENSOR, 8, 0) == 0) {
 				display(0, "timeout");
 				display(1, "enable read");
@@ -163,7 +163,7 @@ void start_button_init()
 void read_rfid()
 {
 	uint8_t timeout_counter = 0;
-	while(timeout_counter < 100) {
+	while(timeout_counter < 1000) {
 		if (bus_transmit(BUS_ADDRESS_SENSOR, 10, 0) == 0) {
 			display(0, "timeout");
 			display(1, "trans read");
@@ -176,16 +176,26 @@ void read_rfid()
 void disable_timer_interrupts()
 {
 	TCCR0B &= ~(1 << CS02 | 1 << CS01 | 1 << CS00); 
-	TIMSK0 &= ~(1 << OCIE0A);
-	TIFR0 |= (1 << OCF0A | 1 << TOV0); // clear overflow and compare match flags
+	//TIMSK0 &= ~(1 << OCIE0A);
+	//TIFR0 |= (1 << OCF0A | 1 << TOV0); // clear overflow and compare match flags
 	//TCCR0A &= ~(1 << WGM01 | 1 << WGM00);
 	//TCCR0B &= ~(1 << CS02 | 1 << CS01 | 1 << CS00); 
 }
 
-//---Timer interrupt----
+void enable_timer_interrupts()
+{
+	TIFR0 |= (1 << OCF0A | 1 << TOV0);
+	//TIMSK0 |= (1 << OCIE0A);
+	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
+}
+
+//-----------------------------Timer interrupt-------------------------------------- XXX
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {	
 	uint16_t line_data = request_line_data(); //Collect line data from sensor unit
+	//uint8_t station_data = 1;
+	//int8_t curr_error = 0;
+
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
 	if(PINA & PINA1) {
@@ -232,9 +242,10 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 //----- RFID is done -----
 void RFID_done(uint8_t id, uint16_t id_and_station)
 {
-	int8_t station_tag = (uint8_t)(id_and_station);
-	uint8_t station_data = (uint8_t)(id_and_station >> 8);
-	display_station_and_rfid(station_data, station_tag);
+	display(0, "rfid done");
+	//int8_t station_tag = (uint8_t)(id_and_station);
+	//uint8_t station_data = (uint8_t)(id_and_station >> 8);
+	//display_station_and_rfid(station_data, station_tag);
 }
 
 
@@ -254,15 +265,16 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 //---Pin Change Interrupt start-button----
 ISR(PCINT1_vect)
 {
-	//disable_timer_interrupts();
+	disable_timer_interrupts();
 	display(0, "starting");
 	//display(1, "pressed");
-	_delay_ms(200);
-	enable_rfid_reader();
-	_delay_ms(200);
-	clear_sensor();
-	_delay_ms(200);
-	timer_interrupt_init();
+	//_delay_ms(200);
+	//enable_rfid_reader();
+	//_delay_ms(2);
+	//clear_sensor();
+	//_delay_ms(200);
+	enable_timer_interrupts();
+	//return;
 }
 
 int main(void)

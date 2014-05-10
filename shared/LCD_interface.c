@@ -43,13 +43,13 @@ void display(uint8_t line_number, const char* str, ...) {
 
 	if (module_identifier == 0) // bus has not been initialized correctly!
 		return;
-
+	uint8_t timeout_counter;
 	for (uint8_t i = 0; i < 16; ++i){
-
+	timeout_counter = 0;
 		do {
 			status = bus_transmit(BUS_ADDRESS_COMMUNICATION, 2*module_identifier + line_number, ((uint16_t) i << 7) | (display_symbols[i] & 0b01111111));
-
-		} while (status != 0);
+			++timeout_counter;
+		} while (status != 0 && timeout_counter < 100);
 
 		if (display_symbols[i] == 0x00) 
 			break;

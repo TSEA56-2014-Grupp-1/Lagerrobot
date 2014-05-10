@@ -57,5 +57,6 @@ void read_rfid();
 void timer_interrupt_init();
 void start_button_init();
 void disable_timer_interrupts();
+void enable_timer_interrupts();
 
 #endif /* CHASSI_H_ */
