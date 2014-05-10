@@ -42,6 +42,7 @@ int main(void)
 	bus_register_receive(7, RFID_disable_reading);
 	bus_register_receive(8, RFID_enable_reading);
 	bus_register_receive(10, read_rfid);
+	bus_register_receive(11, send_line_data);
 	usart_init(520);
 	RFID_scanner_init();
 	line_init();

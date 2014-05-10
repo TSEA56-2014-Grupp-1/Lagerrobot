@@ -88,31 +88,34 @@ void send_rfid(uint8_t station_tag)
 
 void read_rfid(uint8_t id, uint16_t metadata)
 {
-		ADCSRA = (ADCSRA & (0 << ADEN)); // disable ADC
-		uint8_t prev_station = identify_station_RFID();
-		uint8_t current_station = 0;
-		clear_station_RFID();
-		uint8_t i = 0;
-		for(i= 0; i <= 10; ++i)
+	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+	uint8_t prev_station = identify_station_RFID();
+	uint8_t current_station = 0;
+	clear_station_RFID();
+	uint8_t i = 0;
+	for(i= 0; i <= 100; ++i)
+	{
+		if (RFID_read_usart())
+		_delay_us(10);
+		else if(station_RFID[11] == 0x0D) // Correct stopbyte found
 		{
-			RFID_read_usart();
-			if(station_RFID[11] == 0x0D) // Correct stopbyte found
+			current_station = identify_station_RFID();
+			if (current_station != prev_station)
 			{
-				current_station = identify_station_RFID();
-				if (current_station != prev_station)
-				{
-				PORTD |= (1 << PORTD2); // Disable rfid reading
-				send_rfid(identify_station_RFID());
-				ADCSRA |= (1 << ADEN); // enable ADC
-				return;
-				}
+			PORTD |= (1 << PORTD2); // Disable rfid reading
+			send_rfid(current_station);
+			line_init(); 
+			return;
 			}
-			//_delay_us(20);
 		}
-		PORTD |= (1 << PORTD2); // Disable rfid reading
+		
+	}
+	if (current_station == prev_station)
+		send_rfid(3);
+	else
 		send_rfid(0); //  time out or wrong stopbyte found
-		ADCSRA |= (1 << ADEN); // enable ADC
-		return;
+	PORTD |= (1 << PORTD2); // Disable rfid reading
+	line_init();
 }
 
 

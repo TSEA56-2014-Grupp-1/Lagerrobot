@@ -36,7 +36,6 @@ uint8_t	manual_control;
  * @return The data returned by the Sensor unit. High byte contains station information, 
  * low byte contains the value of the center of mass for the line sensor.
  */
-uint16_t request_line_data();
 
 /**
  * @brief Checks if provided station information indicates a station.
@@ -58,5 +57,7 @@ void timer_interrupt_init();
 void start_button_init();
 void disable_timer_interrupts();
 void enable_timer_interrupts();
+void receive_line_data(uint8_t id, uint16_t line_data);
+void request_line_data();
 
 #endif /* CHASSI_H_ */
