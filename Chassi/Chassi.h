@@ -27,6 +27,7 @@ uint8_t handled_stations_list[100];
 uint8_t station_count;
 uint8_t follow_line;
 uint8_t	manual_control;
+uint8_t scan_count;
 
 
 /**

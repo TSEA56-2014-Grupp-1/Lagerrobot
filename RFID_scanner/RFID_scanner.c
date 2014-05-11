@@ -94,22 +94,21 @@ void read_rfid(uint8_t id, uint16_t metadata)
 	uint8_t i = 0;
 	for(i= 0; i <= 150; ++i)
 	{
-		
-		if (RFID_read_usart())
-		_delay_us(30);
-		else if(station_RFID[11] == 0x0D) // Correct stopbyte found
+		RFID_read_usart();
+		if(station_RFID[11] == 0x0D) // Correct stopbyte found
 		{
 			current_station = identify_station_RFID();
 			if (current_station != prev_station)
 			{
-			break; 
-			//return;
+				break; 
 			}
 		}
-		
+		_delay_us(30);
 	}
-	PORTD |= (1 << PORTD2); // Disable rfid reading
-	send_rfid(current_station);
+	if (current_station != prev_station)
+		send_rfid(current_station);
+	else 
+		send_rfid(0);
 	line_init();
 }
 

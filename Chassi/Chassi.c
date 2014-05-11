@@ -33,7 +33,7 @@ void clear_sensor()
 void timer_interrupt_init()
 {
 	//enable timer interrupts for ocie0a
-	TIMSK0 |= (1 << OCIE0A);
+	//TIMSK0 |= (1 << OCIE0A);
 	TIFR0 |= (1 << OCF0A);
 	
 	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
@@ -233,7 +233,11 @@ void receive_line_data(uint8_t id, uint16_t line_data)
 		return;
 	}
 	stop_wheels();
-	_delay_ms(100);
+	_delay_ms(200);
+	_delay_ms(200);
+	_delay_ms(200);
+	_delay_ms(200);
+	
 	read_rfid();
 }
 
@@ -258,8 +262,40 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 {
 	int8_t station_id = (uint8_t)(id_and_station);
 	uint8_t station_data = (uint8_t)(id_and_station >> 8);
-
-	display_station_and_rfid(station_data, station_id);
+	if (manual_control != 1 && station_id == 0 && scan_count < 5)
+	{
+		drive_left_wheels(0, 200);
+		drive_right_wheels(0, 200);
+		_delay_ms(100);
+		stop_wheels();
+		_delay_ms(200);
+		_delay_ms(200);
+		++scan_count;
+		read_rfid();
+		return;
+	}
+	else if (manual_control != 1 && station_id == 0 && scan_count < 30)
+	{
+		drive_left_wheels(1, 200);
+		drive_right_wheels(1, 200);
+		_delay_ms(100);
+		stop_wheels();	
+		_delay_ms(200);
+		_delay_ms(200);
+		++scan_count;
+		read_rfid();
+		return;
+	}
+	else if (manual_control != 1)
+	{
+		stop_wheels();
+		disable_rfid_reader();
+		display_station_and_rfid(station_data, station_id);
+	}
+	else
+	{
+		display_station_and_rfid(station_data, station_id);
+	}
 }
 
 
@@ -280,8 +316,9 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 ISR(PCINT1_vect)
 {
 	disable_timer_interrupts();
-	display(0, "starting");
-	//display(1, "pressed");
+	display(0, "start button");
+	display(1, "pressed");
+	scan_count = 0; // reset the scan counter
 	enable_rfid_reader();
 	_delay_us(20);
 	clear_sensor();
@@ -301,6 +338,7 @@ int main(void)
 	carrying_rfid = 0;
 	station_count = 0;
 	manual_control = 0;
+	scan_count = 0;
 	
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
@@ -313,7 +351,7 @@ int main(void)
 	start_button_init();
 	_delay_ms(100);
 	timer_interrupt_init();
-	
+
 
 	
     while(1)
