@@ -233,6 +233,7 @@ void receive_line_data(uint8_t id, uint16_t line_data)
 		return;
 	}
 	stop_wheels();
+	_delay_ms(100);
 	read_rfid();
 }
 
@@ -257,6 +258,7 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 {
 	int8_t station_id = (uint8_t)(id_and_station);
 	uint8_t station_data = (uint8_t)(id_and_station >> 8);
+
 	display_station_and_rfid(station_data, station_id);
 }
 

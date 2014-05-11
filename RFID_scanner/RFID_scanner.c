@@ -44,13 +44,12 @@ void RFID_disable_reading(uint8_t id, uint16_t metadata)
 
 void RFID_enable_reading(uint8_t id, uint16_t metadata)
 {
-	PORTD = PORTD & (0 << PORTD2); // Enable reading
+	PORTD &= ~(1 << PORTD2); // Enable reading
 }
 
 void RFID_scanner_init()
 {
 	DDRD = 0b00000100; // Set PD2 as Output
-	//PORTD = PORTD & (0 << PORTD2); // Disable reading
 }
 
 uint8_t RFID_read_usart()
@@ -93,28 +92,24 @@ void read_rfid(uint8_t id, uint16_t metadata)
 	uint8_t current_station = 0;
 	clear_station_RFID();
 	uint8_t i = 0;
-	for(i= 0; i <= 100; ++i)
+	for(i= 0; i <= 150; ++i)
 	{
+		
 		if (RFID_read_usart())
-		_delay_us(10);
+		_delay_us(30);
 		else if(station_RFID[11] == 0x0D) // Correct stopbyte found
 		{
 			current_station = identify_station_RFID();
 			if (current_station != prev_station)
 			{
-			PORTD |= (1 << PORTD2); // Disable rfid reading
-			send_rfid(current_station);
-			line_init(); 
-			return;
+			break; 
+			//return;
 			}
 		}
 		
 	}
-	if (current_station == prev_station)
-		send_rfid(3);
-	else
-		send_rfid(0); //  time out or wrong stopbyte found
 	PORTD |= (1 << PORTD2); // Disable rfid reading
+	send_rfid(current_station);
 	line_init();
 }
 
