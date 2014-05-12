@@ -242,7 +242,7 @@ uint8_t process_spoofed_transmit(uint8_t data_length, uint8_t data[]) {
 
 uint8_t process_packet(void) {
 	uint8_t packet_id;
-	uint8_t packet_data_length;
+	uint8_t packet_length;
 	uint8_t packet_data[32]; // TODO: Verify this value
 	uint8_t packet_checksum;
 	uint8_t packet_calculated_checksum = 0;
@@ -253,15 +253,15 @@ uint8_t process_packet(void) {
 	}
 	packet_calculated_checksum += packet_id;
 
-	// Read length of packet data
-	if (usart_read_byte(&packet_data_length) != 0) {
+	// Read length of packet, including checksum
+	if (usart_read_byte(&packet_length) != 0) {
 		return 2;
 	}
-	packet_calculated_checksum += packet_data_length;
+	packet_calculated_checksum += packet_length;
 
 	// Read packet data if any
 	uint8_t i;
-	for (i = 0; i < packet_data_length; ++i) {
+	for (i = 0; i < packet_length-1; ++i) {
 		if (usart_read_byte(&packet_data[i]) != 0) {
 			return 3;
 		}
@@ -285,17 +285,17 @@ uint8_t process_packet(void) {
 			// TODO: Implement this
 			break;
 		case PKT_ARM_COMMAND:
-			return process_arm_command(packet_data_length, packet_data);
+			return process_arm_command(packet_length - 1, packet_data);
 		case PKT_CHASSIS_COMMAND:
-			return process_chassis_command(packet_data_length, packet_data);
+			return process_chassis_command(packet_length - 1, packet_data);
 		case PKT_CALIBRATION_COMMAND:
-			return process_calibration_command(packet_data_length, packet_data);
+			return process_calibration_command(packet_length-1, packet_data);
 		case PKT_PACKET_REQUEST:
-			return process_packet_request(packet_data_length, packet_data);
+			return process_packet_request(packet_length-1, packet_data);
 		case PKT_SPOOFED_REQUEST:
-			return process_spoofed_request(packet_data_length, packet_data);
+			return process_spoofed_request(packet_length-1, packet_data);
 		case PKT_SPOOFED_TRANSMIT:
-			return process_spoofed_transmit(packet_data_length, packet_data);
+			return process_spoofed_transmit(packet_length-1, packet_data);
 	}
 
 	// Unknown packet ID
