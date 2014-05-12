@@ -49,7 +49,7 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 			bus_transmit(BUS_ADDRESS_ARM, 3, (uint16_t)data[1]);
 			break;
 		case CMD_ARM_MOVE_POS:
-			if (data_length != 6) {
+			if (data_length != 7) {
 				return 1;
 			}
 
@@ -60,29 +60,31 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 			data[4] == y_low
 			data[5] == angle */
 			
-			uint16_t x = (uint16_t)((0x01 & data[1]) << 8) | (uint16_t)data[2];
+			uint16_t x = (uint16_t)(data[1] << 8) | (uint16_t)data[2];
 			uint16_t y = (uint16_t)((0x01 & data[3]) << 8) | (uint16_t)data[4];
-			uint16_t angle = (uint16_t)data[5];
-			
-			//x = x | 0x0000;
-			y |= (1 << 9);
-			angle |= (2 << 9);
+			int16_t angle = (int16_t)(uint16_t)(data[5] << 8) | (uint16_t)(data[6]);
 		
 			uint8_t bus_check = 0;
 			
-			bus_check += bus_transmit(BUS_ADDRESS_ARM, 4, x);
+			bus_check += bus_transmit(BUS_ADDRESS_ARM, 6, x);
 			_delay_ms(1);
-			bus_check += bus_transmit(BUS_ADDRESS_ARM, 4, y);
+			bus_check += bus_transmit(BUS_ADDRESS_ARM, 7, y);
 			_delay_ms(1);
-			bus_check += bus_transmit(BUS_ADDRESS_ARM, 4, angle);
-			_delay_ms(1);
-			if (bus_check == 0) {
-				bus_transmit(BUS_ADDRESS_ARM, 4, 0x0600); //Start moving
+			if (angle >= 0) {
+				bus_check += bus_transmit(BUS_ADDRESS_ARM, 8, angle);
 			}
 			else {
-				display(0,"E: Arm pos send: %u", bus_check);
+				bus_check += bus_transmit(BUS_ADDRESS_ARM, 9, -1*angle);
+			}
+			_delay_ms(1);
+			if (bus_check == 0) {
+				bus_transmit(BUS_ADDRESS_ARM, 10, 0); //Start moving
+			}
+			else {
+				display(0,"E: Arm pos send: %d", bus_check);
 				return 2;
 			}
+
 	}
 
 	return 0;

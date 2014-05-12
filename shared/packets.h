@@ -3,7 +3,7 @@
 
 /*	packets					|	packet_id | packet contents (byte numbers)			*/			
 #define PKT_STOP				0	//		none
-#define PKT_ARM_COMMAND			1	//		command type(1), data(2-4)
+#define PKT_ARM_COMMAND			1	//		command type(1), data(2-10)
 #define PKT_CHASSIS_COMMAND		2	//		command type(1), data(2-3)
 #define PKT_CALIBRATION_COMMAND	3	//		sensor id(1)
 #define PKT_ARM_STATUS			4	//		<not defined yet>
