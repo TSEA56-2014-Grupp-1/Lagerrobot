@@ -14,28 +14,10 @@
 #include "../shared/usart.h"
 #include "../shared/bus.h"
 #include "../Sensor/linesensor.h"
+#include "rfid_tags.h"
 
 uint8_t station_RFID[12];
 
-//-----RFID_tags-----
-const uint8_t  RFID_B80[] = {
-	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44, 0x42, 0x39, 0x31, 0x36, 0x41, 0x0D
-};
-const uint8_t RFID_B81[] = {
-	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44, 0x42, 0x32, 0x37, 0x43, 0x34, 0x0D
-};
-const	uint8_t RFID_B82[] = {
-	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44, 0x38, 0x41, 0x44, 0x30, 0x45, 0x0D
-};
-const	uint8_t RFID_B83[] = {
-	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44, 0x38, 0x41, 0x42, 0x38, 0x42, 0x0D
-};
-const uint8_t RFID_B84[] = {
-	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44, 0x33, 0x44, 0x38, 0x32 ,0x46, 0x0D
-};
-const uint8_t RFID_B85[] = {
-	0x0A, 0x32, 0x36, 0x30, 0x30, 0x44 ,0x33, 0x44, 0x42, 0x42, 0x38, 0x0D
-};
 
 void RFID_disable_reading(uint8_t id, uint16_t metadata)
 {
@@ -138,6 +120,32 @@ uint8_t identify_station_RFID()
 	return 84;
 	else if (compare_RFID_arrays(RFID_B85))
 	return 85;
+	/*
+	else if (compare_RFID_arrays(RFID_B60))
+	return 60;
+	else if (compare_RFID_arrays(RFID_B61))
+	return 61;
+	else if (compare_RFID_arrays(RFID_B62))
+	return 62;
+	else if (compare_RFID_arrays(RFID_B63))
+	return 63;
+	else if (compare_RFID_arrays(RFID_B64))
+	return 64;
+	else if (compare_RFID_arrays(RFID_B65))
+	return 65;
+	else if (compare_RFID_arrays(RFID_B100))
+	return 100;
+	else if (compare_RFID_arrays(RFID_B101))
+	return 101;
+	else if (compare_RFID_arrays(RFID_B102))
+	return 102;
+	else if (compare_RFID_arrays(RFID_B103))
+	return 103;
+	else if (compare_RFID_arrays(RFID_B104))
+	return 104;
+	else if (compare_RFID_arrays(RFID_B105))
+	return 105;
+	*/
 	else
 	return 0; // no match
 };
