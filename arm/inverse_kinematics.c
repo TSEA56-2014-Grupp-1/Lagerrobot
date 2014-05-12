@@ -85,7 +85,7 @@ uint16_t ik_joint_rad_to_angle(uint8_t joint, float angle) {
  *
  *	@return Angle in radians where 0 is the reference angle
  */
-uint16_t ik_joint_angle_to_rad(uint8_t joint, uint16_t angle) {
+float ik_joint_angle_to_rad(uint8_t joint, uint16_t angle) {
 	// Converts radians to servo angle
 	float common_factor = 300.0f * M_PI / (1023.0f * 180.0f);
 
@@ -200,6 +200,8 @@ uint8_t ik_angles(arm_coordinate coord, arm_joint_angles *joint_angles)
 	if (!ik_valid_coordinate(coord) || ik_angles_p(p, joint_angles) != 0) {
 		return 1;
 	}
+
+	joint_angles->t0 = coord.angle;
 
 	float sin_theta3 = coord.y - p.y;
 	float cos_theta3 = coord.x - p.x;

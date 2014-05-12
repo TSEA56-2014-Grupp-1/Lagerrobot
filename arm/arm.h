@@ -12,6 +12,7 @@
 #endif
 
 #include "servo.h"
+#include "types.h"
 #include "inverse_kinematics.h"
 
 #include <avr/io.h>
@@ -62,9 +63,9 @@
  *	@{
  */
 #define ARM_JOINT_BASE_ANGLE_MIN         0
-#define ARM_JOINT_SHOULDER_ANGLE_MIN     0
-#define ARM_JOINT_ELBOW_ANGLE_MIN        0
-#define ARM_JOINT_WRIST_ANGLE_MIN        0
+#define ARM_JOINT_SHOULDER_ANGLE_MIN     200
+#define ARM_JOINT_ELBOW_ANGLE_MIN        200
+#define ARM_JOINT_WRIST_ANGLE_MIN        155
 #define ARM_JOINT_WRIST_ROTATE_ANGLE_MIN 0
 #define ARM_JOINT_CLAW_ANGLE_MIN         0
 // @}
@@ -77,9 +78,9 @@
  *	@{
  */
 #define ARM_JOINT_BASE_ANGLE_MAX         1023
-#define ARM_JOINT_SHOULDER_ANGLE_MAX     1023
-#define ARM_JOINT_ELBOW_ANGLE_MAX        1023
-#define ARM_JOINT_WRIST_ANGLE_MAX        1023
+#define ARM_JOINT_SHOULDER_ANGLE_MAX     820
+#define ARM_JOINT_ELBOW_ANGLE_MAX        950
+#define ARM_JOINT_WRIST_ANGLE_MAX        810
 #define ARM_JOINT_WRIST_ROTATE_ANGLE_MAX 1023
 #define ARM_JOINT_CLAW_ANGLE_MAX         511
 // @}
@@ -95,6 +96,7 @@ uint8_t arm_move(uint8_t joint, uint16_t angle);
 uint8_t arm_move_add(uint8_t joint, uint16_t angle);
 void arm_move_perform(void);
 void arm_move_to_angles(arm_joint_angles joint_angles);
+uint8_t arm_move_to_coordinate(arm_coordinate coord);
 
 uint8_t arm_joint_is_moving(uint8_t joint);
 uint8_t arm_claw_open(void);

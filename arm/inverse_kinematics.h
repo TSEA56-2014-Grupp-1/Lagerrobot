@@ -38,7 +38,7 @@
  *
  *	@{
  */
-#define ARM_JOINT_BASE_ORIGIN_OFFSET         511.0f
+#define ARM_JOINT_BASE_ORIGIN_OFFSET         518.0f
 #define ARM_JOINT_SHOULDER_ORIGIN_OFFSET     740.0f
 #define ARM_JOINT_ELBOW_ORIGIN_OFFSET        765.0f
 #define ARM_JOINT_WRIST_ORIGIN_OFFSET        511.0f
@@ -54,7 +54,7 @@
 /**
  *	Y value to consider as floor
  */
-#define ARM_FLOOR_LEVEL -150L
+#define ARM_FLOOR_LEVEL -180L
 
 /**
  *	Shortest horizontal distance in mm from the arm's origin to the robot's edge.
@@ -65,7 +65,7 @@
 uint16_t ik_joint_rad_to_angle(uint8_t id, float angle);
 
 //XXX: @return float or uint16_t?
-uint16_t ik_joint_angle_to_rad(uint8_t id, uint16_t angle);
+float ik_joint_angle_to_rad(uint8_t id, uint16_t angle);
 arm_coordinate ik_calculate_coordinate(arm_joint_angles joint_angles);
 uint8_t ik_angles(arm_coordinate coord, arm_joint_angles *joint_angles);
 uint8_t ik_valid_coordinate(arm_coordinate coord);

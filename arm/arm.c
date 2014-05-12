@@ -6,7 +6,6 @@
  */
 
 #include "arm.h"
-#include "inverse_kinematics.h"
 
 /**
  *	Setup sane defaults for arm servos regarding speed and compliance margins
@@ -71,24 +70,29 @@ uint8_t arm_move_add(uint8_t joint, uint16_t angle) {
 
 	switch (joint) {
 		case ARM_JOINT_BASE:
-			servo_move_add(ARM_SERVO_BASE, angle);
+			servo_reg_write_uint16(ARM_SERVO_BASE, SERVO_GOAL_POSITION_L, angle);
 			break;
 		case ARM_JOINT_SHOULDER:
-			servo_move_add(ARM_SERVO_SHOULDER_1, angle);
-			servo_move_add(ARM_SERVO_SHOULDER_2, 1023 - angle);
+			servo_reg_write_uint16(
+				ARM_SERVO_SHOULDER_1, SERVO_GOAL_POSITION_L, angle);
+			servo_reg_write_uint16(
+				ARM_SERVO_SHOULDER_2, SERVO_GOAL_POSITION_L, 1023 - angle);
 			break;
 		case ARM_JOINT_ELBOW:
-			servo_move_add(ARM_SERVO_ELBOW_1, angle);
-			servo_move_add(ARM_SERVO_ELBOW_2, 1023 - angle);
+			servo_reg_write_uint16(
+				ARM_SERVO_ELBOW_1, SERVO_GOAL_POSITION_L, angle);
+			servo_reg_write_uint16(
+				ARM_SERVO_ELBOW_2, SERVO_GOAL_POSITION_L, 1023 - angle);
 			break;
 		case ARM_JOINT_WRIST:
-			servo_move_add(ARM_SERVO_WRIST, angle);
+			servo_reg_write_uint16(ARM_SERVO_WRIST, SERVO_GOAL_POSITION_L, angle);
 			break;
 		case ARM_JOINT_WRIST_ROTATE:
-			servo_move_add(ARM_SERVO_WRIST_ROTATE, angle);
+			servo_reg_write_uint16(
+				ARM_SERVO_WRIST_ROTATE, SERVO_GOAL_POSITION_L, angle);
 			break;
 		case ARM_JOINT_CLAW:
-			servo_move_add(ARM_SERVO_CLAW, angle);
+			servo_reg_write_uint16(ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, angle);
 			break;
 		default:
 			// We should never get here
@@ -158,18 +162,32 @@ uint8_t arm_joint_is_moving(uint8_t joint) {
 	uint8_t i;
 	uint8_t moving;
 
-	// Try to detect 5 times if joint is still moving before giving up and
+	// Try to detect 10 times if joint is still moving before giving up and
 	// assume it doesn't
-	for (i = 0; i < 5; i++) {
+	for (i = 0; i < 10; i++) {
 		if (!servo_read_uint8(arm_joint_to_servo(joint), SERVO_MOVING, &moving)) {
 			return moving;
 		}
 
-		// Retry after 50 ms
-		_delay_ms(10);
+		// Retry after a while
+		_delay_ms(20);
 	}
 
 	return 0;
+}
+
+/**
+ *	Check if any joint is moving in arm
+ */
+uint8_t arm_is_moving(void) {
+	// Relies on C's short circuit evaluation. It will never try more than needed
+	return
+		arm_joint_is_moving(ARM_JOINT_BASE) ||
+		arm_joint_is_moving(ARM_JOINT_SHOULDER) ||
+		arm_joint_is_moving(ARM_JOINT_ELBOW) ||
+		arm_joint_is_moving(ARM_JOINT_WRIST) ||
+		arm_joint_is_moving(ARM_JOINT_WRIST_ROTATE) ||
+		arm_joint_is_moving(ARM_JOINT_CLAW);
 }
 
 /**
@@ -180,10 +198,14 @@ uint8_t arm_joint_is_moving(uint8_t joint) {
  *	                    library.
  */
 void arm_move_to_angles(arm_joint_angles joint_angles) {
-	arm_move_add(ARM_JOINT_BASE, ik_joint_rad_to_angle(ARM_JOINT_BASE, joint_angles.t0));
-	arm_move_add(2, ik_joint_rad_to_angle(2, joint_angles.t1));
-	arm_move_add(3, ik_joint_rad_to_angle(3, joint_angles.t2));
-	arm_move_add(4, ik_joint_rad_to_angle(4, joint_angles.t3));
+	arm_move_add(ARM_JOINT_BASE,
+		ik_joint_rad_to_angle(ARM_JOINT_BASE, joint_angles.t0));
+	arm_move_add(ARM_JOINT_SHOULDER,
+		ik_joint_rad_to_angle(ARM_JOINT_SHOULDER, joint_angles.t1));
+	arm_move_add(ARM_JOINT_ELBOW,
+		ik_joint_rad_to_angle(ARM_JOINT_ELBOW, joint_angles.t2));
+	arm_move_add(ARM_JOINT_WRIST,
+		ik_joint_rad_to_angle(ARM_JOINT_WRIST, joint_angles.t3));
 }
 
 /**
@@ -229,6 +251,69 @@ uint8_t arm_claw_close(void) {
 			}
 		}
 	}
+
+	return 0;
+}
+
+/**
+ *	Return arm to resting position. Block until operation is complete
+ */
+void arm_resting_position() {
+	// Raise arm before turning base to prevent collision with self
+	arm_move_add(ARM_JOINT_SHOULDER, 511);
+	arm_move_add(ARM_JOINT_ELBOW, 511);
+	arm_move_add(ARM_JOINT_WRIST, ARM_JOINT_WRIST_ANGLE_MAX);
+	arm_move_perform();
+
+
+	// Wait for shoulder and elbow to complete movement
+	do {
+		_delay_ms(20);
+	} while (
+		arm_joint_is_moving(ARM_JOINT_SHOULDER) ||
+		arm_joint_is_moving(ARM_JOINT_ELBOW));
+
+	// Final position
+	arm_move_add(ARM_JOINT_BASE, 511);
+	arm_move_add(ARM_JOINT_SHOULDER, ARM_JOINT_SHOULDER_ANGLE_MIN);
+	arm_move_add(ARM_JOINT_ELBOW, ARM_JOINT_ELBOW_ANGLE_MIN);
+	arm_move_perform();
+
+	// Wait for shoulder and elbow to complete movement
+	do {
+		_delay_ms(20);
+	} while (
+		arm_joint_is_moving(ARM_JOINT_SHOULDER) ||
+		arm_joint_is_moving(ARM_JOINT_ELBOW));
+}
+
+/**
+ *	Move arm claw to the given coordinate and block until operation is complete
+ */
+uint8_t arm_move_to_coordinate(arm_coordinate coord) {
+	arm_joint_angles joint_angles;
+
+	if (ik_angles(coord, &joint_angles)) {
+		return 1;
+	}
+
+	arm_move_to_angles(joint_angles);
+	arm_move_perform();
+
+	// Wait for movement to complete
+	do {
+		_delay_ms(20);
+	} while (arm_is_moving());
+
+	return 0;
+}
+
+/**
+ *	Return item in claw to the given coordinate.
+ */
+uint8_t arm_return_item(arm_coordinate coord) {
+	arm_move_to_coordinate(coord);
+	arm_claw_open();
 
 	return 0;
 }

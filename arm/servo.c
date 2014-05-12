@@ -302,13 +302,12 @@ uint8_t servo_read_uint8(uint8_t id, uint8_t address, uint8_t *memory) {
 uint8_t servo_read_uint16(uint8_t id, uint8_t address, uint16_t *memory) {
 	uint8_t data[2];
 
-	uint8_t status_code = servo_read(id, address, 1, data);
+	uint8_t status_code = servo_read(id, address, 2, data);
 	if (status_code != 0) {
 		return status_code;
 	}
 
-	*memory = data[0];
-	*memory |= (uint16_t)data[1] << 8;
+	*memory = data[0] | ((uint16_t)data[1] << 8);
 
 	return 0;
 }
@@ -352,7 +351,7 @@ uint8_t servo_write_uint8(uint8_t id, uint8_t address, uint8_t data) {
 }
 
 /**
- *	Write two bytes to a servo. The given address should be the low end of the
+ *	Buffer two bytes to a servo. The given address should be the low end of the
  *	of the integer, for instance #SERVO_PRESENT_LOAD_L. Bit 0 through 7 will be
  *	written to address and bit 8 through 15 to address + 1.
  *
@@ -390,18 +389,37 @@ uint8_t _servo_reg_write(uint8_t id, uint8_t data_length, ...) {
 }
 
 /**
+ *	Write two bytes to a servo. The given address should be the low end of the
+ *	of the integer, for instance #SERVO_PRESENT_LOAD_L. Bit 0 through 7 will be
+ *	written to address and bit 8 through 15 to address + 1.
+ *
+ *	@param id Servo ID to write to
+ *	@param address Starting memory address to write to
+ *	@param data Data to write to address
+ *
+ *	@return Status code like servo_receive()
+ */
+uint8_t servo_reg_write_uint16(uint8_t id, uint8_t address, uint16_t data) {
+	return _servo_reg_write(id, 3, address, (uint8_t)data, (uint8_t)(data >> 8));
+}
+
+/**
+ *	Buffer one byte to a servo.
+ *
+ *	@param id Servo ID to write to
+ *	@param address Memory address to write to
+ *	@param data Data to write to address
+ *
+ *	@return Status code like servo_receive()
+ */
+uint8_t servo_reg_write_uint8(uint8_t id, uint8_t address, uint8_t data) {
+	return _servo_reg_write(id, 2, address, data);
+}
+
+/**
  *	Send instruction to perform all registered writes by servo_reg_write() and
  *	servo_sync_reg_write()
  */
 void servo_action(uint8_t id) {
 	servo_send(id, SERVO_INST_ACTION);
 }
-
-uint8_t servo_move_add(uint8_t id, uint16_t angle) {
-	return servo_reg_write(id, SERVO_GOAL_POSITION_L, (uint8_t)angle, (uint8_t)(angle >> 8));
-}
-
-uint8_t servo_move(uint8_t id, uint16_t angle) {
-	return servo_write(id, SERVO_GOAL_POSITION_L, (uint8_t)angle, (uint8_t)(angle >> 8));
-}
-
