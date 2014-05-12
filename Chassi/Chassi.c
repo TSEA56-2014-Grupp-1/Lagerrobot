@@ -220,7 +220,7 @@ void receive_line_data(uint8_t id, uint16_t line_data)
 	if (!is_station(station_data) && (manual_control != 1))	// robot is not on station and linefollowing is on
 	{
 		pd_update(curr_error);
-		accelerator = STEERING_MAX_SPEED;
+		accelerator = STEERING_MAX_SPEED; // XXX Could be an inargument instead of global
 		steering_wheel = control;
 		update_steering();
 		enable_timer_interrupts();
@@ -264,24 +264,22 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	uint8_t station_data = (uint8_t)(id_and_station >> 8);
 	if (manual_control != 1 && station_id == 0 && scan_count < 5)
 	{
-		drive_left_wheels(0, 200);
-		drive_right_wheels(0, 200);
+		drive_left_wheels(1, 200);
+		drive_right_wheels(1, 200);
 		_delay_ms(100);
 		stop_wheels();
-		_delay_ms(200);
-		_delay_ms(200);
+		_delay_ms(100);
 		++scan_count;
 		read_rfid();
 		return;
 	}
 	else if (manual_control != 1 && station_id == 0 && scan_count < 30)
 	{
-		drive_left_wheels(1, 200);
-		drive_right_wheels(1, 200);
+		drive_left_wheels(0, 200);
+		drive_right_wheels(0, 200);
 		_delay_ms(100);
 		stop_wheels();	
-		_delay_ms(200);
-		_delay_ms(200);
+		_delay_ms(100);
 		++scan_count;
 		read_rfid();
 		return;

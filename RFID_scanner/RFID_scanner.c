@@ -91,8 +91,8 @@ void read_rfid(uint8_t id, uint16_t metadata)
 	uint8_t prev_station = identify_station_RFID();
 	uint8_t current_station = 0;
 	clear_station_RFID();
-	uint8_t i = 0;
-	for(i= 0; i <= 150; ++i)
+	uint16_t i = 0;
+	for(i= 0; i <= 500; ++i)
 	{
 		RFID_read_usart();
 		if(station_RFID[11] == 0x0D) // Correct stopbyte found
@@ -103,7 +103,7 @@ void read_rfid(uint8_t id, uint16_t metadata)
 				break; 
 			}
 		}
-		_delay_us(30);
+		_delay_ms(1);
 	}
 	if (current_station != prev_station)
 		send_rfid(current_station);
