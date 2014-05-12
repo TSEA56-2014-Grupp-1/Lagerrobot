@@ -3,7 +3,7 @@
  *
  * Created: 2014-04-01 09:30:00
  *  Author: Philip
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -14,10 +14,8 @@
 #include <stdlib.h>
 
 #define ZONE_SIZE 200
-#define MAX_ANGLE 140 
 #define STEP 1
 #define DISTANCE_LOOP_COUNT 100
-#define START_ANGLE 40
 #define AD_CONV 20
 #define ANGLE_OFFSET 0
 
@@ -51,7 +49,7 @@ uint8_t scanner_set_position(uint8_t angle, sensor sensor_id) {
 void sidescanner_init()
 {
 	DDRB |= 0b11000000;	//Set port direction
-	
+
 	// set top value
 	ICR3H = 0x18; //Top value high (18 with prescaler 64)
 	ICR3L = 0x69; // Top value low (6249 or 0x1869 with prescaler 64)
@@ -65,42 +63,42 @@ void sidescanner_init()
 
 	//set prescaler 64
 	TCCR3B |= (0 << CS12 | 1 << CS11 | 1 << CS10);
-	
+
 	//Enable adc, Set ADIF flag, Set ADC Interreupt enable, set prescaler
 	ADCSRA = 0b10011111;
 	//set AD-channel 1
-	ADMUX = 0b00000001;	
+	ADMUX = 0b00000001;
 	//Start AD-conversion
-	
-	scanner_set_position(START_ANGLE, sensor_left);
-	scanner_set_position(START_ANGLE, sensor_right);
+
+	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_left);
+	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_right);
 	_delay_ms(100);
-	
+
 	//bus_register_receive(15, left_object_detection);
 	//bus_register_receive(16, right_object_detection);
 }
 
 uint16_t get_distance(sensor sensor_id) {
-	
+
 	uint16_t distance_array[AD_CONV];
-	
+
 	for (uint8_t i = 0; i < AD_CONV; ++i) {
 		ADCSRA |= (1 << ADSC);
 		while (ADCSRA & (1 << ADSC));
 		ADCSRA &= ~(1 << ADIF);
 		distance_array[i] = ADC;
 	}
-	return ad_interpolate(get_median_value(distance_array, AD_CONV), sensor_id);
+	return ad_interpolate(get_median_value(distance_array, AD_CONV), sensor_id) + SCANNER_AXIS_TO_FRONT;
 }
 
 uint16_t get_median_distance(uint16_t angle, sensor sensor_id)
 {
 	scanner_set_position(angle,sensor_id);
 	_delay_ms(1000);
-	
+
 	uint8_t i;
 	uint16_t distance_array[DISTANCE_LOOP_COUNT];
-	
+
 	for(i = 0; i < DISTANCE_LOOP_COUNT; i++){
 		distance_array[i] = get_distance(sensor_id);
 	}
@@ -109,11 +107,11 @@ uint16_t get_median_distance(uint16_t angle, sensor sensor_id)
 }
 
 uint8_t find_first_distance(uint16_t *object_distance, uint16_t *object_angle, sensor sensor_id)
-{	
+{
 	uint16_t distance = 400;
-	uint16_t angle = 40;
+	uint16_t angle = SENSOR_SCANNER_ANGLE_FIRST;
 
-	while (angle <= MAX_ANGLE)
+	while (angle <= SENSOR_SCANNER_ANGLE_LAST)
 	{
 		distance = get_distance(sensor_id);
 		if(distance <= ZONE_SIZE) {
@@ -124,18 +122,18 @@ uint8_t find_first_distance(uint16_t *object_distance, uint16_t *object_angle, s
 		else {
 			angle += STEP;
 			scanner_set_position(angle, sensor_id);
-			_delay_ms(50);
+			_delay_ms(100);
 		}
 	}
 	return 0;
 }
 
 uint8_t find_second_distance(uint16_t *object_distance, uint16_t *object_angle, uint16_t start_angle, sensor sensor_id) {
-	
+
 	uint16_t distance = 400;
 	uint16_t angle = start_angle;
-	
-	while (angle <= MAX_ANGLE){
+
+	while (angle <= SENSOR_SCANNER_ANGLE_LAST){
 		distance = get_distance(sensor_id);
 		if(distance <= ZONE_SIZE) {
 			*object_angle = angle;
@@ -146,11 +144,11 @@ uint8_t find_second_distance(uint16_t *object_distance, uint16_t *object_angle, 
 		}
 		angle += STEP;
 		scanner_set_position(angle, sensor_id);
-		_delay_ms(50);
+		_delay_ms(100);
 	}
 	return 0;
 }
-			
+
 double calculate_angle_coordinate(uint16_t angle, uint16_t distance)	{
 	double alfa = angle*M_PI/180;
 	double x_coord;
@@ -172,33 +170,33 @@ double calculate_distance_coordinate(uint16_t angle, uint16_t distance)	{
 void object_detection(uint8_t callback_id, uint16_t meta_data)
 {
 	sidescanner_init();
-	
+
 	sensor sensor_id = meta_data;
-	
+
 	uint16_t first_distance = 0;
 	uint16_t first_angle = 0;
-	
+
 	uint16_t second_distance = 0;
 	uint16_t second_angle = 0;
-	
+
 	if (!find_first_distance(&first_distance, &first_angle, sensor_id)) {
 		display(0, "No object found!");
 		return;
 	}
-	
+
 	if (!find_second_distance(&second_distance, &second_angle, first_angle, sensor_id)) {
 		//Setting angle to max since end of the object was outside scanning area.
-		second_angle = MAX_ANGLE;
+		second_angle = SENSOR_SCANNER_ANGLE_LAST;
 		second_distance = first_distance;
 	}
-	
+
 	uint16_t angle = (first_angle + second_angle)/2;
-	
+
 	//XXX: This should be used, not in use since debugging with display
 	uint16_t distance = get_median_distance(angle, sensor_id);
  	double object_angle = calculate_angle_coordinate(angle, distance);
  	double object_distance = calculate_distance_coordinate(angle, distance);
-	
+
 // 	if (object_angle > 1 && object_angle < 1.6) {
 // 		object_angle = object_angle*1.05;
 // 	}
@@ -208,9 +206,10 @@ void object_detection(uint8_t callback_id, uint16_t meta_data)
 // 	else if (object_angle >= 1.9) {
 // 		object_angle = object_angle*1.10;
 // 	}
-	
+
 	display(0,"a: %d d: %d",(uint16_t)(object_angle*100),(uint16_t)object_distance);
-	
+	display(1, "As:%u Ds:%d", angle, distance);
+
 	uint8_t send_status;
 	do {
 		send_status = 0;

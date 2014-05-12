@@ -3,7 +3,7 @@
  *
  * Created: 2014-03-27 08:55:21
  *  Author: Karl
- */ 
+ */
 
 
 #include <avr/io.h>
@@ -18,12 +18,12 @@ ISR(ADC_vect) {
 	switch (ADMUX & 0b00011111) {
 		case 0 :
 			update_linesensor();
-			
+
 		//XXX: These wont be needed anymore
 		case 1 :
 			//update_distance_sensor_2();	//left sensor (adc1)
 		break;
-		case 2 : 
+		case 2 :
 			//update_distance_sensor_3(); //right sensor (adc2)
 		break;
 		case 3 :
@@ -38,19 +38,21 @@ int main(void)
 
 	bus_init(4);
 	sidescanner_init();
-	
+
 	sei();
 
 	object_detection(0, sensor_left);
-	
 // 	_delay_ms(4000);
-// 	scanner_set_position(180, sensor_left);
-// 	_delay_ms(2000);
-// 	scanner_set_position(175, sensor_left);
-// 	_delay_ms(4000);
-// 	scanner_set_position(90, sensor_left);
+
+	for (;;) {}
     while(1)
     {
+    	scanner_set_position(0, sensor_left);
+	 	_delay_ms(4000);
+	 	scanner_set_position(90, sensor_left);
+	 	_delay_ms(4000);
+	 	scanner_set_position(180, sensor_left);
+    	_delay_ms(4000);
 // 		ADCSRA |= (1 << ADSC);
 // 		while (ADCSRA & (1 << ADSC));
 // 		ADCSRA &= ~(1 << ADIF);

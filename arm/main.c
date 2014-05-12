@@ -73,58 +73,33 @@ void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
 		_delay_ms(30);
 	}
 }
+*/
 
-uint16_t remote_angle = 255;
-coordinate remote_coordinate = {.x = 100, .y = 100};
-void arm_process_coordinate(uint8_t callback_id, uint16_t data) {
-	uint16_t value = data & 0x1ff;
-	angles joint_angles;
-
-	//display(0, "D: %u/%u/%u", callback_id, data >> 9, data & 0x1ff);
-	//display(1, "Raw: %x", data);
-
-	switch (data >> 9) {
-		case 0:
-			remote_coordinate.x = value;
+uint8_t move_to_remote = 0;
+arm_coordinate remote_coordinate;
+void arm_process_remote_coordinate(uint8_t callback_id, uint16_t data) {
+	switch (callback_id) {
+		case 6:
+			remote_coordinate.x = data;
 			break;
-		case 1:
-			remote_coordinate.y = value;
+		case 7:
+			remote_coordinate.y = (int16_t)data + ARM_FLOOR_LEVEL;
 			break;
-		case 2:
-			remote_angle = 2 * value;
+		case 8:
+			remote_coordinate.angle = (float)data / 1000;
 			break;
-		case 3:
-			arm_move_joint(1, remote_angle);
-
-			// Calclulate IK
-			// TODO: Calculate ik_calculate_x_limit
-			if (ik_angles(remote_coordinate, 150, &joint_angles) != 0) {
-				return;
-			}
-
-			// while (arm_joint_is_moving(1));
-
-
-
-			arm_move_to_angles(joint_angles);
-			servo_action(SERVO_BROADCASTING_ID);
+		case 9:
+			remote_coordinate.angle = (float)data / -1000;
+			break;
+		case 10:
+			move_to_remote = 1;
 			break;
 	}
 }
-*/
-
-// 
-// void uint16_t arm_status(uint8_t id, uint16_t data) {
-// 
-// }
-// 
-// void uint16_t arm_move(uint8_t id, uint16_t data) {
-// 
-// }
 
 void arm_receive_coord(uint8_t id, uint16_t data) {
 	if (id == 3) {
-		pos_from_sensor.angle = -1*(float)data / 1000;
+		pos_from_sensor.angle = -1*(float)data / 100;
 	}
 	else if (id == 4) {
 		pos_from_sensor.x = data;
@@ -135,14 +110,6 @@ void arm_receive_coord(uint8_t id, uint16_t data) {
 void sensor_done(uint8_t id, uint16_t data) {
 	pickup_item = 1;
 }
-
-void on_station(uint8_t callback_id, uint16_t meta_data){
-	
-	if(meta_data){
-		
-	}
-}
-
 int main(void) {
 	uint8_t i;
 	uint8_t moving = 0;
@@ -151,12 +118,16 @@ int main(void) {
 	arm_init();
 	bus_init(BUS_ADDRESS_ARM);
 	_delay_ms(1000);
-	
+
 	/*
 	bus_register_receive(2, arm_movement_command);
 	bus_register_receive(3, arm_stop_movement);
-	bus_register_receive(4, arm_process_coordinate);
 	*/
+	bus_register_receive(6, arm_process_remote_coordinate);
+	bus_register_receive(7, arm_process_remote_coordinate);
+	bus_register_receive(8, arm_process_remote_coordinate);
+	bus_register_receive(9, arm_process_remote_coordinate);
+	bus_register_receive(10, arm_process_remote_coordinate);
 
 // 	bus_register_response(1, arm_status);
 // 	bus_register_receive(2, arm_movement_command);
@@ -167,37 +138,39 @@ int main(void) {
 	bus_register_receive(3, arm_receive_coord);
 	bus_register_receive(4, arm_receive_coord);
 	bus_register_receive(5, sensor_done);
-	
+
 	arm_claw_open();
-	
+
 	arm_joint_angles joint_angles;
 
 	for (;;) {
-		
-		
-			
-			if (!ik_angles(pos_from_sensor, &joint_angles) && pickup_item == 1) {
+
+
+
+		if (pickup_item == 1 && !ik_angles(pos_from_sensor, &joint_angles)) {
 /*				display(1,"in here");*/
-				joint_angles.t0 = pos_from_sensor.angle;
-				arm_move_to_angles(joint_angles);
-				arm_move_perform();
-				pickup_item = 0;
-			}
-			else if (pickup_item != 0) {
-				display(0, "Cord unable to reach");
-				pickup_item = 0;
-			}
-						
-		
-		if (pickup_item) {
-		
-			
+			joint_angles.t0 = pos_from_sensor.angle;
+			arm_move_to_angles(joint_angles);
+			arm_move_perform();
 			pickup_item = 0;
-				
-			// 	while(arm_joint_is_moving(ARM_JOINT_SHOULDER));
-			// 	arm_claw_close();
+			}
+		else if (pickup_item != 0) {
+			display(0, "Cord unable to reach");
+			pickup_item = 0;
+			}
+		else if (move_to_remote) {
+
+			display(0, "%d, %u",
+				(int16_t)(remote_coordinate.angle * 1000),
+				ik_joint_rad_to_angle(ARM_JOINT_BASE, remote_coordinate.angle));
+			display(1, "X:%d,Y:%d",
+				remote_coordinate.x,
+				remote_coordinate.y);
+
+			arm_move_to_coordinate(remote_coordinate);
+			move_to_remote = 0;
 		}
-		
+
 		// Continiously check if arm is moving
 		/*moving = 0;
 		for (i = 1; i <= ARM_JOINT_COUNT; ++i) {
