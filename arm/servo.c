@@ -24,7 +24,7 @@ void servo_enable_write(void) {
 	PORTD |= 1 << PORTD2;
 
 	// Wait for tri-state buffer to switch directions
-	_delay_us(10);
+	_delay_us(20);
 }
 
 /**
@@ -38,7 +38,7 @@ void servo_enable_read(void) {
 	PORTD &= ~(1 << PORTD2);
 
 	// Wait for tri-state buffer to switch directions
-	_delay_us(10);
+	_delay_us(20);
 }
 
 /**

@@ -7,9 +7,9 @@
 
 #include "usart.h"
 
-uint8_t usart_receive_buffer[256];
+volatile uint8_t usart_receive_buffer[256];
 uint8_t usart_buffer_read_index = 0;
-uint8_t usart_buffer_write_index = 0;
+volatile uint8_t usart_buffer_write_index = 0;
 
 /**
  *	Interrupt vector to add received data to ring buffer
@@ -65,7 +65,7 @@ void usart_write_byte(uint8_t data) {
  */
 uint8_t usart_read_byte(uint8_t * data) {
 	uint8_t timeout_counter = 0;
-	uint8_t USART_RECEIVE_TIMEOUT_COUNT = 100;
+	uint8_t USART_RECEIVE_TIMEOUT_COUNT = 1000;
 
 	while (!usart_has_bytes()) {
 		if (timeout_counter++ >= USART_RECEIVE_TIMEOUT_COUNT) {

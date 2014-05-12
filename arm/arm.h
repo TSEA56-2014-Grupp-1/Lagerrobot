@@ -17,6 +17,9 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
+
+#define ARM_SERVO_DEFAULT_SPEED 0x040
+
 /**
  *	@name Servo IDs
  *
@@ -99,5 +102,8 @@ void arm_move_to_angles(arm_joint_angles joint_angles);
 uint8_t arm_joint_is_moving(uint8_t joint);
 uint8_t arm_claw_open(void);
 uint8_t arm_claw_close(void);
+
+uint8_t arm_start_movement(uint8_t joint);
+uint8_t arm_stop_movement(uint8_t joint);
 
 #endif /* ARM_H_ */

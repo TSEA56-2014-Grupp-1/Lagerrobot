@@ -21,8 +21,9 @@ uint8_t pickup_item = 0;
 
 arm_coordinate pos_from_sensor;
 
-/*
+
 // TODO: Redesign this
+/*
 void arm_movement_command(uint8_t callback_id, uint16_t command_data) {
 	uint8_t joint = (uint8_t)(command_data);
 	uint8_t direction = (uint8_t)(command_data >> 8);
@@ -30,10 +31,12 @@ void arm_movement_command(uint8_t callback_id, uint16_t command_data) {
 	if (direction == 0)
 	{
 		arm_move(joint, joint_get_minangle(joint));
+		arm_start_movement(joint);
 	}
 	else if(direction == 1)
 	{
 		arm_move(joint, joint_get_maxangle(joint));
+		arm_start_movement(joint);
 	}
 }
 
@@ -121,7 +124,7 @@ void arm_process_coordinate(uint8_t callback_id, uint16_t data) {
 
 void arm_receive_coord(uint8_t id, uint16_t data) {
 	if (id == 3) {
-		pos_from_sensor.angle = -1*(float)(data)/100;
+		pos_from_sensor.angle = -1*(float)data / 1000;
 	}
 	else if (id == 4) {
 		pos_from_sensor.x = data;
@@ -130,19 +133,13 @@ void arm_receive_coord(uint8_t id, uint16_t data) {
 }
 
 void sensor_done(uint8_t id, uint16_t data) {
+	pickup_item = 1;
+}
+
+void on_station(uint8_t callback_id, uint16_t meta_data){
 	
-	display(1,"A: %d D: %d",(int16_t)(pos_from_sensor.angle*100),(uint16_t)pos_from_sensor.x);
-	
-	arm_joint_angles joint_angles;
-	joint_angles.t0 = pos_from_sensor.angle;
-	
-	if (!ik_angles(pos_from_sensor, &joint_angles)) {
-		arm_move_to_angles(joint_angles);
-		pickup_item = 1;
-	}
-	else {
-		display(0, "Cord unable to reach");
-		pickup_item = 0;
+	if(meta_data){
+		
 	}
 }
 
@@ -172,12 +169,25 @@ int main(void) {
 	bus_register_receive(5, sensor_done);
 	
 	arm_claw_open();
+	
+	arm_joint_angles joint_angles;
 
 	for (;;) {
 		
 		
-		
-		arm_move_perform();				
+			
+			if (!ik_angles(pos_from_sensor, &joint_angles) && pickup_item == 1) {
+/*				display(1,"in here");*/
+				joint_angles.t0 = pos_from_sensor.angle;
+				arm_move_to_angles(joint_angles);
+				arm_move_perform();
+				pickup_item = 0;
+			}
+			else if (pickup_item != 0) {
+				display(0, "Cord unable to reach");
+				pickup_item = 0;
+			}
+						
 		
 		if (pickup_item) {
 		

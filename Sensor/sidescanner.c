@@ -19,7 +19,7 @@
 #define DISTANCE_LOOP_COUNT 100
 #define START_ANGLE 40
 #define AD_CONV 20
-#define ANGLE_OFFSET 5
+#define ANGLE_OFFSET 0
 
 //XXX: uint16_t instead of int?
 int compare (const void * a, const void * b)
@@ -37,10 +37,10 @@ uint8_t scanner_set_position(uint8_t angle, sensor sensor_id) {
 		return 1;
 	}
 	else if (sensor_id == sensor_left) {
-		OCR3A = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
+		OCR3A = SENSOR_SCANNER_ANGLE_START + (uint16_t)(SENSOR_SCANNER_ANGLE_STEP*angle/100);
 	}
 	else if (sensor_id == sensor_right) {
-		OCR3B = SENSOR_SCANNER_ANGLE_START + SENSOR_SCANNER_ANGLE_STEP*angle;
+		OCR3B = SENSOR_SCANNER_ANGLE_START + (uint16_t)(SENSOR_SCANNER_ANGLE_STEP*angle/100);
 	}
 	else {
 		return 2;
@@ -95,7 +95,7 @@ uint16_t get_distance(sensor sensor_id) {
 
 uint16_t get_median_distance(uint16_t angle, sensor sensor_id)
 {
-	scanner_set_position(angle + ANGLE_OFFSET,sensor_id);
+	scanner_set_position(angle,sensor_id);
 	_delay_ms(1000);
 	
 	uint8_t i;
@@ -195,20 +195,21 @@ void object_detection(uint8_t callback_id, uint16_t meta_data)
 	uint16_t angle = (first_angle + second_angle)/2;
 	
 	//XXX: This should be used, not in use since debugging with display
-	uint16_t distance = get_median_distance(angle, sensor_id); 
+	uint16_t distance = get_median_distance(angle, sensor_id);
  	double object_angle = calculate_angle_coordinate(angle, distance);
  	double object_distance = calculate_distance_coordinate(angle, distance);
 	
-	if (object_angle > 1 && object_angle < 1.6) {
-		object_angle = object_angle*1.05;
-	}
-	else if (object_angle >= 1.6 && object_angle < 1.9) {
-		object_angle = object_angle*1.08;
-	}
-	else if (object_angle >= 1.9) {
-		object_angle = object_angle*1.10;
-	}
+// 	if (object_angle > 1 && object_angle < 1.6) {
+// 		object_angle = object_angle*1.05;
+// 	}
+// 	else if (object_angle >= 1.6 && object_angle < 1.9) {
+// 		object_angle = object_angle*1.08;
+// 	}
+// 	else if (object_angle >= 1.9) {
+// 		object_angle = object_angle*1.10;
+// 	}
 	
+	display(0,"a: %d d: %d",(uint16_t)(object_angle*100),(uint16_t)object_distance);
 	
 	uint8_t send_status;
 	do {
@@ -221,6 +222,5 @@ void object_detection(uint8_t callback_id, uint16_t meta_data)
 			send_status += bus_transmit(BUS_ADDRESS_ARM,5, 0);
 		}
 	} while (send_status != 0);
-	
-	display(0,"a: %d d: %d",(uint16_t)(object_angle*100),(uint16_t)object_distance);
+
 }

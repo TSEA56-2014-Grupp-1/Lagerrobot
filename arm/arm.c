@@ -186,6 +186,16 @@ void arm_move_to_angles(arm_joint_angles joint_angles) {
 	arm_move_add(4, ik_joint_rad_to_angle(4, joint_angles.t3));
 }
 
+uint8_t arm_start_movement(uint8_t joint)
+{
+	return servo_write(arm_joint_to_servo(joint),SERVO_GOAL_SPEED_L, ARM_SERVO_DEFAULT_SPEED);
+}
+
+uint8_t arm_stop_movement(uint8_t joint)
+{
+	return servo_write(arm_joint_to_servo(joint),SERVO_GOAL_SPEED_L, 0, 0);
+}
+
 /**
  *	Open claw and block until operation is complete
  */
