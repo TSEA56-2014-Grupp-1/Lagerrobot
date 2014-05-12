@@ -196,25 +196,25 @@ void bluetooth::send_packet(char packet_id, int num_args, ...) {
     va_list param_list;
 	quint8 checksum = 0;
 
-    QByteArray parameter = QByteArray(num_args + 1, 0);
+    QByteArray bytes_to_send = QByteArray(num_args + 3, 0);
 
-    parameter[0] = packet_id;
+    bytes_to_send[0] = packet_id;
 	checksum += (uint8_t)packet_id;
-	parameter[1] = num_args;
-	checksum += (uint8_t)num_args;
+	bytes_to_send[1] = num_args + 1;
+	checksum += (uint8_t)num_args + 1;
 
     va_start(param_list, num_args);
 
 	for (int i = 2; i < num_args + 2; ++i) {
-		parameter[i] = va_arg(param_list, int);
-		checksum += (uint8_t)parameter[i];
+		bytes_to_send[i] = va_arg(param_list, int);
+		checksum += (uint8_t)bytes_to_send[i];
     }
 
-	parameter[num_args + 2] = (quint8)~checksum;
+	bytes_to_send[num_args + 2] = (quint8)~checksum;
 
     va_end(param_list);
 
-    write(parameter);
+    write(bytes_to_send);
 }
 
 /*
