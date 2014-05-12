@@ -23,7 +23,7 @@
 
 // Global variables
 uint8_t carrying_rfid;
-uint8_t handled_stations_list[100];
+uint8_t handled_stations_list[19];
 uint8_t station_count;
 uint8_t follow_line;
 uint8_t	manual_control;
@@ -50,8 +50,7 @@ uint16_t request_rfid_tag();
 void arm_is_done(uint8_t id, uint16_t pickup_data);
 void send_to_arm(uint16_t arm_action);
 void display_station_and_rfid(uint8_t station_data, uint8_t tag);
-void send_command_to_arm(uint8_t station_data ,uint8_t station_tag);
-void display_command(uint8_t station_tag);
+void command_to_arm(uint8_t station_data, uint8_t station_tag);
 void RFID_done(uint8_t id, uint16_t id_and_station);
 void read_rfid();
 void timer_interrupt_init();
@@ -60,5 +59,10 @@ void disable_timer_interrupts();
 void enable_timer_interrupts();
 void receive_line_data(uint8_t id, uint16_t line_data);
 void request_line_data();
+void drive_to_next();
+uint8_t station_is_handled(uint8_t tag);
+void arm_done_to_pc(uint8_t action);
+void send_to_pc(uint8_t decision);
+void command_to_pc(uint16_t id_and_station);
 
 #endif /* CHASSI_H_ */

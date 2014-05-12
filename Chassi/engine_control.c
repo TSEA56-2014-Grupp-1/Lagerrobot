@@ -102,7 +102,7 @@ void engine_control_command(uint8_t id, uint16_t command_data)
 		break;
 	}
 
-	update_steering();
+	update_steering(accelerator);
 
 }
 
@@ -128,7 +128,7 @@ void drive_right_wheels( uint8_t direction, uint16_t speed)
 	}
 }
 
-void update_steering() {
+void update_steering(uint16_t speed) {
 	uint16_t speed_left;
 	uint16_t speed_right;
 	
@@ -138,8 +138,8 @@ void update_steering() {
 	uint8_t dir_left;
 	uint8_t dir_right;
 	
-	velocity_left = accelerator - steering_wheel;
-	velocity_right = accelerator + steering_wheel;
+	velocity_left = speed - steering_wheel;
+	velocity_right = speed + steering_wheel;
 	
 	speed_left = abs(velocity_left);
 	speed_right = abs(velocity_right);
