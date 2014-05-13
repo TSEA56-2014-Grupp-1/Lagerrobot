@@ -23,16 +23,24 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 
 	switch (data[0]) {
 		case CMD_ARM_MOVE:
-			if (data_length != 3) {
+			if (data_length != 4) {
 				return 1;
 			}
-
-			bus_transmit(
-				BUS_ADDRESS_ARM, 2, ((uint16_t)data[1] << 8) | (uint16_t)data[2]);
+			/*
+			data[1] = coordinate [x = 0, y = 1, angle = 2]
+			data[2] = direction [1 = up, 0 = down]
+			data[3] = start/stop [start = 1, stop = 0]
+			*/
+			
+			uint8_t packet_to_send =  (uint8_t)(data[2] & 0x01) | (uint8_t)((data[3] & 0x01) << 1) | (uint8_t)((data[1] & 0x03) << 2);
+			
+			bus_transmit(BUS_ADDRESS_ARM, 2, (uint16_t)packet_to_send);
+			
 			break;
 		case CMD_ARM_GRIP:
+			bus_transmit(BUS_ADDRESS_ARM, 1, 0);
 		case CMD_ARM_RELEASE:
-			// TODO: Write this
+			bus_transmit(BUS_ADDRESS_ARM, 1, 1);
 			break;
 		case CMD_ARM_PREDEFINED_POS:
 			if (data_length != 2) {
