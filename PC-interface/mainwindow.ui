@@ -226,117 +226,12 @@
      <rect>
       <x>450</x>
       <y>0</y>
-      <width>291</width>
-      <height>301</height>
+      <width>303</width>
+      <height>281</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="0" column="2">
-      <widget class="QPushButton" name="pushButton_close_gripper">
-       <property name="text">
-        <string>Stäng</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Gripklo</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label_12">
-       <property name="text">
-        <string>2:a led</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>3:a led</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLabel" name="label_13">
-       <property name="text">
-        <string>1:a led</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="label_14">
-       <property name="text">
-        <string>Basrotation</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QPushButton" name="pushButton_1_upp">
-       <property name="text">
-        <string>Upp</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="2">
-      <widget class="QPushButton" name="pushButton_base_left">
-       <property name="text">
-        <string>Vänster</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pushButton_2_upp">
-       <property name="text">
-        <string>Upp</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QPushButton" name="pushButton_3_upp">
-       <property name="text">
-        <string>Upp</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="3">
-      <widget class="QPushButton" name="pushButton_open_gripper">
-       <property name="text">
-        <string>Öppna</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <widget class="QPushButton" name="pushButton_3_down">
-       <property name="text">
-        <string>Ner</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="3">
-      <widget class="QPushButton" name="pushButton_2_down">
-       <property name="text">
-        <string>Ner</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="3">
-      <widget class="QPushButton" name="pushButton_1_down">
-       <property name="text">
-        <string>Ner</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="3">
-      <widget class="QPushButton" name="pushButton_base_right">
-       <property name="text">
-        <string>Höger</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1" colspan="3">
+     <item row="4" column="1" colspan="3">
       <layout class="QGridLayout" name="gridLayout">
        <item row="1" column="1">
         <widget class="QLineEdit" name="lineEdit_y_cord"/>
@@ -376,6 +271,90 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="3" column="3">
+      <widget class="QPushButton" name="pushButton_base_right">
+       <property name="text">
+        <string>Höger</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="pushButton_y_down">
+       <property name="text">
+        <string>Ner</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="pushButton_open_gripper">
+       <property name="text">
+        <string>Öppna</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="pushButton_y_upp">
+       <property name="text">
+        <string>Upp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QPushButton" name="pushButton_base_left">
+       <property name="text">
+        <string>Vänster</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_14">
+       <property name="text">
+        <string>Basvinkel:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label_13">
+       <property name="text">
+        <string>y:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_10">
+       <property name="text">
+        <string>Gripklo</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="pushButton_close_gripper">
+       <property name="text">
+        <string>Stäng</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pushButton_x_up">
+       <property name="text">
+        <string>Upp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="pushButton_x_down">
+       <property name="text">
+        <string>Ner</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_11">
+       <property name="text">
+        <string>x:</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -468,9 +447,9 @@
    <widget class="QPushButton" name="pushButton_pause_graph">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>490</y>
-      <width>281</width>
+      <x>810</x>
+      <y>370</y>
+      <width>111</width>
       <height>23</height>
      </rect>
     </property>
@@ -611,25 +590,16 @@
       </rect>
      </property>
     </widget>
-    <zorder>label_21</zorder>
-    <zorder>transmit_button</zorder>
-    <zorder>callback_lineEdit</zorder>
-    <zorder>label_20</zorder>
-    <zorder>request_button</zorder>
-    <zorder>highByte_lineEdit</zorder>
-    <zorder>label_19</zorder>
-    <zorder>label_18</zorder>
-    <zorder>lowByte_lineEdit</zorder>
-    <zorder>label_21</zorder>
-    <zorder>transmit_button</zorder>
-    <zorder>callback_lineEdit</zorder>
-    <zorder>label_20</zorder>
-    <zorder>highByte_lineEdit</zorder>
-    <zorder>request_button</zorder>
-    <zorder>label_19</zorder>
-    <zorder>label_18</zorder>
-    <zorder>lowByte_lineEdit</zorder>
-    <zorder>address_lineEdit</zorder>
+   </widget>
+   <widget class="QCustomPlot" name="plot_sensor" native="true">
+    <property name="geometry">
+     <rect>
+      <x>-1</x>
+      <y>479</y>
+      <width>811</width>
+      <height>141</height>
+     </rect>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -637,10 +607,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1274</width>
-     <height>22</height>
      <width>1297</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -712,12 +680,8 @@
   <tabstop>pushButton_send_param</tabstop>
   <tabstop>pushButton_close_gripper</tabstop>
   <tabstop>pushButton_open_gripper</tabstop>
-  <tabstop>pushButton_3_upp</tabstop>
-  <tabstop>pushButton_3_down</tabstop>
-  <tabstop>pushButton_2_upp</tabstop>
-  <tabstop>pushButton_2_down</tabstop>
-  <tabstop>pushButton_1_upp</tabstop>
-  <tabstop>pushButton_1_down</tabstop>
+  <tabstop>pushButton_y_upp</tabstop>
+  <tabstop>pushButton_y_down</tabstop>
   <tabstop>pushButton_base_left</tabstop>
   <tabstop>pushButton_base_right</tabstop>
   <tabstop>pushButton_start_position_arm</tabstop>

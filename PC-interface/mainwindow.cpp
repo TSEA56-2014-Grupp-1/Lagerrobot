@@ -41,6 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     set_up_graphs();
     connect(ui->horizontalScrollBar_graphs, SIGNAL(valueChanged(int)), this, SLOT(horzScrollBarChanged(int)));
     connect(ui->plot_steering, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(wheelevent_steering(QWheelEvent*)));
+	connect(ui->plot_sensor, SIGNAL(mouseWheel(QWheelEvent*)), this, SLOT(wheelevent_steering(QWheelEvent*)));
 }
 
 //XXX: TODO:
@@ -125,7 +126,7 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
-		timer_req->start();
+		//timer_req->start();
         time_graph->start();
     }
     else {
@@ -228,126 +229,6 @@ void MainWindow::on_pushButton_open_gripper_clicked()
 	port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 6);
 }
 
-void MainWindow::on_pushButton_3_upp_pressed()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 4);
-	}
-}
-
-void MainWindow::on_pushButton_3_upp_released()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
-	}
-}
-
-void MainWindow::on_pushButton_3_down_pressed()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 4);
-	}
-}
-
-void MainWindow::on_pushButton_3_down_released()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 4);
-	}
-}
-
-void MainWindow::on_pushButton_2_upp_pressed()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 3);
-	}
-}
-
-void MainWindow::on_pushButton_2_upp_released()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
-	}
-}
-
-void MainWindow::on_pushButton_2_down_pressed()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 3);
-	}
-}
-
-void MainWindow::on_pushButton_2_down_released()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 3);
-	}
-}
-
-void MainWindow::on_pushButton_1_upp_pressed()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 2);
-	}
-}
-
-void MainWindow::on_pushButton_1_upp_released()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
-	}
-}
-
-void MainWindow::on_pushButton_1_down_pressed()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 2);
-	}
-}
-
-void MainWindow::on_pushButton_1_down_released()
-{
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 2);
-	}
-}
-
 void MainWindow::on_pushButton_base_left_pressed()
 {
 	if (port == NULL) {
@@ -448,12 +329,6 @@ void MainWindow::on_connect_action_triggered()
  *      @brief Disable all buttons
  */
 void MainWindow::disable_buttons() {
-    ui->pushButton_1_down->setEnabled(false);
-    ui->pushButton_1_upp->setEnabled(false);
-    ui->pushButton_2_down->setEnabled(false);
-    ui->pushButton_2_upp->setEnabled(false);
-    ui->pushButton_3_down->setEnabled(false);
-    ui->pushButton_3_upp->setEnabled(false);
     ui->pushButton_base_left->setEnabled(false);
     ui->pushButton_base_right->setEnabled(false);
     ui->pushButton_calibrate_floor->setEnabled(false);
@@ -478,12 +353,6 @@ void MainWindow::disable_buttons() {
  *      @brief Enable all buttons
  */
 void MainWindow::enable_buttons() {
-    ui->pushButton_1_down->setEnabled(true);
-    ui->pushButton_1_upp->setEnabled(true);
-    ui->pushButton_2_down->setEnabled(true);
-    ui->pushButton_2_upp->setEnabled(true);
-    ui->pushButton_3_down->setEnabled(true);
-    ui->pushButton_3_upp->setEnabled(true);
     ui->pushButton_base_left->setEnabled(true);
     ui->pushButton_base_right->setEnabled(true);
     ui->pushButton_calibrate_floor->setEnabled(true);
@@ -574,6 +443,16 @@ void MainWindow::set_up_graphs() {
 	ui->plot_steering->legend->setFont(legendFont);
 	ui->plot_steering->legend->setVisible(true);
 
+	//XXX: Set up graph for sensor (plot_sensor)
+	ui->plot_sensor->addGraph();
+
+	ui->plot_sensor->xAxis->setLabel("Time");
+	ui->plot_sensor->xAxis->setAutoTickStep(false);
+	ui->plot_sensor->xAxis->setTickStep(1);
+
+	ui->plot_sensor->graph()->setLineStyle(QCPGraph::lsLine);
+	ui->plot_sensor->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+
     ui->graphicsView_linesensor->setScene(linesensor_plot);
     ui->graphicsView_linesensor->show();
     linesensor_circels.resize(11);
@@ -614,7 +493,12 @@ void MainWindow::draw_graphs() {
 
 	ui->plot_steering->xAxis->setRange(qFloor((double)(time_graph->elapsed()/1000) - 10),
 									   qFloor((double)time_graph->elapsed()/1000));
+
+	ui->plot_sensor->xAxis->setRange(qFloor((double)(time_graph->elapsed()/1000) - 10),
+									 qFloor((double)time_graph->elapsed()/1000));
+
     ui->plot_steering->replot();
+	ui->plot_sensor->replot();
     ui->horizontalScrollBar_graphs->setRange(0,(double)time_graph->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth
     ui->horizontalScrollBar_graphs->setValue(time_graph->elapsed()/100);
 }
@@ -625,10 +509,12 @@ void MainWindow::draw_graphs() {
  *      @param value Value of the scrollbar.
  */
 void MainWindow::horzScrollBarChanged(int value) {
-    if (qAbs(ui->plot_steering->xAxis->range().center()-value/10) > 0.1) // if user is dragging plot, we don't want to replot twice
+	if (qAbs(ui->plot_steering->xAxis->range().center()-value/10) > 0.1) // if user is dragging plot, we don't want to replot twice
     {
         ui->plot_steering->xAxis->setRange(value/10, ui->plot_steering->xAxis->range().size(), Qt::AlignCenter);
+		ui->plot_sensor->xAxis->setRange(value/10, ui->plot_sensor->xAxis->range().size(), Qt::AlignCenter);
         ui->plot_steering->replot();
+		ui->plot_steering->replot();
     }
 }
 
@@ -748,17 +634,19 @@ void MainWindow::on_pushButton_send_arm_pos_clicked()
     bool angle_check;
 	quint16 x = ui->lineEdit_x_cord->text().toInt(&x_check);
 	quint16 y = ui->lineEdit_y_cord->text().toInt(&y_check);
-	quint16 angle = ui->lineEdit_angle->text().toInt(&angle_check);
+	qint16 angle = ui->lineEdit_angle->text().toInt(&angle_check);
+	float angle_rad = angle*M_PI/180;
+	int16_t angle_to_send = angle_rad*1000;
     if (port == NULL) {
         print_on_log("No port to send to.");
         return;
     }
     if (x_check && y_check && angle_check){
-		port->send_packet(PKT_ARM_COMMAND, 6, CMD_ARM_MOVE_POS,
+		port->send_packet(PKT_ARM_COMMAND, 7, CMD_ARM_MOVE_POS,
 						  (quint8)(x >> 8), (quint8)x, (quint8)(y >> 8),
-						  (quint8)y, angle);
+						  (quint8)y, (quint8)(angle_to_send >> 8),(quint8)(angle_to_send));
 		print_on_log("Sent arm command");
-		print_on_log(QObject::tr("x: %1, y: %2, angle: %3").arg(QString::number(x)).arg(QString::number(y)).arg(QString::number(angle)));
+		print_on_log(QObject::tr("x: %1, y: %2, angle: %3").arg(QString::number(x)).arg(QString::number(y)).arg(QString::number(angle_to_send)));
     }
     else
 		print_on_log("Invalid arguments to arm position, must be integers.");
@@ -853,4 +741,120 @@ void MainWindow::on_transmit_button_clicked()
                           ui->highByte_lineEdit->text().toInt(),
                           ui->lowByte_lineEdit->text().toInt());
     }
+}
+
+void MainWindow::handle_decision(quint8 decision) {
+	if (decision == DEC_ARM_PICKED_UP) {
+		print_on_log("Arm has picked up an object");
+	}
+	else if (decision == DEC_ARM_PUT_DOWN) {
+		print_on_log("Arm has put down an object");
+	}
+	else if (decision == DEC_NO_ID_FOUND) {
+		print_on_log("No RFID found");
+	}
+	else if (decision == DEC_NO_MATCH) {
+		print_on_log("RFID did not match");
+	}
+	else if (decision == DEC_OBJECT_NOT_FOUND) {
+		print_on_log("Object was found by arm");
+	}
+	else if (decision == DEC_PICKUP_LEFT) {
+		print_on_log("Picking up object to the left");
+	}
+	else if (decision == DEC_PICKUP_RIGHT) {
+		print_on_log("Picking up object to the right");
+	}
+	else if (decision == DEC_PUT_DOWN_LEFT) {
+		print_on_log("Putting down object to the left");
+	}
+	else if (decision == DEC_PUT_DOWN_RIGHT) {
+		print_on_log("Puttin down object to the right");
+	}
+	else if (decision == DEC_STATION_HANDELED) {
+		print_on_log("Station already handled");
+	}
+	else if (decision == DEC_UNKOWN_ERROR) {
+		print_on_log("Unkown error in chassi");
+	}
+}
+
+void MainWindow::on_pushButton_y_upp_pressed()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 1, 1);
+	}
+}
+
+void MainWindow::on_pushButton_y_down_pressed()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 0, 1);
+	}
+}
+
+void MainWindow::on_pushButton_x_up_pressed()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 1, 1);
+	}
+}
+
+void MainWindow::on_pushButton_x_down_pressed()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 0, 1);
+	}
+}
+
+void MainWindow::on_pushButton_y_upp_released()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 1, 0);
+	}
+}
+
+void MainWindow::on_pushButton_y_down_released()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 0, 0);
+	}
+}
+
+void MainWindow::on_pushButton_x_up_released()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 1, 0);
+	}
+}
+
+void MainWindow::on_pushButton_x_down_released()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 0, 0);
+	}
 }

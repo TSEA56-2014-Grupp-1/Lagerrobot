@@ -42,6 +42,8 @@ public:
 
 	void pickupstation(QByteArray*);
 
+	void handle_decision(quint8 decision);
+
 	//XXX: should be private
 
 
@@ -71,41 +73,17 @@ private slots:
 
     void on_pushButton_stop_line_clicked();
 
+	void on_pushButton_base_right_released();
+
+	void on_pushButton_base_right_pressed();
+
+	void on_pushButton_base_left_released();
+
+	void on_pushButton_base_left_pressed();
+
     void on_pushButton_close_gripper_clicked();
 
     void on_pushButton_open_gripper_clicked();
-
-    void on_pushButton_3_upp_pressed();
-
-    void on_pushButton_3_upp_released();
-
-    void on_pushButton_3_down_pressed();
-
-    void on_pushButton_3_down_released();
-
-    void on_pushButton_2_upp_pressed();
-
-    void on_pushButton_2_upp_released();
-
-    void on_pushButton_2_down_pressed();
-
-    void on_pushButton_2_down_released();
-
-    void on_pushButton_1_upp_pressed();
-
-    void on_pushButton_1_upp_released();
-
-    void on_pushButton_1_down_pressed();
-
-    void on_pushButton_1_down_released();
-
-    void on_pushButton_base_left_pressed();
-
-    void on_pushButton_base_left_released();
-
-    void on_pushButton_base_right_pressed();
-
-    void on_pushButton_base_right_released();
 
     void on_pushButton_start_position_arm_clicked();
 
@@ -140,6 +118,22 @@ private slots:
     void on_request_button_clicked();
 
     void on_transmit_button_clicked();
+
+	void on_pushButton_y_upp_pressed();
+
+	void on_pushButton_y_down_pressed();
+
+	void on_pushButton_x_up_pressed();
+
+	void on_pushButton_x_down_pressed();
+
+	void on_pushButton_y_upp_released();
+
+	void on_pushButton_y_down_released();
+
+	void on_pushButton_x_up_released();
+
+	void on_pushButton_x_down_released();
 
 private:
     Ui::MainWindow *ui;

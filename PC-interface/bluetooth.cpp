@@ -68,7 +68,7 @@ void bluetooth::process_packet()
 
         break;
 	case PKT_CHASSIS_DECISION:
-
+		window->handle_decision(parameters[0]);
         break;
 	case PKT_CHASSIS_STATUS:
 
@@ -83,10 +83,7 @@ void bluetooth::process_packet()
         break;
 	case PKT_RFID_DATA:
 		window->print_on_log("Received new RFID tag");
-		for (int i = 1; i < 13; ++i) {
-			RFID.append(parameters.at(i));
-		}
-		window->set_RFID(RFID);
+		window->set_RFID(QString::number(parameters[0]));
         break;
 	case PKT_CALIBRATION_DATA:
         window->print_on_log(QString("Calibration, new tape reference: ")
