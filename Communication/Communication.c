@@ -149,6 +149,13 @@ void init(){
 	clear_message(ARM, 1);
 }
 
+void forward_decision(uint8_t id, uint16_t data) {
+	send_packet(PKT_CHASSIS_DECISION, 1, (uint8_t)data);
+}
+
+void forward_RFID(uint8_t id, uint16_t data) {
+	send_packet(PKT_RFID_DATA, 1, data);
+}
 
 int main(void)
 {
@@ -164,7 +171,8 @@ int main(void)
 	bus_register_receive(5, lcd_arm_line2);
 	bus_register_receive(6, lcd_chassi_line1);
 	bus_register_receive(7, lcd_chassi_line2);
-	
+	bus_register_receive(8, forward_decision);
+	bus_register_receive(9, forward_RFID);
 	
 	
 	display(0, "Ouroborobot");

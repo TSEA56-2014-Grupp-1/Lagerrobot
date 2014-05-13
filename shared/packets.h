@@ -10,8 +10,8 @@
 #define PKT_CHASSIS_STATUS		5	//		<not defined yet>
 #define PKT_LINE_DATA			6	//		sensor values(1-11), line flags(12), center of mass(13)
 #define PKT_RANGE_DATA			7	//		ranger values(1-3), distances(4-6), angles(7-8) 
-#define PKT_RFID_DATA			8	//		tag bytes(1-12)
-#define	PKT_CHASSIS_DECISION	9	//		<not defined yet>
+#define PKT_RFID_DATA			8	//		tag bytes(1)
+#define	PKT_CHASSIS_DECISION	9	//		type of decision (1)
 #define PKT_ARM_DECISION		10	//		<not defined yet>
 #define PKT_PACKET_REQUEST		11	//		id of packet pc wants(1)
 #define PKT_SPOOFED_REQUEST		12	//		bus request packets(1-4) (address, id, metadata_h, metadata_l)
@@ -39,5 +39,17 @@
 #define CAL_LINE				1	//		tape or no tape(1)
 #define CAL_RANGE				2	//		distance to object(1)
 
+/*	Types of decision			dec_id */
+#define DEC_PICKUP_RIGHT		0   //Station to the right
+#define DEC_PICKUP_LEFT			1	//Station to the left
+#define DEC_PUT_DOWN_RIGHT		2	//Putting down object to the right
+#define DEC_PUT_DOWN_LEFT		3	//Putting down object to the left
+#define DEC_NO_MATCH			4	//ID did not match object
+#define DEC_STATION_HANDELED	5	//Station is already handeld
+#define DEC_NO_ID_FOUND			6	//No ID was found
+#define DEC_ARM_PICKED_UP		7	//Arm has picked up an object
+#define DEC_ARM_PUT_DOWN		8	//Arm has put down the object
+#define DEC_OBJECT_NOT_FOUND	9	//Object was not found by arm
+#define DEC_UNKOWN_ERROR		10	//An unkown error has occured
 
 #endif /* PACKETS_H_*/
