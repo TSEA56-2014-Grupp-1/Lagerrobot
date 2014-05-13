@@ -327,3 +327,56 @@ uint8_t arm_return_item(arm_coordinate coord) {
 
 	return 0;
 }
+
+/**
+ *	Calculate current arm joint angles as an arm coordinate
+ */
+uint8_t arm_angles(arm_joint_angles *joint_angles) {
+	uint16_t position;
+
+	if (servo_read_uint16(
+		arm_joint_to_servo(ARM_JOINT_BASE), SERVO_PRESENT_POSITION_L, &position))
+	{
+		return 1;
+	}
+	joint_angles->t0 = ik_joint_angle_to_rad(ARM_JOINT_BASE, position);
+
+	if (servo_read_uint16(
+		arm_joint_to_servo(ARM_JOINT_SHOULDER), SERVO_PRESENT_POSITION_L, &position))
+	{
+		return 2;
+	}
+	joint_angles->t1 = ik_joint_angle_to_rad(ARM_JOINT_SHOULDER, position);
+
+	if (servo_read_uint16(
+		arm_joint_to_servo(ARM_JOINT_ELBOW), SERVO_PRESENT_POSITION_L, &position))
+	{
+		return 3;
+	}
+	joint_angles->t2 = ik_joint_angle_to_rad(ARM_JOINT_ELBOW, position);
+
+	if (servo_read_uint16(
+		arm_joint_to_servo(ARM_JOINT_WRIST), SERVO_PRESENT_POSITION_L, &position))
+	{
+		return 4;
+	}
+	joint_angles->t3 = ik_joint_angle_to_rad(ARM_JOINT_WRIST, position);
+
+	return 0;
+}
+
+/**
+ *	Calculate current arm position as an arm coordinate
+ */
+uint8_t arm_position(arm_coordinate *coord) {
+	arm_joint_angles joint_angles;
+	uint8_t status = arm_angles(&joint_angles);
+
+	if (status) {
+		return status;
+	}
+
+	*coord = ik_calculate_coordinate(joint_angles);
+
+	return 0;
+}

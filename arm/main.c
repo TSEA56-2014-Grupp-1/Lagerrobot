@@ -13,12 +13,21 @@
 
 #define HEIGHT -150
 
-/**
- *	1 if arm is currently moving
- */
-uint8_t is_moving = 0;
-uint8_t pickup_item = 0;
+typedef struct {
+	int16_t x;
+	int16_t y;
+	float angle;
+} delta_arm_coordinate;
 
+
+uint8_t manual_control = 0;
+delta_arm_coordinate manual_control_change = {
+	.x = 0,
+	.y = 0,
+	.angle = 0
+};
+
+uint8_t pickup_item = 0;
 arm_coordinate pos_from_sensor;
 
 
@@ -110,56 +119,81 @@ void arm_receive_coord(uint8_t id, uint16_t data) {
 void sensor_done(uint8_t id, uint16_t data) {
 	pickup_item = 1;
 }
-int main(void) {
-	uint8_t i;
-	uint8_t moving = 0;
 
+void update_manual_control(uint8_t id, uint16_t data) {
+	// Check if X should be moved
+	if (data & 2) {
+		if (data & 1) {
+			manual_control_change.x = 5;
+		} else {
+			manual_control_change.x = -5;
+		}
+	} else {
+		manual_control_change.x = 0;
+	}
+
+	// Check if Y should be moved
+	if (data & 8) {
+		if (data & 4) {
+			manual_control_change.y = 5;
+		} else {
+			manual_control_change.y = -5;
+		}
+	} else {
+		manual_control_change.y = 0;
+	}
+
+	// Check if angle should be moved
+	if (data & 32) {
+		if (data & 16) {
+			manual_control_change.angle = 0.17;
+		} else {
+			manual_control_change.angle = -0.17;
+		}
+	} else {
+		manual_control_change.angle = 0;
+	}
+}
+
+int main(void) {
 	servo_init();
 	arm_init();
 	bus_init(BUS_ADDRESS_ARM);
-	_delay_ms(1000);
 
-	/*
-	bus_register_receive(2, arm_movement_command);
-	bus_register_receive(3, arm_stop_movement);
-	*/
+	bus_register_receive(2, update_manual_control);
+
+	bus_register_receive(3, arm_receive_coord);
+	bus_register_receive(4, arm_receive_coord);
+	bus_register_receive(5, sensor_done);
+
 	bus_register_receive(6, arm_process_remote_coordinate);
 	bus_register_receive(7, arm_process_remote_coordinate);
 	bus_register_receive(8, arm_process_remote_coordinate);
 	bus_register_receive(9, arm_process_remote_coordinate);
 	bus_register_receive(10, arm_process_remote_coordinate);
 
-// 	bus_register_response(1, arm_status);
-// 	bus_register_receive(2, arm_movement_command);
-
-// 	display(0, "So: %u", arm_claw_open());
-// 	display(1, "Sc: %u", arm_claw_close());
-
-	bus_register_receive(3, arm_receive_coord);
-	bus_register_receive(4, arm_receive_coord);
-	bus_register_receive(5, sensor_done);
+	_delay_ms(1000);
 
 	arm_claw_open();
 
 	arm_joint_angles joint_angles;
 
 	for (;;) {
-
-
-
-		if (pickup_item == 1 && !ik_angles(pos_from_sensor, &joint_angles)) {
-/*				display(1,"in here");*/
-			joint_angles.t0 = pos_from_sensor.angle;
-			arm_move_to_angles(joint_angles);
-			arm_move_perform();
-			pickup_item = 0;
+		if (pickup_item) {
+			switch (ik_angles(pos_from_sensor, &joint_angles)) {
+				case 0:
+					arm_move_to_angles(joint_angles);
+					arm_move_perform();
+					break;
+				case 1:
+					display(0, "Invalid coordinate");
+					break;
+				case 2:
+					display(0, "No P found");
+					break;
 			}
-		else if (pickup_item != 0) {
-			display(0, "Cord unable to reach");
 			pickup_item = 0;
-			}
-		else if (move_to_remote) {
-
+		} else if (move_to_remote) {
 			display(0, "%d, %u",
 				(int16_t)(remote_coordinate.angle * 1000),
 				ik_joint_rad_to_angle(ARM_JOINT_BASE, remote_coordinate.angle));
@@ -169,15 +203,8 @@ int main(void) {
 
 			arm_move_to_coordinate(remote_coordinate);
 			move_to_remote = 0;
-		}
+		} else if (manual_control) {
 
-		// Continiously check if arm is moving
-		/*moving = 0;
-		for (i = 1; i <= ARM_JOINT_COUNT; ++i) {
-			moving |= arm_joint_is_moving(i);
 		}
-
-		// Update global variable
-		is_moving = moving;*/
 	}
 }

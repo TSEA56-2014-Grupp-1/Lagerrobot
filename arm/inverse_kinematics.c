@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 /**
- *	Given three angles will calculate the target coordinate. This function is
+ *	Given joint angles will calculate the target coordinate. This function is
  *	the reverse of ik_angles().
  *
  *	@param joint_angles Angles in radians for all joints
@@ -18,7 +18,7 @@
  *	@return Struct of two dimensional cartesian coordinates
  */
 arm_coordinate ik_calculate_coordinate(arm_joint_angles joint_angles) {
-	arm_coordinate coord = {.x = 0, .y = 0};
+	arm_coordinate coord = {.x = 0, .y = 0, .angle = joint_angles.t0};
 
 	coord.x += ARM_LENGTH_LINK_1 * cos(joint_angles.t1);
 	coord.y += ARM_LENGTH_LINK_1 * sin(joint_angles.t1);
@@ -186,7 +186,8 @@ uint8_t ik_angles_p(arm_coordinate coord, arm_joint_angles *joint_angles) {
  *	is the reverse of ik_calculate_coordinate(). Possible status codes are:
  *
  *	- 0 if successful
- *	- 1 if P was unreachable
+ *	- 1 if target was invalid
+ *	- 2 if P was not found
  *
  *	@param[in] coord Coordinate for target
  *	@param[out] joint_angles Joint angles in radians for each joint
@@ -197,8 +198,12 @@ uint8_t ik_angles(arm_coordinate coord, arm_joint_angles *joint_angles)
 {
 	arm_coordinate p = ik_find_p(coord);
 
-	if (!ik_valid_coordinate(coord) || ik_angles_p(p, joint_angles) != 0) {
+	if (!ik_valid_coordinate(coord)) {
 		return 1;
+	}
+
+	if (ik_angles_p(p, joint_angles)) {
+		return 2;
 	}
 
 	joint_angles->t0 = coord.angle;
