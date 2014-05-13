@@ -235,7 +235,7 @@ void MainWindow::on_pushButton_base_left_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 1);
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 2, 1, 1);
 	}
 }
 
@@ -245,7 +245,7 @@ void MainWindow::on_pushButton_base_left_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_MOVE, 2, 1, 0);
 	}
 }
 
@@ -255,7 +255,7 @@ void MainWindow::on_pushButton_base_right_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 1);
+		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 2, 0, 1);
 	}
 }
 
@@ -265,7 +265,7 @@ void MainWindow::on_pushButton_base_right_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_STOP, 1);
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_MOVE, 2, 0, 0);
 	}
 }
 
