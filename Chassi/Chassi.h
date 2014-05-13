@@ -15,19 +15,20 @@
 #include <stdlib.h>
 
 // Decisions
-#define AT_STATION 1;
-#define WRONG_STATION_MEM 2;
-#define WRONG_STATION_RFID 3;
-#define OBJECT_IS_PUT_DOWN 4;
-#define LOOK_FOR_OBJECT 5;
+
 
 // Global variables
 uint8_t carrying_rfid;
-uint8_t handled_stations_list[19];
-uint8_t station_count;
+uint8_t handled_stations_list[18];
+uint8_t handled_count;
 uint8_t follow_line;
 uint8_t	manual_control;
 uint8_t scan_count;
+uint8_t station_count;
+uint8_t station_list[18];
+uint8_t lap_finished;
+uint8_t number_of_stations;
+
 
 
 /**
@@ -61,8 +62,12 @@ void receive_line_data(uint8_t id, uint16_t line_data);
 void request_line_data();
 void drive_to_next();
 uint8_t station_is_handled(uint8_t tag);
-void arm_done_to_pc(uint8_t action);
-void send_to_pc(uint8_t decision);
-void command_to_pc(uint16_t id_and_station);
+void decision_to_pc(uint8_t decision);
+void rfid_to_pc(uint8_t tag_id);
+uint8_t is_pickup_station(uint8_t id);
+uint8_t skip_station();
+void update_station_list(uint8_t station_id);
+void drive(uint8_t curr_error);
+
 
 #endif /* CHASSI_H_ */
