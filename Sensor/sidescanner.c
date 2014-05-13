@@ -91,22 +91,7 @@ uint16_t get_distance(sensor sensor_id) {
 	return ad_interpolate(get_median_value(distance_array, AD_CONV), sensor_id) + SCANNER_AXIS_TO_FRONT;
 }
 
-uint16_t get_median_distance(uint16_t angle, sensor sensor_id)
-{
-	scanner_set_position(angle,sensor_id);
-	_delay_ms(1000);
-
-	uint8_t i;
-	uint16_t distance_array[DISTANCE_LOOP_COUNT];
-
-	for(i = 0; i < DISTANCE_LOOP_COUNT; i++){
-		distance_array[i] = get_distance(sensor_id);
-	}
-
-	return get_median_value(distance_array, DISTANCE_LOOP_COUNT);
-}
-
-uint8_t find_first_distance(uint16_t *object_distance, uint16_t *object_angle, sensor sensor_id)
+uint8_t find_first_angle(uint16_t *object_angle, sensor sensor_id)
 {
 	uint16_t distance = 400;
 	uint16_t angle = SENSOR_SCANNER_ANGLE_FIRST;
@@ -115,7 +100,6 @@ uint8_t find_first_distance(uint16_t *object_distance, uint16_t *object_angle, s
 	{
 		distance = get_distance(sensor_id);
 		if(distance <= ZONE_SIZE) {
-			*object_distance = distance;
 			*object_angle = angle;
 			return 1;
 		}
@@ -128,24 +112,32 @@ uint8_t find_first_distance(uint16_t *object_distance, uint16_t *object_angle, s
 	return 0;
 }
 
-uint8_t find_second_distance(uint16_t *object_distance, uint16_t *object_angle, uint16_t start_angle, sensor sensor_id) {
+uint8_t find_end(uint16_t *object_distance, uint16_t *object_angle, uint16_t start_angle, sensor sensor_id) {
 
 	uint16_t distance = 400;
 	uint16_t angle = start_angle;
+	
+	uint8_t i = 0;
+	uint16_t distance_array[100];
 
 	while (angle <= SENSOR_SCANNER_ANGLE_LAST){
 		distance = get_distance(sensor_id);
+		
 		if(distance <= ZONE_SIZE) {
 			*object_angle = angle;
-			*object_distance = distance;
+			distance_array[i] = distance;
+			++i;
 		}
 		else {
+			*object_distance = get_median_value(distance_array, i+1);
 			return 1;
 		}
+		
 		angle += STEP;
 		scanner_set_position(angle, sensor_id);
 		_delay_ms(100);
 	}
+	*object_distance = get_median_value(distance_array, i+1);
 	return 0;
 }
 
@@ -173,39 +165,26 @@ void object_detection(uint8_t callback_id, uint16_t meta_data)
 
 	sensor sensor_id = meta_data;
 
-	uint16_t first_distance = 0;
 	uint16_t first_angle = 0;
 
-	uint16_t second_distance = 0;
+	uint16_t distance = 0;
 	uint16_t second_angle = 0;
 
-	if (!find_first_distance(&first_distance, &first_angle, sensor_id)) {
+	if (!find_first_angle(&first_angle, sensor_id)) {
 		display(0, "No object found!");
 		return;
 	}
 
-	if (!find_second_distance(&second_distance, &second_angle, first_angle, sensor_id)) {
+	if (!find_end(&distance, &second_angle, first_angle, sensor_id)) {
 		//Setting angle to max since end of the object was outside scanning area.
 		second_angle = SENSOR_SCANNER_ANGLE_LAST;
-		second_distance = first_distance;
+		display(0, "Last angle not found");
 	}
 
 	uint16_t angle = (first_angle + second_angle)/2;
 
-	//XXX: This should be used, not in use since debugging with display
-	uint16_t distance = get_median_distance(angle, sensor_id);
  	double object_angle = calculate_angle_coordinate(angle, distance);
  	double object_distance = calculate_distance_coordinate(angle, distance);
-
-// 	if (object_angle > 1 && object_angle < 1.6) {
-// 		object_angle = object_angle*1.05;
-// 	}
-// 	else if (object_angle >= 1.6 && object_angle < 1.9) {
-// 		object_angle = object_angle*1.08;
-// 	}
-// 	else if (object_angle >= 1.9) {
-// 		object_angle = object_angle*1.10;
-// 	}
 
 	display(0,"a: %d d: %d",(uint16_t)(object_angle*100),(uint16_t)object_distance);
 	display(1, "As:%u Ds:%d", angle, distance);

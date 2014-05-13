@@ -47,12 +47,12 @@ int main(void)
 	for (;;) {}
     while(1)
     {
-    	scanner_set_position(0, sensor_left);
-	 	_delay_ms(4000);
-	 	scanner_set_position(90, sensor_left);
-	 	_delay_ms(4000);
-	 	scanner_set_position(180, sensor_left);
-    	_delay_ms(4000);
+//     	scanner_set_position(0, sensor_left);
+// 	 	_delay_ms(4000);
+// 	 	scanner_set_position(90, sensor_left);
+// 	 	_delay_ms(4000);
+// 	 	scanner_set_position(180, sensor_left);
+//     	_delay_ms(4000);
 // 		ADCSRA |= (1 << ADSC);
 // 		while (ADCSRA & (1 << ADSC));
 // 		ADCSRA &= ~(1 << ADIF);
