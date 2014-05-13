@@ -44,9 +44,10 @@ int main(void)
 	object_detection(0, sensor_left);
 // 	_delay_ms(4000);
 
-	for (;;) {}
+
     while(1)
     {
+
 //     	scanner_set_position(0, sensor_left);
 // 	 	_delay_ms(4000);
 // 	 	scanner_set_position(90, sensor_left);
