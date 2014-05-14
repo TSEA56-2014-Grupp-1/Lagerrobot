@@ -14,6 +14,9 @@
  */
 void line_init();
 
+void send_line_data(uint8_t id, uint16_t metadata);
+
+
 /*
  *	@brief Updates the linesensor, calculates line weight and detects pickup stations.
  */
@@ -121,5 +124,7 @@ void calibrate_linesensor(uint8_t id, uint16_t metadata);
  *	@brief Clears the pickupstation data.
  */
 void clear_pickupstation();
+
+uint8_t get_station_data();
 
 #endif /* LINESENSOR_H_ */
