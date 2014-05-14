@@ -189,7 +189,7 @@ void object_detection(sensor sensor_id)
 	uint8_t send_status;
 	do {
 		send_status = 0;
-		send_status += bus_transmit(BUS_ADDRESS_ARM,3, (uint16_t)(object_angle*100));
+		send_status += bus_transmit(BUS_ADDRESS_ARM,3, (uint16_t)(object_angle*1000));
 		_delay_ms(50);
 		send_status += bus_transmit(BUS_ADDRESS_ARM,4, (uint16_t)object_distance);
 		_delay_ms(50);
