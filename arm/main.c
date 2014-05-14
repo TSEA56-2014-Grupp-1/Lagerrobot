@@ -223,6 +223,10 @@ int main(void) {
 	bus_register_receive(12, object_return);
 
 	_delay_ms(1000);
+
+	// Make sure claw is open
+	arm_claw_open();
+
 	while (bus_transmit(BUS_ADDRESS_SENSOR, 9, 1));
 	object_side = LEFT;
 

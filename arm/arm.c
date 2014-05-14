@@ -405,7 +405,7 @@ void arm_move_perform_block(void) {
 	// Wait for base movement to complete
 	do {
 		_delay_ms(10);
-	} while (arm_joint_is_moving(ARM_JOINT_SHOULDER));
+	} while (arm_joint_is_moving(ARM_JOINT_BASE));
 
 	// Move rest of arm
 	arm_move_perform();
