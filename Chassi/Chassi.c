@@ -305,10 +305,7 @@ void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sens
 	
 	stop_wheels();
 	enable_rfid_reader();
-	_delay_ms(200);  // XXX How much delay is needed?
-	_delay_ms(200);
-	_delay_ms(200);
-	_delay_ms(200);
+	_delay_ms(500);  // XXX How much delay is needed?
 	read_rfid();
 	}
 }
@@ -316,42 +313,46 @@ void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sens
 // Sensor calls RFID_done as a response to read_rfid
 void RFID_done(uint8_t id, uint16_t id_and_station)
 {
-	int8_t station_id = (uint8_t)(id_and_station);
+	uint8_t station_id = (uint8_t)(id_and_station);
 	uint8_t station_data = (uint8_t)(id_and_station >> 8);
 	if (station_id != 0) // rfid found!
 	{
-		disable_rfid_reader();
-		display_station_and_rfid(station_data, station_id);
-		rfid_to_pc(station_id);
-		command_to_arm(station_data, station_id);
-		update_station_list(station_id);
-	}
-	else if (station_id == 0 && scan_count < 3) // no id found, start backing
-	{
-		drive_left_wheels(0, 200);
-		drive_right_wheels(0, 200);
-		_delay_ms(100);
 		stop_wheels();
-		_delay_ms(100); // XXX How much delay is needed? 
+		_delay_ms(1);
+		disable_rfid_reader();
+		_delay_ms(1);
+		display_station_and_rfid(station_data, station_id);
+		//rfid_to_pc(station_id);
+		update_station_list(station_id);
+		command_to_arm(station_data, station_id);
+	}
+	else if (station_id == 0 && scan_count < 13) // still no id found, drive forward
+	{
+		drive_left_wheels(1, 160);
+		drive_right_wheels(1, 160);
+		_delay_ms(100);
+		//stop_wheels();	
+		_delay_ms(100); // XXX How much delay is needed?
 		++scan_count;
 		read_rfid();
 	}
-	else if (station_id == 0 && scan_count < 20) // still no id found, drive forward
+		else if (station_id == 0 && scan_count < 35) // no id found, start backing
 	{
-		drive_left_wheels(1, 200);
-		drive_right_wheels(1, 200);
+		drive_left_wheels(0, 160);
+		drive_right_wheels(0, 160);
 		_delay_ms(100);
-		stop_wheels();	
-		_delay_ms(100); // XXX How much delay is needed?
+		//stop_wheels();
+		_delay_ms(100); // XXX How much delay is needed? 
 		++scan_count;
 		read_rfid();
 	}
 	else
 	{
+		stop_wheels();
 		disable_rfid_reader();
-		decision_to_pc(6);
-		display_station_and_rfid(station_data, 01);
-		drive_to_next();
+	//	decision_to_pc(6);
+		display_station_and_rfid(station_data, 1);
+		//drive_to_next();
 	}
 }
 
@@ -364,39 +365,44 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 	{
 		display(0, "st allready");
 		display(1, "handled");
-		decision_to_pc(5);
+	//	decision_to_pc(5);
 		drive_to_next();
 	}
 	else if(match == 1 && (station_data == 0)) // match with carrying and station to the right
 	{
-		decision_to_pc(2);
-		send_to_arm(2);	// 2 = put down object to the right
+	//	decision_to_pc(2);
+	//	send_to_arm(2);	// 2 = put down object to the right
+	arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
 	}
 	else if(match == 1 && (station_data == 2)) // match with carrying and station to the left
 	{
-		decision_to_pc(3);
-		send_to_arm(3); // 3 = put down object to the left
+	//	decision_to_pc(3);
+	//	send_to_arm(3); // 3 = put down object to the left
+	arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
+	
 	}
-	else if (carrying_rfid != 0) // Carrying object and no match with station
+	else if (carrying_rfid != 0 || pickup_station == 0) // Carrying object or not a pickupstation
 	{
-		decision_to_pc(4);
+	//	decision_to_pc(4);
 		drive_to_next();
 	}
 	else if (station_data == 0 && pickup_station == 1) // Not carrying and pickup station right
 	{
 		carrying_rfid = station_tag;
-		decision_to_pc(0);
-		send_to_arm(0); // 0 = pick up to the right
+	//	decision_to_pc(0);
+	//	send_to_arm(0); // 0 = pick up to the right
+	arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
 	}
 	else if (station_data == 2 && pickup_station == 1) // Not carrying and pickup station left
 	{
 		carrying_rfid = station_tag;
-		decision_to_pc(1);
-		send_to_arm(1); // 1 = pick up to the left
+	//	decision_to_pc(1);
+	//	send_to_arm(1); // 1 = pick up to the left
+	arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
 	}
 	else
 	{
-		decision_to_pc(10); // 10 = unkown error
+	//	decision_to_pc(10); // 10 = unkown error
 		display(0, "error");
 		display(1, "cmd to arm");
 	}
@@ -407,7 +413,8 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 {
 	if (pickup_data == 0) // Arm picked up object
 	{
-		decision_to_pc(7);
+		//decision_to_pc(7);
+		_delay_ms(2000);
 		drive_to_next();
 	}
 	else if (pickup_data == 1) // Arm put down object
@@ -415,19 +422,20 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 		handled_stations_list[handled_count++] = carrying_rfid;
 		handled_stations_list[handled_count++] = carrying_rfid + 1;
 		carrying_rfid = 0;
-		decision_to_pc(8);
+	//	decision_to_pc(8);
+		_delay_ms(2000);
 		drive_to_next();
 	}
 	else if (pickup_data == 2) // Arm did not find object to pick up
 	{
-		decision_to_pc(9);
+	//	decision_to_pc(9);
 		carrying_rfid = 0;
 		display(0, "arm found");
 		display(1, "nothing");
 	}
 	else 
 	{
-		decision_to_pc(10); // 10 = unkown error
+	//	decision_to_pc(10); // 10 = unkown error
 		display(0, "error");
 		display(1, "arm_is_done");
 	}
