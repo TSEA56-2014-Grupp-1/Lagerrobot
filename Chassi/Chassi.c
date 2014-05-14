@@ -55,6 +55,10 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 	TIMSK0 |= (1 << OCIE0A); // Enable timer interrupts
 }
 
+uint16_t got_steering_request(uint8_t id, uint16_t metadata) {
+	return steering_wheel;
+}
+
 
 uint8_t is_station(uint8_t station_data)
 {
@@ -135,7 +139,7 @@ int main(void)
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
 	bus_register_receive(2, arm_is_done);
-
+	bus_register_response(5, got_steering_request);
 	sei();
 	//enable timer interrupts for ocie0a
  	TIMSK0 |= (1 << OCIE0A);

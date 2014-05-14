@@ -8,7 +8,7 @@
 #define PKT_CALIBRATION_COMMAND	3	//		sensor id(1)
 #define PKT_ARM_STATUS			4	//		<not defined yet>
 #define PKT_CHASSIS_STATUS		5	//		<not defined yet>
-#define PKT_LINE_DATA			6	//		sensor values(1-11), line flags(12), center of mass(13)
+#define PKT_LINE_DATA			6	//		sensor values(1-11), line flags(12), center of mass(13), steering wheel(14)
 #define PKT_RANGE_DATA			7	//		ranger values(1-3), distances(4-6), angles(7-8) 
 #define PKT_RFID_DATA			8	//		tag bytes(1)
 #define	PKT_CHASSIS_DECISION	9	//		type of decision (1)
@@ -18,7 +18,6 @@
 #define PKT_SPOOFED_RESPONSE	13	//		bus response packets(1-2)
 #define PKT_SPOOFED_TRANSMIT	14	//		bus transmit packets(1-4) (address, id, metadata_h, metadata_l)
 #define PKT_CALIBRATION_DATA    15  //      calibration value (1)
-
 
 /*	commands (in packets)	|	cmd_id	  |	command data					*/ 
 #define CMD_ARM_MOVE			0	//		coordinate(1) [x = 0, y = 1, angle = 2], direction(2) [1=up, 0=down], start/stop(3) [start = 1, stop = 0]

@@ -49,6 +49,8 @@ uint8_t is_station(uint8_t station_data);
 uint16_t request_rfid_tag();
 void arm_is_done(uint8_t id, uint16_t pickup_data);
 void send_to_arm(uint16_t arm_action);
+
+uint16_t got_steering_request(uint8_t id, uint16_t metadata);
 /*
 void disable_rfid_reader();
 void enable_rfid_reader();
