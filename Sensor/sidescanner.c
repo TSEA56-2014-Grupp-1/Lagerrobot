@@ -46,7 +46,7 @@ uint8_t scanner_set_position(uint8_t angle, sensor sensor_id) {
 	return 0;
 }
 
-void sidescanner_init()
+void sidescanner_init(sensor sensor_id)
 {
 	DDRB |= 0b11000000;	//Set port direction
 
@@ -66,9 +66,13 @@ void sidescanner_init()
 
 	//Enable adc, Set ADIF flag, Set ADC Interreupt enable, set prescaler
 	ADCSRA = 0b10011111;
-	//set AD-channel 1
-	ADMUX = 0b00000001;
-	//Start AD-conversion
+	
+	//set AD-channel 1 if sensor left, 2 if sensor right
+	if (sensor_id == sensor_left)
+		ADMUX = 0b00000001;
+	else if(sensor_id == sensor_right)
+		ADMUX = 0b00000010;
+	
 
 	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_left);
 	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_right);
@@ -161,12 +165,10 @@ double calculate_distance_coordinate(uint16_t angle, uint16_t distance)	{
 
 void object_detection(uint8_t callback_id, uint16_t meta_data)
 {
-	sidescanner_init();
 
 	sensor sensor_id = meta_data;
 
 	uint16_t first_angle = 0;
-
 	uint16_t distance = 0;
 	uint16_t second_angle = 0;
 

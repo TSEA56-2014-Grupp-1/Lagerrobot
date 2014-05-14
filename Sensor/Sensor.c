@@ -37,13 +37,13 @@ int main(void)
 {
 
 	bus_init(4);
-	sidescanner_init();
+	sidescanner_init(sensor_left);
 
 	sei();
 
 	object_detection(0, sensor_left);
 // 	_delay_ms(4000);
-
+		scanner_set_position(90,sensor_left);
 
     while(1)
     {

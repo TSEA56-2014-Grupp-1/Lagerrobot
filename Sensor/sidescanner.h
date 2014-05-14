@@ -25,7 +25,7 @@
 #include <util/delay.h>
 
 void object_detection(uint8_t callback_id, uint16_t meta_data);
-void sidescanner_init();
+void sidescanner_init(sensor sensor_id);
 uint8_t scanner_set_position(uint8_t angle, sensor sensor_id);
 
 #endif /* SIDESCANNER_H_ */
