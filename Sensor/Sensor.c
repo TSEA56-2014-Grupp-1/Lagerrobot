@@ -33,9 +33,11 @@ void sensor_task_manager()	{
 			break;
 		case 1:
 			object_detection(sensor_left);
+			sensor_task = 3;
 			break;
 		case 2:
 			object_detection(sensor_right);
+			sensor_task = 3;
 			break;
 		default:
 			_delay_ms(10);
