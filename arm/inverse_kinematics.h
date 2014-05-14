@@ -26,8 +26,8 @@
  *
  *	@{
  */
-#define ARM_LENGTH_LINK_1 152L
-#define ARM_LENGTH_LINK_2 149L
+#define ARM_LENGTH_LINK_1 151L
+#define ARM_LENGTH_LINK_2 148L
 #define ARM_LENGTH_LINK_3 152L
 // @}
 
@@ -38,10 +38,10 @@
  *
  *	@{
  */
-#define ARM_JOINT_BASE_ORIGIN_OFFSET         518.0f
-#define ARM_JOINT_SHOULDER_ORIGIN_OFFSET     740.0f
-#define ARM_JOINT_ELBOW_ORIGIN_OFFSET        765.0f
-#define ARM_JOINT_WRIST_ORIGIN_OFFSET        511.0f
+#define ARM_JOINT_BASE_ORIGIN_OFFSET         511.0f
+#define ARM_JOINT_SHOULDER_ORIGIN_OFFSET     757.0f
+#define ARM_JOINT_ELBOW_ORIGIN_OFFSET        775.0f
+#define ARM_JOINT_WRIST_ORIGIN_OFFSET        497.0f
 #define ARM_JOINT_WRIST_ROTATE_ORIGIN_OFFSET 511.0f
 // @}
 
@@ -60,7 +60,7 @@
  *	Shortest horizontal distance in mm from the arm's origin to the robot's edge.
  *	This is used when calculating valid positions for the arm's joints.
  */
-#define ARM_ROBOT_EDGE 140L
+#define ARM_ROBOT_EDGE 170L
 
 uint16_t ik_joint_rad_to_angle(uint8_t id, float angle);
 

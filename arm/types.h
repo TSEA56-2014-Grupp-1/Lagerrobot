@@ -30,4 +30,6 @@ typedef struct {
 	float t3;
 } arm_joint_angles;
 
+typedef enum {LEFT, RIGHT} arm_side;
+
  #endif /* TYPES_H_ */

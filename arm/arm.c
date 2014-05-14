@@ -15,8 +15,9 @@ void arm_init(void)
 	servo_write(
 		SERVO_BROADCASTING_ID,
 		SERVO_CW_COMPLIANCE_MARGIN,
-		0x00, 0x00, 0x40, 0x40);
+		0x00, 0x00, 0x30, 0x30);
 
+	servo_write_uint16(SERVO_BROADCASTING_ID, SERVO_PUNCH_L, 10);
 	servo_write_uint16(SERVO_BROADCASTING_ID, SERVO_GOAL_SPEED_L, 0x040);
 }
 
@@ -61,45 +62,57 @@ uint8_t arm_valid_angle(uint8_t joint, uint16_t angle) {
  *	@param joint Joint index. Use ARM_JOINT_* constants.
  *	@param angle Angle to move joint to
  *
- *	@return 1 if valid joint and angle, else 0
+ *	@return 0 if valid joint and angle, else status code from servo_receive()
  */
 uint8_t arm_move_add(uint8_t joint, uint16_t angle) {
+	uint8_t status;
+
 	if (!arm_valid_angle(joint, angle)) {
-		return 0;
+		return 12;
 	}
 
 	switch (joint) {
 		case ARM_JOINT_BASE:
-			servo_reg_write_uint16(ARM_SERVO_BASE, SERVO_GOAL_POSITION_L, angle);
+			status = servo_reg_write_uint16(ARM_SERVO_BASE, SERVO_GOAL_POSITION_L, angle);
 			break;
 		case ARM_JOINT_SHOULDER:
-			servo_reg_write_uint16(
+			status = servo_reg_write_uint16(
 				ARM_SERVO_SHOULDER_1, SERVO_GOAL_POSITION_L, angle);
-			servo_reg_write_uint16(
+
+			if (status) {
+				break;
+			}
+
+			status = servo_reg_write_uint16(
 				ARM_SERVO_SHOULDER_2, SERVO_GOAL_POSITION_L, 1023 - angle);
 			break;
 		case ARM_JOINT_ELBOW:
-			servo_reg_write_uint16(
+			status = servo_reg_write_uint16(
 				ARM_SERVO_ELBOW_1, SERVO_GOAL_POSITION_L, angle);
-			servo_reg_write_uint16(
+
+			if (status) {
+				break;
+			}
+
+			status = servo_reg_write_uint16(
 				ARM_SERVO_ELBOW_2, SERVO_GOAL_POSITION_L, 1023 - angle);
 			break;
 		case ARM_JOINT_WRIST:
-			servo_reg_write_uint16(ARM_SERVO_WRIST, SERVO_GOAL_POSITION_L, angle);
+			status = servo_reg_write_uint16(ARM_SERVO_WRIST, SERVO_GOAL_POSITION_L, angle);
 			break;
 		case ARM_JOINT_WRIST_ROTATE:
-			servo_reg_write_uint16(
+			status = servo_reg_write_uint16(
 				ARM_SERVO_WRIST_ROTATE, SERVO_GOAL_POSITION_L, angle);
 			break;
 		case ARM_JOINT_CLAW:
-			servo_reg_write_uint16(ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, angle);
+			status = servo_reg_write_uint16(ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, angle);
 			break;
 		default:
 			// We should never get here
-			return 0;
+			return 13;
 	}
 
-	return 1;
+	return status;
 }
 
 /**
@@ -115,15 +128,16 @@ void arm_move_perform(void) {
  *	@param joint Joint index. Use ARM_JOINT_* constants.
  *	@param angle Angle to move joint to
  *
- *	@return 1 if valid joint and angle, else 0
+ *	@return 0 if valid joint and angle, else error from servo_receive()
  */
 uint8_t arm_move(uint8_t joint, uint16_t angle) {
-	if (!arm_move_add(joint, angle)) {
-		return 0;
+	uint8_t status = arm_move_add(joint, angle);
+	if (status) {
+		return status;
 	}
 
 	arm_move_perform();
-	return 1;
+	return 0;
 }
 
 /**
@@ -192,30 +206,40 @@ uint8_t arm_is_moving(void) {
 
 /**
  *	Given angles in radians for shoulder, elbow and wrist joint will add move
- *	commands to related servos.
+ *	commands.
  *
  *	@param joint_angles Angles in radians as provided by the inverse kinematics
  *	                    library.
  */
-void arm_move_to_angles(arm_joint_angles joint_angles) {
-	arm_move_add(ARM_JOINT_BASE,
+uint8_t arm_move_to_angles(arm_joint_angles joint_angles) {
+	// Save errors for
+	uint8_t status;
+
+	status = arm_move_add(ARM_JOINT_BASE,
 		ik_joint_rad_to_angle(ARM_JOINT_BASE, joint_angles.t0));
-	arm_move_add(ARM_JOINT_SHOULDER,
+	if (status) {
+		return 1;
+	}
+
+	status = arm_move_add(ARM_JOINT_SHOULDER,
 		ik_joint_rad_to_angle(ARM_JOINT_SHOULDER, joint_angles.t1));
-	arm_move_add(ARM_JOINT_ELBOW,
+	if (status) {
+		return 2;
+	}
+
+	status = arm_move_add(ARM_JOINT_ELBOW,
 		ik_joint_rad_to_angle(ARM_JOINT_ELBOW, joint_angles.t2));
-	arm_move_add(ARM_JOINT_WRIST,
+	if (status) {
+		return 3;
+	}
+
+	status = arm_move_add(ARM_JOINT_WRIST,
 		ik_joint_rad_to_angle(ARM_JOINT_WRIST, joint_angles.t3));
-}
+	if (status) {
+		return 4;
+	}
 
-uint8_t arm_start_movement(uint8_t joint)
-{
-	return servo_write(arm_joint_to_servo(joint),SERVO_GOAL_SPEED_L, ARM_SERVO_DEFAULT_SPEED);
-}
-
-uint8_t arm_stop_movement(uint8_t joint)
-{
-	return servo_write(arm_joint_to_servo(joint),SERVO_GOAL_SPEED_L, 0, 0);
+	return 0;
 }
 
 /**
@@ -228,7 +252,6 @@ uint8_t arm_claw_open(void) {
 	if (status_code) {
 		return status_code;
 	}
-
 
 	while (arm_joint_is_moving(ARM_JOINT_CLAW));
 
@@ -268,7 +291,7 @@ uint8_t arm_claw_close(void) {
 /**
  *	Return arm to resting position. Block until operation is complete
  */
-void arm_resting_position() {
+void arm_resting_position(void) {
 	// Raise arm before turning base to prevent collision with self
 	arm_move_add(ARM_JOINT_SHOULDER, 511);
 	arm_move_add(ARM_JOINT_ELBOW, 511);
@@ -303,27 +326,15 @@ void arm_resting_position() {
 uint8_t arm_move_to_coordinate(arm_coordinate coord) {
 	arm_joint_angles joint_angles;
 
-	if (ik_angles(coord, &joint_angles)) {
-		return 1;
+	uint8_t status = ik_angles(coord, &joint_angles);
+	if (status) {
+		return status;
 	}
 
-	arm_move_to_angles(joint_angles);
-	arm_move_perform();
-
-	// Wait for movement to complete
-	do {
-		_delay_ms(20);
-	} while (arm_is_moving());
-
-	return 0;
-}
-
-/**
- *	Return item in claw to the given coordinate.
- */
-uint8_t arm_return_item(arm_coordinate coord) {
-	arm_move_to_coordinate(coord);
-	arm_claw_open();
+	status = arm_move_to_angles(joint_angles);
+	if (status) {
+		return status + 2;
+	}
 
 	return 0;
 }
@@ -366,7 +377,9 @@ uint8_t arm_angles(arm_joint_angles *joint_angles) {
 }
 
 /**
- *	Calculate current arm position as an arm coordinate
+ *	Calculate current arm position as an arm coordinate.
+ *
+ *	@return Status code as defined by arm_angles()
  */
 uint8_t arm_position(arm_coordinate *coord) {
 	arm_joint_angles joint_angles;
@@ -379,4 +392,26 @@ uint8_t arm_position(arm_coordinate *coord) {
 	*coord = ik_calculate_coordinate(joint_angles);
 
 	return 0;
+}
+
+/**
+ *	Perform all queued moves and block until done. Base movement is performed
+ *	before the rest of the arm is moved.
+ */
+void arm_move_perform_block(void) {
+	// Move base first
+	servo_action(arm_joint_to_servo(ARM_JOINT_BASE));
+
+	// Wait for base movement to complete
+	do {
+		_delay_ms(10);
+	} while (arm_joint_is_moving(ARM_JOINT_SHOULDER));
+
+	// Move rest of arm
+	arm_move_perform();
+
+	// Wait for movement to complete
+	do {
+		_delay_ms(10);
+	} while (arm_is_moving());
 }

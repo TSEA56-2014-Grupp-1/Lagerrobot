@@ -62,7 +62,7 @@ uint16_t ik_joint_rad_to_angle(uint8_t joint, float angle) {
 
 	switch (joint) {
 		case ARM_JOINT_BASE:
-			return (uint16_t)(ARM_JOINT_BASE_ORIGIN_OFFSET - angle * common_factor + 0.5f);
+			return (uint16_t)(ARM_JOINT_BASE_ORIGIN_OFFSET + angle * common_factor + 0.5f);
 		case ARM_JOINT_SHOULDER:
 			return (uint16_t)(ARM_JOINT_SHOULDER_ORIGIN_OFFSET - angle * common_factor + 0.5f);
 		case ARM_JOINT_ELBOW:

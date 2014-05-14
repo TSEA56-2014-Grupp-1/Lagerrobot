@@ -28,13 +28,13 @@
  *
  *	@{
  */
-#define ARM_SERVO_BASE         1
+#define ARM_SERVO_BASE         7
 #define ARM_SERVO_SHOULDER_1   2
 #define ARM_SERVO_SHOULDER_2   3
 #define ARM_SERVO_ELBOW_1      4
 #define ARM_SERVO_ELBOW_2      5
 #define ARM_SERVO_WRIST        6
-#define ARM_SERVO_WRIST_ROTATE 7
+#define ARM_SERVO_WRIST_ROTATE 1
 #define ARM_SERVO_CLAW         8
 // @}
 
@@ -97,15 +97,18 @@ void arm_init(void);
 
 uint8_t arm_move(uint8_t joint, uint16_t angle);
 uint8_t arm_move_add(uint8_t joint, uint16_t angle);
-void arm_move_perform(void);
-void arm_move_to_angles(arm_joint_angles joint_angles);
+uint8_t arm_move_to_angles(arm_joint_angles joint_angles);
 uint8_t arm_move_to_coordinate(arm_coordinate coord);
+void arm_move_perform(void);
+void arm_move_perform_block(void);
 
+void arm_resting_position(void);
+uint8_t arm_position(arm_coordinate *coord);
+
+uint8_t arm_is_moving(void);
 uint8_t arm_joint_is_moving(uint8_t joint);
+
 uint8_t arm_claw_open(void);
 uint8_t arm_claw_close(void);
-
-uint8_t arm_start_movement(uint8_t joint);
-uint8_t arm_stop_movement(uint8_t joint);
 
 #endif /* ARM_H_ */

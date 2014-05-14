@@ -7,183 +7,249 @@
 #include "arm.h"
 #include "servo.h"
 #include "inverse_kinematics.h"
+#include "types.h"
 #include "../shared/LCD_interface.h"
 #include "../shared/bus.h"
 #include "../shared/usart.h"
 
-#define HEIGHT -150
+/**
+ *	Height of object to pick up
+ */
+#define OBJECT_HEIGHT 75
 
-typedef struct {
-	int16_t x;
-	int16_t y;
-	float angle;
-} delta_arm_coordinate;
+/**
+ *	Flag signaling whether there is a manual target or not
+ */
+uint8_t has_manual_target = 0;
 
+/**
+ *	Stores manual target's position
+ */
+arm_coordinate manual_target_position;
 
-uint8_t manual_control = 0;
-delta_arm_coordinate manual_control_change = {
+void manual_target(uint8_t callback_id, uint16_t data) {
+	switch (callback_id) {
+		case 6:
+			manual_target_position.x = data;
+			break;
+		case 7:
+			// Y-level starts at floor level for
+			manual_target_position.y = (int16_t)data + ARM_FLOOR_LEVEL;
+			break;
+		case 8:
+			manual_target_position.angle = (float)data / 1000;
+			break;
+		case 9:
+			manual_target_position.angle = (float)data / -1000;
+			break;
+		case 10:
+			has_manual_target = 1;
+			break;
+	}
+}
+
+/**
+ *	Flag for signaling that pickup of object should be done.
+ */
+uint8_t object_grab = 0;
+
+/**
+ *	Position for object to be picked up.
+ */
+arm_coordinate object_position;
+
+/**
+ *	Position where the most recently picked up object was. Used to place object.
+ */
+arm_coordinate last_object_position;
+
+/**
+ *	Flag if arm currently is carrying an object
+ */
+uint8_t has_object = 0;
+
+/**
+ *	Remember on which side of robot object to search for was
+ */
+arm_side object_side;
+
+/**
+ *	Handle data from distance sensors and initiate
+ */
+void object_pickup(uint8_t id, uint16_t data) {
+	switch (id) {
+		case 2: // Initiate object search on given side, left = 0, right = 1
+			while (bus_transmit(BUS_ADDRESS_SENSOR, 9, (data & 1) + 1));
+
+			switch (data) {
+				case LEFT:
+					object_side = LEFT;
+					break;
+				case RIGHT:
+					object_side = RIGHT;
+					break;
+			}
+			break;
+		case 3: // Angle received
+			switch (object_side) {
+				case LEFT:
+					object_position.angle = (float)data / 1000;
+					break;
+				case RIGHT:
+					object_position.angle = (float)data / -1000;
+					break;
+			}
+			break;
+		case 4: // Distance received
+			object_position.x = data;
+			object_position.y = ARM_FLOOR_LEVEL + OBJECT_HEIGHT;
+			break;
+		case 5: // Mark pickup ready
+			// Verify that we're not already carrying an object and that an object
+			// was found
+			if (data && !has_object) {
+				object_grab = 1;
+			} else {
+				// Tell chassis that we failed to find anything
+				while (bus_transmit(BUS_ADDRESS_CHASSIS, 2, 2));
+			}
+			break;
+	}
+}
+
+/**
+ *	Flag if object should be returned
+ */
+uint8_t object_drop_off = 0;
+
+/**
+ *	Listen to request to drop off object
+ */
+void object_return(uint8_t id, uint16_t data) {
+	if (has_object) {
+		object_drop_off = 1;
+	}
+}
+
+/**
+ *	Manual claw control state.
+ *
+ *	- 0 is do nothing
+ *	- 1 is close claw
+ *	- 2 is open claw
+ */
+uint8_t manual_control_claw = 0;
+
+/**
+ *	Open or close claw data = 0 means close and data = 1 means open
+ */
+void control_claw(uint8_t id, uint16_t data) {
+	manual_control_claw = (data & 1) + 1;
+}
+
+/**
+ *	Increase current position with values in this struct when controlling manually.
+ */
+arm_coordinate manual_control_change = {
 	.x = 0,
 	.y = 0,
 	.angle = 0
 };
 
-uint8_t pickup_item = 0;
-arm_coordinate pos_from_sensor;
-
-
-// TODO: Redesign this
-/*
-void arm_movement_command(uint8_t callback_id, uint16_t command_data) {
-	uint8_t joint = (uint8_t)(command_data);
-	uint8_t direction = (uint8_t)(command_data >> 8);
-
-	if (direction == 0)
-	{
-		arm_move(joint, joint_get_minangle(joint));
-		arm_start_movement(joint);
-	}
-	else if(direction == 1)
-	{
-		arm_move(joint, joint_get_maxangle(joint));
-		arm_start_movement(joint);
-	}
-}
-
-void arm_stop_movement(uint8_t callback_id, uint16_t _joint)
-{
-	usart_clear_buffer();
-	uint8_t data[2];
-	uint16_t int_data;
-	uint8_t status_code;
-	uint8_t joint = (uint8_t)_joint;
-
-	display(0, "%u", joint);
-
-	status_code = (uint16_t)servo_read(
-		joint_get_servo_id(joint),
-		 SERVO_PRESENT_POSITION_L,
-		  2,
-		   data);
-
-	int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
-
-	display(1, "%u %u", int_data, status_code);
-
-	arm_move_joint(joint, int_data);
-	_delay_ms(30);
-
-	while (arm_joint_is_moving(joint) & !(status_code == 0))
-	{
-		usart_clear_buffer();
-		status_code = (uint16_t)servo_read(joint_get_servo_id(joint), SERVO_PRESENT_POSITION_L, 2, data);
-		int_data = (uint16_t)data[0] | ((uint16_t)data[1] << 8);
-
-		arm_move_joint(joint, int_data);
-		_delay_ms(30);
-	}
-}
-*/
-
-uint8_t move_to_remote = 0;
-arm_coordinate remote_coordinate;
-void arm_process_remote_coordinate(uint8_t callback_id, uint16_t data) {
-	switch (callback_id) {
-		case 6:
-			remote_coordinate.x = data;
-			break;
-		case 7:
-			remote_coordinate.y = (int16_t)data + ARM_FLOOR_LEVEL;
-			break;
-		case 8:
-			remote_coordinate.angle = (float)data / 1000;
-			break;
-		case 9:
-			remote_coordinate.angle = (float)data / -1000;
-			break;
-		case 10:
-			move_to_remote = 1;
-			break;
-	}
-}
-
-void arm_receive_coord(uint8_t id, uint16_t data) {
-	if (id == 3) {
-		pos_from_sensor.angle = -1*(float)data / 100;
-	}
-	else if (id == 4) {
-		pos_from_sensor.x = data;
-		pos_from_sensor.y = HEIGHT;
-	}
-}
-
-void sensor_done(uint8_t id, uint16_t data) {
-	pickup_item = 1;
-}
-
+/**
+ *	Move arm target manually
+ */
 void update_manual_control(uint8_t id, uint16_t data) {
-	// Check if X should be moved
-	if (data & 2) {
-		if (data & 1) {
-			manual_control_change.x = 5;
-		} else {
-			manual_control_change.x = -5;
-		}
-	} else {
-		manual_control_change.x = 0;
-	}
-
-	// Check if Y should be moved
-	if (data & 8) {
-		if (data & 4) {
-			manual_control_change.y = 5;
-		} else {
-			manual_control_change.y = -5;
-		}
-	} else {
-		manual_control_change.y = 0;
-	}
-
-	// Check if angle should be moved
-	if (data & 32) {
-		if (data & 16) {
-			manual_control_change.angle = 0.17;
-		} else {
-			manual_control_change.angle = -0.17;
-		}
-	} else {
-		manual_control_change.angle = 0;
+	switch (data >> 2) {
+		case 0: // x
+			if (data & 2) {
+				if (data & 1) {
+					manual_control_change.x = 1;
+				} else {
+					manual_control_change.x = -1;
+				}
+			} else {
+				manual_control_change.x = 0;
+			}
+			break;
+		case 1: // y
+			if (data & 2) {
+				if (data & 1) {
+					manual_control_change.y = 1;
+				} else {
+					manual_control_change.y = -1;
+				}
+			} else {
+				manual_control_change.y = 0;
+			}
+			break;
+		case 2: // angle
+			if (data & 2) {
+				if (data & 1) {
+					manual_control_change.angle = 0.03;
+				} else {
+					manual_control_change.angle = -0.03;
+				}
+			} else {
+				manual_control_change.angle = 0;
+			}
+			break;
 	}
 }
 
 int main(void) {
+	uint8_t status;
+	arm_coordinate current_position;
+
 	servo_init();
 	arm_init();
 	bus_init(BUS_ADDRESS_ARM);
 
-	bus_register_receive(2, update_manual_control);
+	bus_register_receive(1, control_claw);
 
-	bus_register_receive(3, arm_receive_coord);
-	bus_register_receive(4, arm_receive_coord);
-	bus_register_receive(5, sensor_done);
+	bus_register_receive(2, object_pickup);
+	bus_register_receive(3, object_pickup);
+	bus_register_receive(4, object_pickup);
+	bus_register_receive(5, object_pickup);
 
-	bus_register_receive(6, arm_process_remote_coordinate);
-	bus_register_receive(7, arm_process_remote_coordinate);
-	bus_register_receive(8, arm_process_remote_coordinate);
-	bus_register_receive(9, arm_process_remote_coordinate);
-	bus_register_receive(10, arm_process_remote_coordinate);
+	bus_register_receive(6, manual_target);
+	bus_register_receive(7, manual_target);
+	bus_register_receive(8, manual_target);
+	bus_register_receive(9, manual_target);
+	bus_register_receive(10, manual_target);
+
+	bus_register_receive(11, update_manual_control);
+
+	bus_register_receive(12, object_return);
 
 	_delay_ms(1000);
-
-	arm_claw_open();
-
-	arm_joint_angles joint_angles;
+	while (bus_transmit(BUS_ADDRESS_SENSOR, 9, 1));
+	object_side = LEFT;
 
 	for (;;) {
-		if (pickup_item) {
-			switch (ik_angles(pos_from_sensor, &joint_angles)) {
+		if (object_grab) {
+			status = arm_move_to_coordinate(object_position);
+
+			switch (status) {
 				case 0:
-					arm_move_to_angles(joint_angles);
-					arm_move_perform();
+					// Save position for when dropping off object
+					last_object_position = object_position;
+
+					display(0, "Success");
+
+					// Perform movement to coordinate
+					arm_move_perform_block();
+
+					// Grip object and return to resting position
+					arm_claw_close();
+					display(0, "Picked object");
+					arm_resting_position();
+
+					// TODO: Verify that the claw actually gripped something
+					has_object = 1;
+
+					// Send command that arm picked up object to chassis
+					while (bus_transmit(BUS_ADDRESS_CHASSIS, 2, 0));
 					break;
 				case 1:
 					display(0, "Invalid coordinate");
@@ -191,20 +257,71 @@ int main(void) {
 				case 2:
 					display(0, "No P found");
 					break;
+				default:
+					display(0, "Error %u", status);
 			}
-			pickup_item = 0;
-		} else if (move_to_remote) {
-			display(0, "%d, %u",
-				(int16_t)(remote_coordinate.angle * 1000),
-				ik_joint_rad_to_angle(ARM_JOINT_BASE, remote_coordinate.angle));
+			object_grab = 0;
+		} else if (object_drop_off) {
+			// Move to the position where object was picked up
+			status = arm_move_to_coordinate(last_object_position);
+
+			switch (status) {
+				case 0:
+					// Perform movement to coordinate
+					arm_move_perform_block();
+
+					// Leave object and return to resting position
+					arm_claw_open();
+					display(0, "Left object");
+					arm_resting_position();
+
+					// TODO: Verify that the claw actually gripped something
+					has_object = 0;
+
+					// Send command that arm is done to chassis
+					while (bus_transmit(BUS_ADDRESS_CHASSIS, 2, 1));
+					break;
+				case 1:
+					display(0, "Invalid coordinate");
+					break;
+				case 2:
+					display(0, "No P found");
+					break;
+				default:
+					display(0, "Error %u", status);
+			}
+			object_drop_off = 0;
+		} else if (has_manual_target) {
 			display(1, "X:%d,Y:%d",
-				remote_coordinate.x,
-				remote_coordinate.y);
+				manual_target_position.x,
+				manual_target_position.y);
 
-			arm_move_to_coordinate(remote_coordinate);
-			move_to_remote = 0;
-		} else if (manual_control) {
+			arm_move_to_coordinate(manual_target_position);
+			arm_move_perform_block();
 
+			has_manual_target = 0;
+		} else if (
+			manual_control_change.x != 0 ||
+			manual_control_change.y != 0 ||
+			manual_control_change.angle != 0)
+		{
+			if (!arm_position(&current_position)) {
+				current_position.x += manual_control_change.x;
+				current_position.y += manual_control_change.y;
+				current_position.angle += manual_control_change.angle;
+
+				arm_move_to_coordinate(current_position);
+				arm_move_perform();
+			}
+		} else if (manual_control_claw) {
+			if (manual_control_claw == 1) {
+				display(0, "Claw close");
+				arm_claw_close();
+			} else {
+				display(0, "Claw open");
+				arm_claw_open();
+			}
+			manual_control_claw = 0;
 		}
 	}
 }

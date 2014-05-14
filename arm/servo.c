@@ -334,6 +334,7 @@ uint8_t _servo_write(uint8_t id, uint8_t data_length, ...) {
 
 	// TODO: Calculate optimal delay-time!
 	_delay_us(1200);
+
 	return servo_receive(id, 0);
 }
 
@@ -384,6 +385,9 @@ uint8_t _servo_reg_write(uint8_t id, uint8_t data_length, ...) {
 	if (id == SERVO_BROADCASTING_ID) {
 		return 0;
 	}
+
+	// TODO: Calculate optimal delay-time!
+	_delay_us(1200);
 
 	return servo_receive(id, 0);
 }
