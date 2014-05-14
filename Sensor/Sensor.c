@@ -20,6 +20,35 @@ ISR(ADC_vect) {
 	}
 }
 
+void sensor_task_manager()	{
+	
+	switch (sensor_task)	{
+		case 0:
+		calculate_line_weight();
+		break;
+		case 1:
+		//XXX: object_detection(sensor_left);
+		break;
+		case 2:
+		//XXX: object_detection(sensor_right);
+		break;
+	}
+}
+
+void set_task(uint8_t id, uint16_t data)	{
+	sensor_task = data;
+	if (data == 0) {
+		clear_pickupstation();
+		line_init();
+	}
+	else if (data == 1) {
+		//XXX: sidescanner_init(sensor_left);
+	}
+	else if (data == 2) {
+		//XXX: sidescanner_init(sensor_right);
+	}
+}
+
 int main(void)
 {
 	bus_init(BUS_ADDRESS_SENSOR);
@@ -27,9 +56,7 @@ int main(void)
 	bus_register_response(3, return_linesensor);
 	bus_register_response(5, set_tape_reference);
 	bus_register_receive(2, calibrate_linesensor);
-	bus_register_receive(9, set_task_follow_line);
-	bus_register_receive(12, set_task_pickup_left);
-	bus_register_receive(13, set_task_pickup_right);
+	bus_register_receive(9, set_task);
 	
 	RFID_scanner_init();
 	usart_init(520);
@@ -38,32 +65,4 @@ int main(void)
     {
 		sensor_task_manager();
     }
-}
-
-void sensor_task_manager()	{
-	
-	switch (sensor_task)	{
-		case 0 :
-			calculate_line_weight();
-		case 1:
-			//pickup station left
-		case 2:
-			//pickup station right
-		}	
-}
-
-void set_task_pickup_left()	{
-	sensor_task = 1;
-	sidescanner_init();
-}
-
-void set_task_pickup_right()	{
-	sensor_task = 2;
-	sidescanner_init();
-}
-
-void set_task_follow_line()	{
-	sensor_task = 0;
-	clear_pickupstation();
-	line_init();
 }

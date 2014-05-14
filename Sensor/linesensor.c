@@ -329,7 +329,7 @@ void calibrate_linesensor(uint8_t id, uint16_t metadata)	{
 /*
  *	@brief Clears the pickupstation data.
  */
-void clear_pickupstation(uint8_t id, uint16_t metadata) {
+void clear_pickupstation() {
 	pickup_station = No;
 	previous_pickup_station = No;
 	pickup_iterator = 0;
