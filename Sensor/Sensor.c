@@ -13,6 +13,8 @@
 #include "../shared/bus.h"
 #include "../RFID_scanner/RFID_scanner.h"
 #include "../shared/usart.h"
+#include "sidescanner.h"
+#include "distance_sensors.h"
 
 uint8_t sensor_task = 0;
 
@@ -27,14 +29,14 @@ void sensor_task_manager()	{
 	
 	switch (sensor_task)	{
 		case 0:
-		calculate_line_weight();
-		break;
+			calculate_line_weight();
+			break;
 		case 1:
-		//XXX: object_detection(sensor_left);
-		break;
+			object_detection(sensor_left);
+			break;
 		case 2:
-		//XXX: object_detection(sensor_right);
-		break;
+			object_detection(sensor_right);
+			break;
 		default:
 			_delay_ms(10);
 			break;
@@ -48,16 +50,19 @@ void set_task(uint8_t id, uint16_t data)	{
 		line_init();
 	}
 	else if (data == 1) {
-		//XXX: sidescanner_init(sensor_left);
+		sidescanner_init(sensor_left);
 	}
 	else if (data == 2) {
-		//XXX: sidescanner_init(sensor_right);
+		sidescanner_init(sensor_right);
 	}
 }
 
 int main(void)
 {
 	bus_init(BUS_ADDRESS_SENSOR);
+	usart_init(520);
+	RFID_scanner_init();
+	
 	bus_register_receive(2, calibrate_linesensor);
 	bus_register_response(3, return_linesensor);
 	bus_register_response(4, return_line_weight);
@@ -68,8 +73,6 @@ int main(void)
 	bus_register_receive(10, read_rfid);
 	bus_register_receive(11, send_line_data);
 
-	usart_init(520);
-	RFID_scanner_init();
 	sei();
     while(1)
     {
