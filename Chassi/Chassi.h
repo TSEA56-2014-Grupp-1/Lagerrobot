@@ -15,19 +15,21 @@
 #include <stdlib.h>
 
 // Decisions
-#define AT_STATION 1;
-#define WRONG_STATION_MEM 2;
-#define WRONG_STATION_RFID 3;
-#define OBJECT_IS_PUT_DOWN 4;
-#define LOOK_FOR_OBJECT 5;
+
 
 // Global variables
 uint8_t carrying_rfid;
-uint8_t first_lap_done;
-uint8_t station_list[100];
-uint8_t station_count;
+uint8_t handled_stations_list[18];
+uint8_t handled_count;
 uint8_t follow_line;
 uint8_t	manual_control;
+uint8_t scan_count;
+uint8_t station_count;
+uint8_t station_list[18];
+uint8_t lap_finished;
+uint8_t number_of_stations;
+
+
 
 /**
  * @brief Requests line data from the sensor unit.
@@ -36,7 +38,6 @@ uint8_t	manual_control;
  * @return The data returned by the Sensor unit. High byte contains station information, 
  * low byte contains the value of the center of mass for the line sensor.
  */
-uint16_t request_line_data();
 
 /**
  * @brief Checks if provided station information indicates a station.
@@ -45,17 +46,28 @@ uint16_t request_line_data();
  * @return 1 if the information indicates a station, 0 otherwise.
  */
 uint8_t is_station(uint8_t station_data);
-
+void clear_sensor();
 uint16_t request_rfid_tag();
 void arm_is_done(uint8_t id, uint16_t pickup_data);
 void send_to_arm(uint16_t arm_action);
-/*
-void disable_rfid_reader();
-void enable_rfid_reader();
+void display_station_and_rfid(uint8_t station_data, uint8_t tag);
+void command_to_arm(uint8_t station_data, uint8_t station_tag);
+void RFID_done(uint8_t id, uint16_t id_and_station);
+void read_rfid();
+void timer_interrupt_init();
+void start_button_init();
+void disable_timer_interrupts();
+void enable_timer_interrupts();
+void receive_line_data(uint8_t id, uint16_t line_data);
+void request_line_data();
+void drive_to_next();
+uint8_t station_is_handled(uint8_t tag);
+void decision_to_pc(uint8_t decision);
+void rfid_to_pc(uint8_t tag_id);
+uint8_t is_pickup_station(uint8_t id);
+uint8_t skip_station();
+void update_station_list(uint8_t station_id);
+void drive(uint8_t curr_error);
 
-void follow_line(uint8_t line_data)
-uint8_t is_right_station_mem()
-uint8_t save_time_and_rfid(uint8_t carrying_rfid) 
-*/
 
 #endif /* CHASSI_H_ */

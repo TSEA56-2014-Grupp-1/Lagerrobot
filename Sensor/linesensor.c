@@ -61,9 +61,34 @@ uint16_t pickup_iterator = 0;
  *	@param id Bus id of the function, unused.
  *	@param input_tape_reference The new value of tape_reference.
  */
+
+void send_line_data(uint8_t id, uint16_t metadata)
+{
+		ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+		station_type chassi_output = 1;
+		if(pickup_station == Left)
+		chassi_output = Left;
+		else if(pickup_station == No)
+		chassi_output = No;
+		else if(pickup_station == Right)
+		chassi_output = Right;
+		uint8_t timeout_counter = 0;
+		while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight)))
+		{
+			timeout_counter++;
+		}
+		//ADCSRA |= (1 << ADIE); // enable ADC- interrupt
+		line_init();
+}
+
 uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
 	tape_reference = input_tape_reference;
 	return 0;
+}
+
+uint8_t get_station_data()
+{
+	return pickup_station;
 }
 
 /*
@@ -329,10 +354,11 @@ void calibrate_linesensor(uint8_t id, uint16_t metadata)	{
 /*
  *	@brief Clears the pickupstation data.
  */
-void clear_pickupstation(uint8_t id, uint16_t metadata) {
+void clear_pickupstation() {
 	pickup_station = No;
 	previous_pickup_station = No;
 	pickup_iterator = 0;
+	line_init();
 }
 
 
