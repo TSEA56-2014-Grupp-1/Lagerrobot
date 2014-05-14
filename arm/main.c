@@ -227,6 +227,7 @@ int main(void) {
 	// Make sure claw is open
 	arm_claw_open();
 
+	// XXX: Trick system into thinking we have reached a pickup station
 	while (bus_transmit(BUS_ADDRESS_SENSOR, 9, 1));
 	object_side = LEFT;
 

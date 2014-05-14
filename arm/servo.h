@@ -65,6 +65,12 @@
 #define SERVO_DEFAULT_BAUD_RATE 0x0
 
 /**
+ *	Delay to wait before expecting a response from servos
+ *	TODO: Calculate optimal delay-time!
+ */
+#define SERVO_RESPONSE_DELAY 1200
+
+/**
  *	Magic address to make all servos listen
  */
 #define SERVO_BROADCASTING_ID 0xFE
@@ -156,6 +162,6 @@ uint8_t servo_write_uint8(uint8_t id, uint8_t address, uint8_t data);
 uint8_t servo_write_uint16(uint8_t id, uint8_t address, uint16_t data);
 uint8_t servo_reg_write_uint8(uint8_t id, uint8_t address, uint8_t data);
 uint8_t servo_reg_write_uint16(uint8_t id, uint8_t address, uint16_t data);
-void servo_action(uint8_t id);
+uint8_t servo_action(uint8_t id);
 
 #endif /* SERVO_H_ */

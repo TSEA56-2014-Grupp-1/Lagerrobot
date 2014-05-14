@@ -241,9 +241,6 @@ uint8_t servo_ping(uint8_t id) {
 		return 13;
 	}
 
-	// Disable interrupts while writing to servos
-	cli();
-
 	servo_send(id, SERVO_INST_PING);
 	return servo_receive(id, 0);
 }
@@ -266,8 +263,9 @@ uint8_t servo_read(uint8_t id, uint8_t address, uint8_t length, uint8_t *data) {
 
 	servo_send(id, SERVO_INST_READ, address, length);
 
-	// TODO: Calcualte optimal delay-time!
-	_delay_us(1200);
+	// Wait for servo to respond
+	_delay_us(SERVO_RESPONSE_DELAY);
+
 	return servo_receive(id, data);
 }
 
@@ -332,8 +330,8 @@ uint8_t _servo_write(uint8_t id, uint8_t data_length, ...) {
 		return 0;
 	}
 
-	// TODO: Calculate optimal delay-time!
-	_delay_us(1200);
+	// Wait for servo to respond
+	_delay_us(SERVO_RESPONSE_DELAY);
 
 	return servo_receive(id, 0);
 }
@@ -386,8 +384,8 @@ uint8_t _servo_reg_write(uint8_t id, uint8_t data_length, ...) {
 		return 0;
 	}
 
-	// TODO: Calculate optimal delay-time!
-	_delay_us(1200);
+	// Wait for servo to respond
+	_delay_us(SERVO_RESPONSE_DELAY);
 
 	return servo_receive(id, 0);
 }
@@ -424,6 +422,15 @@ uint8_t servo_reg_write_uint8(uint8_t id, uint8_t address, uint8_t data) {
  *	Send instruction to perform all registered writes by servo_reg_write() and
  *	servo_sync_reg_write()
  */
-void servo_action(uint8_t id) {
+uint8_t servo_action(uint8_t id) {
 	servo_send(id, SERVO_INST_ACTION);
+
+	if (id == SERVO_BROADCASTING_ID) {
+		return 0;
+	}
+
+	// Wait for servo to respond
+	_delay_us(SERVO_RESPONSE_DELAY);
+
+	return servo_receive(id, 0);
 }

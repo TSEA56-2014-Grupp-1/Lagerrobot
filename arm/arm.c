@@ -246,8 +246,8 @@ uint8_t arm_move_to_angles(arm_joint_angles joint_angles) {
  *	Open claw and block until operation is complete
  */
 uint8_t arm_claw_open(void) {
-	uint8_t status_code = servo_write(
-		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 0x00, 0x02);
+	uint8_t status_code = servo_write_uint16(
+		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 511);
 
 	if (status_code) {
 		return status_code;
@@ -265,8 +265,8 @@ uint8_t arm_claw_open(void) {
  *	@return status code as provided by servo_receive()
  */
 uint8_t arm_claw_close(void) {
-	uint8_t status_code = servo_write(
-		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 0x00, 0x00);
+	uint8_t status_code = servo_write_uint16(
+		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 0);
 	uint16_t load;
 
 	if (status_code) {
@@ -315,9 +315,7 @@ void arm_resting_position(void) {
 	// Wait for shoulder and elbow to complete movement
 	do {
 		_delay_ms(20);
-	} while (
-		arm_joint_is_moving(ARM_JOINT_SHOULDER) ||
-		arm_joint_is_moving(ARM_JOINT_ELBOW));
+	} while (arm_is_moving());
 }
 
 /**
@@ -404,7 +402,7 @@ void arm_move_perform_block(void) {
 
 	// Wait for base movement to complete
 	do {
-		_delay_ms(10);
+		_delay_ms(20);
 	} while (arm_joint_is_moving(ARM_JOINT_BASE));
 
 	// Move rest of arm
@@ -412,6 +410,6 @@ void arm_move_perform_block(void) {
 
 	// Wait for movement to complete
 	do {
-		_delay_ms(10);
+		_delay_ms(20);
 	} while (arm_is_moving());
 }
