@@ -33,7 +33,7 @@ uint8_t linesensor_channel;
 /*
  * Holds the values of individual sensors.
  */
-uint8_t sensor_values[11];
+uint8_t sensor_values[11] = {0,0,0,0,0,0,0,0,0,0,0};
 
 /*
  * The center of mass of the line.
@@ -355,7 +355,6 @@ void clear_pickupstation() {
 	pickup_station = No;
 	previous_pickup_station = No;
 	pickup_iterator = 0;
-	line_init();
 }
 
 

@@ -12,6 +12,7 @@
 #include "linesensor.h"
 #include "../shared/bus.h"
 #include "../RFID_scanner/RFID_scanner.h"
+#include "../shared/LCD_interface.h"
 #include "../shared/usart.h"
 #include "sidescanner.h"
 #include "distance_sensors.h"
@@ -47,6 +48,7 @@ void sensor_task_manager()	{
 
 void set_task(uint8_t id, uint16_t data)	{
 	sensor_task = data;
+	display(0,"Set task");
 	if (data == 0) {
 		clear_pickupstation();
 		line_init();
