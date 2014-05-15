@@ -465,7 +465,7 @@ void drive_to_next()
 {
 	scan_count = 0; // reset the scan counter
 	//enable_rfid_reader();
-	_delay_us(20);
+	//_delay_us(20);
 	set_sensor_to_linefollowing();
 	enable_timer_interrupts();
 }

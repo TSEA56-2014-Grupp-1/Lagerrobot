@@ -60,16 +60,22 @@ uint16_t pickup_iterator = 0;
  */
 void send_line_data(uint8_t id, uint16_t metadata)
 {
-		cli();
-		station_type chassi_output = pickup_station;
-		uint8_t line_weight_to_send = line_weight;
+	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+	station_type chassi_output = 1;
+	if(pickup_station == Left)
+		chassi_output = Left;
+	else if(pickup_station == No)
+		chassi_output = No;
+	else if(pickup_station == Right)
+		chassi_output = Right;
 		
-		uint8_t timeout_counter = 0;
-		while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight_to_send)))
-		{
-			timeout_counter++;
-		}
-		sei();	
+	uint8_t timeout_counter = 0;
+	while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight)))
+	{
+	timeout_counter++;
+	}
+//	ADCSRA |= (1 << ADIE); // enable ADC- interrupt
+	line_init();
 }
 
 /*
@@ -128,7 +134,6 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 void line_init(){
 	linesensor_channel = 0;
 	ADCSRA = 0b10001111;
-	DDRD = 0b11111111;
 	DDRB = 0b11111111;
 	ADMUX = (1 << ADLAR);
 	

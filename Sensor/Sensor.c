@@ -17,7 +17,7 @@
 #include "sidescanner.h"
 #include "distance_sensors.h"
 
-uint8_t sensor_task = 0;
+uint8_t sensor_task = 5;
 
 ISR(ADC_vect) {
 	if ((ADMUX & 0b00011111) == 0) {
@@ -47,16 +47,15 @@ void sensor_task_manager()	{
 }
 
 void set_task(uint8_t id, uint16_t data)	{
-	sensor_task = data;
-	display(0,"Set task");
-	if (data == 0) {
+	sensor_task = (uint8_t)data;
+	if (sensor_task == 0) {
 		clear_pickupstation();
 		line_init();
 	}
-	else if (data == 1) {
+	else if (sensor_task == 1) {
 		sidescanner_init(sensor_left);
 	}
-	else if (data == 2) {
+	else if (sensor_task == 2) {
 		sidescanner_init(sensor_right);
 	}
 }
@@ -66,9 +65,9 @@ int main(void)
 	bus_init(BUS_ADDRESS_SENSOR);
 	usart_init(520);
 	RFID_scanner_init();
-	sidescanner_init(sensor_left);
-	sidescanner_init(sensor_right);
-	line_init();
+// 	sidescanner_init(sensor_left);
+// 	sidescanner_init(sensor_right);
+//	line_init();
 	
 	bus_register_receive(2, calibrate_linesensor);
 	bus_register_response(3, return_linesensor);
