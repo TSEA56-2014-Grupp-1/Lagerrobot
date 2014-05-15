@@ -197,5 +197,7 @@ void object_detection(sensor sensor_id)
 			send_status += bus_transmit(BUS_ADDRESS_ARM,5, !!distance); //send 1 if object found, 0 if not found
 		}
 	} while (send_status != 0);
+	
+	scanner_set_position(SENSOR_SCANNER_ANGLE_START, sensor_id);
 
 }
