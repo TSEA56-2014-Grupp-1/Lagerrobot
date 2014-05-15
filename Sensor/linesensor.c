@@ -63,14 +63,13 @@ void send_line_data(uint8_t id, uint16_t metadata)
 		cli();
 		station_type chassi_output = pickup_station;
 		uint8_t line_weight_to_send = line_weight;
-		sei();	
 		
 		uint8_t timeout_counter = 0;
 		while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight_to_send)))
 		{
 			timeout_counter++;
 		}
-		line_init();
+		sei();	
 }
 
 /*
