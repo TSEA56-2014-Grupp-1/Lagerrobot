@@ -99,6 +99,8 @@ private slots:
 
     void request_data();
 
+    void draw_graphs();
+
     void on_actionDisconnect_triggered();
 
     void on_pushButton_send_param_clicked();
@@ -143,10 +145,10 @@ private:
 
     void set_up_graphs();
 
-	void draw_graphs();
 
     QTimer *timer_req = new QTimer();
     QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
+    QTimer *timer_graph = new QTimer();
 
     QTime *time_graph = new QTime();
     QTime *start_time;

@@ -199,7 +199,7 @@ uint8_t process_packet_request(uint8_t data_length, uint8_t data[]) {
 			bus_request(BUS_ADDRESS_CHASSIS, 5, 0, &steering_wheel);
 
 			send_packet(PKT_LINE_DATA,
-				14,
+				15,
 				line_values[0],
 				line_values[1],
 				line_values[2],
@@ -213,6 +213,7 @@ uint8_t process_packet_request(uint8_t data_length, uint8_t data[]) {
 				line_values[10],
 				flags,
 				center_mass,
+				(uint8_t) (steering_wheel >> 8),
 				(uint8_t) steering_wheel);
 			break;
 	}

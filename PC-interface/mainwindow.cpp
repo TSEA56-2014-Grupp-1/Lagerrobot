@@ -28,12 +28,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-	timer_req->setInterval(250);
+    timer_req->setInterval(250);
     connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
 
     timer_com->setInterval(100);
     connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
     ui->lcdTimer->setDigitCount(10);
+
+    timer_graph->setInterval(30);
+    connect(timer_graph, SIGNAL(timeout()), this, SLOT(draw_graphs()));
 
     disable_buttons();
     ui->actionDisconnect->setEnabled(false);
@@ -126,7 +129,7 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
-		//timer_req->start();
+        timer_req->start();
         time_graph->start();
     }
     else {
@@ -427,14 +430,14 @@ void MainWindow::set_up_graphs() {
     ui->plot_steering->xAxis->setLabel("Time");
     ui->plot_steering->xAxis->setAutoTickStep(false);
     ui->plot_steering->xAxis->setTickStep(1);
-    ui->plot_steering->yAxis->setRange(-127, 127);
+    ui->plot_steering->yAxis->setRange(-300, 300);
 
 	ui->plot_steering->graph(0)->setLineStyle(QCPGraph::lsLine);
-	ui->plot_steering->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    //ui->plot_steering->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
 	ui->plot_steering->graph(0)->setName("Center of mass");
 
 	ui->plot_steering->graph(1)->setLineStyle(QCPGraph::lsLine);
-	ui->plot_steering->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    //ui->plot_steering->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
 	ui->plot_steering->graph(1)->setPen(QPen(QColor(204,0,0)));
 	ui->plot_steering->graph(1)->setName("Steering");
 
@@ -476,7 +479,8 @@ void MainWindow::add_mass_data(int new_data) {
 
 void MainWindow::add_steering_data(int new_data) {
 	times_steering.push_back((double)time_graph->elapsed()/1000);
-	value_steering.push_back((quint8)(new_data/10)); //XXX: wont handle stuff from the robot.
+    print_on_log(QString::number(new_data));
+    value_steering.push_back(new_data / 10);
 	draw_graphs();
 }
 
@@ -487,15 +491,16 @@ void MainWindow::draw_graphs() {
 	if (!update_graph) { //XXX: Part of bad solution, see on_pushButton_pause_graph()
 		return;
 	}
+    timer_graph->start();
 
 	ui->plot_steering->graph(0)->setData(times_mass, value_mass);
 	ui->plot_steering->graph(1)->setData(times_steering, value_steering);
 
-	ui->plot_steering->xAxis->setRange(qFloor((double)(time_graph->elapsed()/1000) - 10),
-									   qFloor((double)time_graph->elapsed()/1000));
+    ui->plot_steering->xAxis->setRange(((double)time_graph->elapsed()/1000) - 10,
+                                       (double)time_graph->elapsed()/1000);
 
-	ui->plot_sensor->xAxis->setRange(qFloor((double)(time_graph->elapsed()/1000) - 10),
-									 qFloor((double)time_graph->elapsed()/1000));
+    ui->plot_sensor->xAxis->setRange(((double)time_graph->elapsed()/1000) - 10,
+                                     (double)time_graph->elapsed()/1000);
 
     ui->plot_steering->replot();
 	ui->plot_sensor->replot();
@@ -511,10 +516,10 @@ void MainWindow::draw_graphs() {
 void MainWindow::horzScrollBarChanged(int value) {
 	if (qAbs(ui->plot_steering->xAxis->range().center()-value/10) > 0.1) // if user is dragging plot, we don't want to replot twice
     {
-        ui->plot_steering->xAxis->setRange(value/10, ui->plot_steering->xAxis->range().size(), Qt::AlignCenter);
-		ui->plot_sensor->xAxis->setRange(value/10, ui->plot_sensor->xAxis->range().size(), Qt::AlignCenter);
+        ui->plot_steering->xAxis->setRange((double)value/10, ui->plot_steering->xAxis->range().size(), Qt::AlignRight);
+        ui->plot_sensor->xAxis->setRange((double)value/10, ui->plot_sensor->xAxis->range().size(), Qt::AlignRight);
         ui->plot_steering->replot();
-		ui->plot_steering->replot();
+        ui->plot_sensor->replot();
     }
 }
 
