@@ -65,7 +65,7 @@ void usart_write_byte(uint8_t data) {
  */
 uint8_t usart_read_byte(uint8_t * data) {
 	uint16_t timeout_counter = 0;
-	uint16_t USART_RECEIVE_TIMEOUT_COUNT = 100;
+	uint16_t USART_RECEIVE_TIMEOUT_COUNT = 1000;
 
 	while (!usart_has_bytes()) {
 		if (timeout_counter++ >= USART_RECEIVE_TIMEOUT_COUNT) {

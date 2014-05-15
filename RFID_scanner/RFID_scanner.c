@@ -32,6 +32,7 @@ void RFID_enable_reading(uint8_t id, uint16_t metadata)
 void RFID_scanner_init()
 {
 	DDRD = 0b00000100; // Set PD2 as Output
+	PORTD |= (1 << PORTD2); // Disable reading
 }
 
 uint8_t RFID_read_usart()
@@ -74,7 +75,7 @@ void read_rfid(uint8_t id, uint16_t metadata)
 	uint8_t current_station = 0;
 	clear_station_RFID();
 	uint16_t i = 0;
-	for(i= 0; i <= 500; ++i) // XXX Increase this even more?
+	for(i= 0; i <= 100; ++i) // XXX Increase this even more?
 	{
 		RFID_read_usart();
 		if(station_RFID[11] == 0x0D) // Correct stopbyte found
