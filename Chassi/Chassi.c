@@ -260,7 +260,7 @@ void update_station_list(uint8_t station_id)
 	}
 }
 
-void drive(uint8_t curr_error)
+void drive(int8_t curr_error)
 {
 	pd_update(curr_error);
 	//accelerator = STEERING_MAX_SPEED; // Is now an inargument to update_steering instead of global

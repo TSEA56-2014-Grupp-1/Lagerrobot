@@ -67,7 +67,7 @@ void rfid_to_pc(uint8_t tag_id);
 uint8_t is_pickup_station(uint8_t id);
 uint8_t skip_station();
 void update_station_list(uint8_t station_id);
-void drive(uint8_t curr_error);
+void drive(int8_t curr_error);
 
 
 #endif /* CHASSI_H_ */
