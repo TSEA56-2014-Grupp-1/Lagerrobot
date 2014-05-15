@@ -75,7 +75,7 @@ void read_rfid(uint8_t id, uint16_t metadata)
 	uint8_t current_station = 0;
 	clear_station_RFID();
 	uint16_t i = 0;
-	for(i= 0; i <= 100; ++i) // XXX Increase this even more?
+	for(i= 0; i <= 200; ++i) // XXX Increase this even more?
 	{
 		RFID_read_usart();
 		if(station_RFID[11] == 0x0D) // Correct stopbyte found
@@ -86,7 +86,7 @@ void read_rfid(uint8_t id, uint16_t metadata)
 				break; 
 			}
 		}
-		_delay_ms(1); // XXX Delay more?
+		_delay_us(10); // XXX Delay more?
 	}
 	if (current_station != prev_station)
 		send_rfid(current_station);
@@ -99,7 +99,7 @@ void read_rfid(uint8_t id, uint16_t metadata)
 uint8_t compare_RFID_arrays(const uint8_t current_compare_RFID[12])
 {
 	uint8_t i;
-	for (i = 7; i <= 10; ++i)
+	for (i = 2; i <= 10; ++i)
 	{
 		if(station_RFID[i] != current_compare_RFID[i])
 			return 0;

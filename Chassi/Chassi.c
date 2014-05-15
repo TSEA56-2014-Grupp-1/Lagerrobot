@@ -312,10 +312,12 @@ void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sens
 	{
 		drive(curr_error);
 	}
+	/*
 	else if (skip_station()) // returns 1 if ok to skip station
 	{
 		drive(curr_error);
 	}
+	*/
 	else if (manual_control == 1) // manual control is on.
 	{
 		stop_wheels();
@@ -348,21 +350,21 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	}
 	else if (station_id == 0 && scan_count < 13) // still no id found, drive forward
 	{
-		drive_left_wheels(1, 160);
-		drive_right_wheels(1, 160);
-		_delay_ms(100);
+		drive_left_wheels(1, 150);
+		drive_right_wheels(1, 150);
+		//_delay_ms(100);
 		//stop_wheels();	
-		_delay_ms(100); // XXX How much delay is needed?
+		_delay_ms(50); // XXX How much delay is needed?
 		++scan_count;
 		read_rfid();
 	}
 		else if (station_id == 0 && scan_count < 35) // no id found, start backing
 	{
-		drive_left_wheels(0, 160);
-		drive_right_wheels(0, 160);
-		_delay_ms(100);
+		drive_left_wheels(0, 150);
+		drive_right_wheels(0, 150);
+		_delay_ms(50);
 		//stop_wheels();
-		_delay_ms(100); // XXX How much delay is needed? 
+		//_delay_ms(100); // XXX How much delay is needed? 
 		++scan_count;
 		read_rfid();
 	}
