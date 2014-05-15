@@ -66,6 +66,7 @@ int main(void)
 	RFID_scanner_init();
 	sidescanner_init(sensor_left);
 	sidescanner_init(sensor_right);
+	line_init();
 	
 	bus_register_receive(2, calibrate_linesensor);
 	bus_register_response(3, return_linesensor);
