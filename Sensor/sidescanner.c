@@ -182,6 +182,10 @@ void object_detection(sensor sensor_id)
 
 	uint16_t angle = (first_angle + second_angle)/2;
 
+	if (sensor_id == sensor_right) {
+		angle = 180 - angle;
+	}
+
  	double object_angle = calculate_angle_coordinate(angle, distance);
  	double object_distance = calculate_distance_coordinate(angle, distance);
 
