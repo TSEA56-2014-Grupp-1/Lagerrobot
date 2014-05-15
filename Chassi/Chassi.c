@@ -190,7 +190,7 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 
 void request_line_data()
 {
-	uint16_t timeout_counter = 0;
+	uint8_t timeout_counter = 0;
 	uint8_t status_code = 1;
 	while (timeout_counter < 100 && status_code != 0)
 	{
@@ -207,6 +207,8 @@ void request_line_data()
 
 void decision_to_pc(uint8_t decision)
 {
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
 	while (timeout_counter < 100 && status_code != 0)
 	{
 		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 8, decision);
@@ -217,6 +219,8 @@ void decision_to_pc(uint8_t decision)
 
 void rfid_to_pc(uint8_t tag_id)
 {
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
 	while (timeout_counter < 100 && status_code != 0)
 	{
 		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 9, tag_id);
