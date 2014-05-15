@@ -19,7 +19,6 @@
 #define AD_CONV 20
 #define ANGLE_OFFSET 0
 
-//XXX: uint16_t instead of int?
 int compare (const void * a, const void * b)
 {
 	return ( *(int*)a - *(int*)b );
