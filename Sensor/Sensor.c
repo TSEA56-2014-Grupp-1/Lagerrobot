@@ -65,8 +65,8 @@ int main(void)
 	bus_init(BUS_ADDRESS_SENSOR);
 	usart_init(520);
 	RFID_scanner_init();
-// 	sidescanner_init(sensor_left);
-// 	sidescanner_init(sensor_right);
+ 	sidescanner_init(sensor_left);
+ 	sidescanner_init(sensor_right);
 //	line_init();
 	
 	bus_register_receive(2, calibrate_linesensor);
