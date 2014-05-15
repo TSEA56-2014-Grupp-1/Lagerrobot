@@ -67,17 +67,24 @@ void read_rfid()
 	}
 }
 
-
+//XXX: Not in use?
 uint16_t request_RFID_tag()
 {
 	uint16_t tag;
+	//XXX: Callback 6 does not exist in sensor.
 	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag);
 	return tag;
 }
 
 void disable_rfid_reader()
 {
-	bus_transmit(BUS_ADDRESS_SENSOR, 7, 0);
+	uint16_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_SENSOR, 7, 0);
+		++timeout_counter;
+	}
 }
 
 void enable_rfid_reader()
@@ -96,7 +103,7 @@ void enable_rfid_reader()
 	}
 }
 
-void clear_sensor()
+void set_sensor_to_linefollowing()
 {
 	uint16_t timeout_counter = 0;
 	uint8_t status_code = 1;
@@ -134,9 +141,9 @@ void send_to_arm(uint16_t arm_action_trans)
 uint8_t is_station(uint8_t station_data)
 {
 	if (station_data == 0 || station_data == 2)
-	return 1;
+		return 1;
 	else
-	return 0;
+		return 0;
 }
 
 
@@ -183,7 +190,7 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 
 void request_line_data()
 {
-	uint16_t timeout_counter = 0;
+	uint8_t timeout_counter = 0;
 	uint8_t status_code = 1;
 	while (timeout_counter < 100 && status_code != 0)
 	{
@@ -200,12 +207,25 @@ void request_line_data()
 
 void decision_to_pc(uint8_t decision)
 {
-	bus_transmit(BUS_ADDRESS_COMMUNICATION, 8, decision);
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 8, decision);
+		++timeout_counter;
+	}
+	
 }
 
 void rfid_to_pc(uint8_t tag_id)
 {
-	bus_transmit(BUS_ADDRESS_COMMUNICATION, 9, tag_id);
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 9, tag_id);
+		++timeout_counter;
+	}
 }
 
 uint8_t is_pickup_station(uint8_t id)
@@ -445,8 +465,8 @@ void drive_to_next()
 {
 	scan_count = 0; // reset the scan counter
 	//enable_rfid_reader();
-	_delay_us(20);
-	clear_sensor();
+	//_delay_us(20);
+	set_sensor_to_linefollowing();
 	enable_timer_interrupts();
 }
 
@@ -464,7 +484,7 @@ ISR(PCINT1_vect)
 int main(void)
 {
 	
-	bus_init(1); // 1 = BUS_ADDRESS_CHASSIS
+	bus_init(BUS_ADDRESS_CHASSIS);
 	_delay_ms(100);
 	engine_init();
 	regulator_init();
