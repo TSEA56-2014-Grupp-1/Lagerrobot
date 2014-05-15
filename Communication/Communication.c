@@ -188,7 +188,7 @@ int main(void)
 	bus_register_receive(6, lcd_chassi_line1);
 	bus_register_receive(7, lcd_chassi_line2);
 	
-	
+
 	
 	display(0, "Ouroborobot");
 	display(1, "Soon...");
