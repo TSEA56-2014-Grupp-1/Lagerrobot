@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define ZONE_SIZE 250
+#define ZONE_SIZE 300
 #define STEP 1
 #define DISTANCE_LOOP_COUNT 100
 #define AD_CONV 20

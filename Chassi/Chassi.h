@@ -69,6 +69,7 @@ uint8_t skip_station();
 void update_station_list(uint8_t station_id);
 void drive(int8_t curr_error);
 uint8_t is_mission_complete();
+void clear_station_list();
 
 void pickup_to_arm(uint16_t arm_action_trans);
 void put_down_to_arm(uint16_t arm_action_trans);
