@@ -528,14 +528,6 @@ int main(void)
 	bus_register_response(5, got_steering_request);
 	
 	sei();
-	//enable timer interrupts for ocie0a
- 	TIMSK0 |= (1 << OCIE0A);
- 	TIFR0 |= (1 << OCF0A);
-// 	
-	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
-	OCR0A = 0x80; 
-	
-	sei();
 	start_button_init();
 	timer_interrupt_init();
 
