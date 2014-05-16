@@ -107,6 +107,7 @@ uint8_t arm_position(arm_coordinate *coord);
 
 uint8_t arm_is_moving(void);
 uint8_t arm_joint_is_moving(uint8_t joint);
+void arm_stop(void);
 
 uint8_t arm_claw_open(void);
 uint8_t arm_claw_close(void);

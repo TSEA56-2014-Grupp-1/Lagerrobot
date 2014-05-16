@@ -244,46 +244,66 @@ uint8_t arm_move_to_angles(arm_joint_angles joint_angles) {
 
 /**
  *	Open claw and block until operation is complete
+ *
+ *	@return Status code from servo_receive()
  */
 uint8_t arm_claw_open(void) {
 	uint8_t status_code = servo_write_uint16(
-		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 511);
+		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 490);
 
 	if (status_code) {
-		return status_code;
+		return 0;
 	}
 
 	while (arm_joint_is_moving(ARM_JOINT_CLAW));
 
-	return 0;
+	return 1;
 }
 
 /**
  *	Close claw and block until complete. If the claw grips something it will
  *	stop gripping prematurely to prevent overloading the servos.
  *
- *	@return status code as provided by servo_receive()
+ *	@return 1 if something was gripped, else 0
  */
 uint8_t arm_claw_close(void) {
-	uint8_t status_code = servo_write_uint16(
-		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 0);
+	uint8_t status_code;
 	uint16_t load;
+	uint16_t initial_position;
+	uint16_t current_position;
 
+	status_code = servo_read_uint16(
+		ARM_SERVO_CLAW, SERVO_PRESENT_POSITION_L, &initial_position);
 	if (status_code) {
-		return status_code;
+		return 0;
 	}
 
-	while (arm_joint_is_moving(ARM_JOINT_CLAW)) {
+	status_code = servo_write_uint16(
+		ARM_SERVO_CLAW, SERVO_GOAL_POSITION_L, 0);
+	if (status_code) {
+		return 0;
+	}
+
+	do {
 		// Continiously check load to stop when somethings is gripped
 		if (servo_read_uint16(ARM_SERVO_CLAW, SERVO_PRESENT_LOAD_L, &load) == 0) {
 			if ((load & 0x1ff) > 100) {
+				// Double check that we have actually moved a bit
+				status_code = servo_read_uint16(
+					ARM_SERVO_CLAW, SERVO_PRESENT_POSITION_L, &current_position);
+
+				if (!status_code && initial_position - current_position < 10) {
+					continue;
+				}
+
 				// Disable torque to stop claw
 				servo_write(ARM_SERVO_CLAW, SERVO_TORQUE_ENABLE, 0);
 
-				return 0;
+				return 1;
 			}
 		}
-	}
+		_delay_ms(20);
+	} while (arm_joint_is_moving(ARM_JOINT_CLAW));
 
 	return 0;
 }
@@ -292,6 +312,9 @@ uint8_t arm_claw_close(void) {
  *	Return arm to resting position. Block until operation is complete
  */
 void arm_resting_position(void) {
+	// TODO: Skip this if already close to resting position
+	// uint16_t position;
+
 	// Raise arm before turning base to prevent collision with self
 	arm_move_add(ARM_JOINT_SHOULDER, 511);
 	arm_move_add(ARM_JOINT_ELBOW, 511);
@@ -412,4 +435,11 @@ void arm_move_perform_block(void) {
 	do {
 		_delay_ms(20);
 	} while (arm_is_moving());
+}
+
+/**
+ *	Stop all arm movements.
+ */
+void arm_stop(void) {
+	servo_read_uint8(SERVO_BROADCASTING_ID, SERVO_TORQUE_ENABLE, 0);
 }
