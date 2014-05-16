@@ -350,6 +350,13 @@ void MainWindow::disable_buttons() {
     ui->pushButton_send_param->setEnabled(false);
     ui->pushButton_stop->setEnabled(false);
     ui->pushButton_send_arm_pos->setEnabled(false);
+    ui->pushButton_x_down->setEnabled(false);
+    ui->pushButton_x_up->setEnabled(false);
+    ui->pushButton_y_down->setEnabled(false);
+    ui->pushButton_y_upp->setEnabled(false);
+    ui->pushButton_stop->setEnabled(false);
+    ui->transmit_button->setEnabled(false);
+    ui->request_button->setEnabled(false);
 }
 
 /*
@@ -374,6 +381,13 @@ void MainWindow::enable_buttons() {
     ui->pushButton_send_param->setEnabled(true);
     ui->pushButton_stop->setEnabled(true);
     ui->pushButton_send_arm_pos->setEnabled(true);
+    ui->pushButton_x_down->setEnabled(true);
+    ui->pushButton_x_up->setEnabled(true);
+    ui->pushButton_y_down->setEnabled(true);
+    ui->pushButton_y_upp->setEnabled(true);
+    ui->pushButton_stop->setEnabled(true);
+    ui->transmit_button->setEnabled(true);
+    ui->request_button->setEnabled(true);
 }
 
 /*
@@ -398,7 +412,11 @@ void MainWindow::on_actionDisconnect_triggered()
 {
     port->disconnect();
     ui->actionDisconnect->setEnabled(false);
+    ui->connect_action->setEnabled(true);
     disable_buttons();
+
+    timer_req->stop();
+    timer_graph->stop();
     delete port;
     port = NULL;
 }

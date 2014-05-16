@@ -115,7 +115,7 @@ uint8_t process_chassis_command(uint8_t data_length, uint8_t data[]) {
 			// data[1] == steering power
 			break;
 		case CMD_CHASSIS_START:
-			// TODO: issue chassis start line following / competition on bus here
+			bus_transmit(BUS_ADDRESS_CHASSIS, 3, 0);
 			break;
 		case CMD_CHASSIS_PARAMETERS:
 			if (data_length != 3) {

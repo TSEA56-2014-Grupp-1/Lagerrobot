@@ -95,7 +95,7 @@ void stop_wheels();
  * @brief Updates the wheel speeds and directions.
  * @details Sets the speed and direction of each wheelpair according to the current steering and accelerometer settings.
  */
-void update_steering();
+void update_steering(uint16_t speed);
 
 
 

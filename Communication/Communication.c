@@ -164,16 +164,16 @@ int main(void)
 	usart_init(0x0009);
 	bus_init(BUS_ADDRESS_COMMUNICATION);
 	
-	
 	bus_register_receive(2, lcd_sensor_line1);
 	bus_register_receive(3, lcd_sensor_line2);
 	bus_register_receive(4, lcd_arm_line1);
 	bus_register_receive(5, lcd_arm_line2);
 	bus_register_receive(6, lcd_chassi_line1);
 	bus_register_receive(7, lcd_chassi_line2);
+
 	bus_register_receive(8, forward_decision);
 	bus_register_receive(9, forward_RFID);
-	
+
 	
 	display(0, "Ouroborobot");
 	display(1, "Soon...");
@@ -204,7 +204,7 @@ int main(void)
 	
 		else {
 			process_packet();
-			usart_reset_buffer();
+			usart_clear_buffer();
 
 		}
 	}
