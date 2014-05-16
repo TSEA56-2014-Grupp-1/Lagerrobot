@@ -34,10 +34,10 @@ uint8_t scanner_set_position(uint8_t angle, sensor sensor_id) {
 		return 1;
 	}
 	else if (sensor_id == sensor_left) {
-		OCR3A = SENSOR_SCANNER_ANGLE_START + (uint16_t)(SENSOR_SCANNER_ANGLE_STEP*angle/100);
+		OCR3A = SENSOR_SCANNER_LEFT_ANGLE_START + (uint16_t)(SENSOR_SCANNER_LEFT_ANGLE_STEP*angle/100);
 	}
 	else if (sensor_id == sensor_right) {
-		OCR3B = SENSOR_SCANNER_ANGLE_START + (uint16_t)(SENSOR_SCANNER_ANGLE_STEP*angle/100);
+		OCR3B = SENSOR_SCANNER_RIGHT_ANGLE_START + (uint16_t)(SENSOR_SCANNER_RIGHT_ANGLE_STEP*angle/100);
 	}
 	else {
 		return 2;
@@ -109,7 +109,7 @@ uint8_t find_first_angle(uint16_t *object_angle, sensor sensor_id)
 		else {
 			angle += STEP;
 			scanner_set_position(angle, sensor_id);
-			_delay_ms(20);
+			_delay_ms(100);
 		}
 	}
 	return 0;
