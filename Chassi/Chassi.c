@@ -155,6 +155,10 @@ void put_down_to_arm(uint16_t arm_action_trans)
 	}
 }
 
+uint16_t got_steering_request(uint8_t id, uint16_t metadata) {
+	return (uint16_t)steering_wheel;
+}
+
 
 uint8_t is_station(uint8_t station_data)
 {
@@ -521,6 +525,15 @@ int main(void)
 	bus_register_receive(4, RFID_done);
 	bus_register_receive(1, receive_line_data);
 	bus_register_receive(0, emergency_stop);
+	bus_register_response(5, got_steering_request);
+	
+	sei();
+	//enable timer interrupts for ocie0a
+ 	TIMSK0 |= (1 << OCIE0A);
+ 	TIFR0 |= (1 << OCF0A);
+// 	
+	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
+	OCR0A = 0x80; 
 	
 	sei();
 	start_button_init();

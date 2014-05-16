@@ -11,10 +11,6 @@
 
 #include <avr/io.h>
 
-#ifndef F_CPU
-	#define F_CPU 18432000UL
- #endif
-
 
 #define COMM 0
 #define SENS 1
@@ -47,7 +43,7 @@ uint8_t heartbeat_counter;
 /**
  * @brief Forces the display to display the page of a certain module.
  * @details Resets the rotation counter and outputs the page of a certain module to the display.
- * 
+ *
  * @param module The identifier of the module to be displayed.
  */
 void lcd_force_display_update(uint8_t module);

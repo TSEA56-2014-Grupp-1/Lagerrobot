@@ -32,11 +32,20 @@ public:
 
     void connect_to_port(QString);
 
+	void add_mass_data(int);
+
     void add_steering_data(int);
 
     void set_RFID(QString);
 
-    void update_linesensor_plot(QByteArray*);
+	void update_linesensor_plot(QByteArray*);
+
+	void pickupstation(QByteArray*);
+
+	void handle_decision(quint8 decision);
+
+	//XXX: should be private
+
 
     void disable_buttons();
     void enable_buttons();
@@ -66,41 +75,17 @@ private slots:
 
     void on_pushButton_stop_line_clicked();
 
+	void on_pushButton_base_right_released();
+
+	void on_pushButton_base_right_pressed();
+
+	void on_pushButton_base_left_released();
+
+	void on_pushButton_base_left_pressed();
+
     void on_pushButton_close_gripper_clicked();
 
     void on_pushButton_open_gripper_clicked();
-
-    void on_pushButton_3_upp_pressed();
-
-    void on_pushButton_3_upp_released();
-
-    void on_pushButton_3_down_pressed();
-
-    void on_pushButton_3_down_released();
-
-    void on_pushButton_2_upp_pressed();
-
-    void on_pushButton_2_upp_released();
-
-    void on_pushButton_2_down_pressed();
-
-    void on_pushButton_2_down_released();
-
-    void on_pushButton_1_upp_pressed();
-
-    void on_pushButton_1_upp_released();
-
-    void on_pushButton_1_down_pressed();
-
-    void on_pushButton_1_down_released();
-
-    void on_pushButton_base_left_pressed();
-
-    void on_pushButton_base_left_released();
-
-    void on_pushButton_base_right_pressed();
-
-    void on_pushButton_base_right_released();
 
     void on_pushButton_start_position_arm_clicked();
 
@@ -118,6 +103,8 @@ private slots:
 
     void send_heartbeat();
 
+    void draw_graphs();
+
     void on_actionDisconnect_triggered();
 
     void on_pushButton_send_param_clicked();
@@ -134,18 +121,39 @@ private slots:
 
     void on_pushButton_pause_graph_clicked();
 
+    void on_request_button_clicked();
+
+    void on_transmit_button_clicked();
+
+	void on_pushButton_y_upp_pressed();
+
+	void on_pushButton_y_down_pressed();
+
+	void on_pushButton_x_up_pressed();
+
+	void on_pushButton_x_down_pressed();
+
+	void on_pushButton_y_upp_released();
+
+	void on_pushButton_y_down_released();
+
+	void on_pushButton_x_up_released();
+
+	void on_pushButton_x_down_released();
+
 private:
     Ui::MainWindow *ui;
 
 
 
     void set_up_graphs();
-    void draw_graphs();
+
 
 
     QTimer *heartbeat_timer = new QTimer();
     QTimer *timer_req = new QTimer();
     QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
+    QTimer *timer_graph = new QTimer();
 
     QTime *time_graph = new QTime();
     QTime *start_time;
@@ -154,12 +162,17 @@ private:
 
     bool update_graph = true;
 
-    QVector<double> times_steering, value_steering;
-
     QVector<QGraphicsEllipseItem*> linesensor_circels;
+
+	QVector<double> times_mass, value_mass;
+	QVector<double> times_steering, value_steering;
 
     QGraphicsScene* linesensor_plot = new QGraphicsScene();
 
+	//XXX: This is not a good soultion, place until better is found
+	bool station = false;
+
+	bool validate_spoof();
 };
 
 #endif // MAINWINDOW_H
