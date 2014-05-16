@@ -5,7 +5,6 @@
  *  Author: Karl & Philip
  */ 
 
-#define F_CPU 16000000UL
 #include <util/delay.h>
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -27,19 +26,36 @@ ISR(ADC_vect) {
 }
 
 void sensor_task_manager()	{
-	
+	uint8_t status;
 	switch (sensor_task)	{
 		case 0:
 			calculate_line_weight();
 			break;
 		case 1:
 			object_detection(sensor_left);
-			sensor_task = 3;
+			sensor_task = 4;
 			break;
 		case 2:
 			object_detection(sensor_right);
-			sensor_task = 3;
+			sensor_task = 4;
 			break;
+		case 3:
+			ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+			clear_station_RFID();
+			
+			status = RFID_read_usart();
+			if (status) {
+				display(0, "no id %u", status);
+				send_rfid(0);
+			}
+			else {
+				uint8_t id = identify_station_RFID();
+				display(0, "yes id %u", status);
+				display(1, "id: %u", id);
+				send_rfid(identify_station_RFID());
+			}
+			
+			sensor_task = 4;
 		default:
 			_delay_ms(10);
 			break;
@@ -58,6 +74,11 @@ void set_task(uint8_t id, uint16_t data)	{
 	else if (sensor_task == 2) {
 		sidescanner_init(sensor_right);
 	}
+}
+
+void read_rfid(uint8_t id, uint16_t metadata)
+{
+	sensor_task = 3;
 }
 
 int main(void)

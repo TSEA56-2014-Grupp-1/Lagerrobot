@@ -184,7 +184,10 @@ void calculate_line_weight()	{
 		if(current_sensor <= 10)
 			sensor_scale = sensor_scale + 256/11;
 	}
-	line_weight = temp_line_weight / tot_weight;
+	if (is_tape_left() || is_tape_right())
+		line_weight = 127;
+	else
+		line_weight = temp_line_weight / tot_weight;
 	sei();
 }
 
@@ -255,11 +258,11 @@ void pickup_station_detection() {
 		previous_pickup_station = No;
 	}
 	
-	else if (previous_pickup_station == Left && !is_tape_left() && pickup_iterator > 1950) {
+	else if (previous_pickup_station == Left && !is_tape_left() && pickup_iterator > 1450) {
 		previous_pickup_station = No;
 		pickup_iterator = 0;
 	}
-	else if (previous_pickup_station == Right && !is_tape_right() && pickup_iterator > 1950) {
+	else if (previous_pickup_station == Right && !is_tape_right() && pickup_iterator > 1450) {
 		previous_pickup_station = No;
 		pickup_iterator = 0;
 	}
@@ -270,11 +273,11 @@ void pickup_station_detection() {
 	else if (previous_pickup_station == No) {
 		if (is_tape_right()) {
 			previous_pickup_station = Right;
-			pickup_iterator = 2000;
+			pickup_iterator = 1500;
 		}
 		else if (is_tape_left()) {
 			previous_pickup_station = Left;
-			pickup_iterator = 2000;
+			pickup_iterator = 1500;
 		}
 	}
 	else if (previous_pickup_station == Left) {

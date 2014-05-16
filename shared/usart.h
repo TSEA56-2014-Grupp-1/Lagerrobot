@@ -6,7 +6,7 @@
  *
  *	Shared functions for working with UART/USART communication.
  */
-#define F_CPU 16000000UL
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>

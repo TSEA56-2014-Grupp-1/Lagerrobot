@@ -109,7 +109,7 @@ uint8_t find_first_angle(uint16_t *object_angle, sensor sensor_id)
 		else {
 			angle += STEP;
 			scanner_set_position(angle, sensor_id);
-			_delay_ms(100);
+			_delay_ms(20);
 		}
 	}
 	return 0;
@@ -190,6 +190,8 @@ void object_detection(sensor sensor_id)
  	double object_distance = calculate_distance_coordinate(angle, distance);
 
 	uint8_t send_status;
+	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_left);
+	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_right);
 	do {
 		send_status = 0;
 		send_status += bus_transmit(BUS_ADDRESS_ARM,3, (uint16_t)(object_angle*1000));
@@ -201,6 +203,6 @@ void object_detection(sensor sensor_id)
 		}
 	} while (send_status != 0);
 	
-	scanner_set_position(SENSOR_SCANNER_ANGLE_START, sensor_id);
+	//scanner_set_position(SENSOR_SCANNER_ANGLE_START, sensor_id);
 
 }
