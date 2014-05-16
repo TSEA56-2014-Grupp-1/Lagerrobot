@@ -455,6 +455,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 		carrying_rfid = 0;
 		decision_to_pc(8);
 	//	_delay_ms(2000);
+	if (!is_mission_complete())
 		drive_to_next();
 	}
 	else if (pickup_data == 2) // Arm did not find object to pick up
@@ -471,6 +472,21 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 		display(1, "arm_is_done");
 	}
 }
+
+uint8_t is_mission_complete()
+{
+	if (lap_finished == 0)
+		return 0;
+	else if(handled_count == station_count)
+	{
+		display(0, "Mission");
+		display(1, "Complete!!");
+		return 1;
+	}	
+	else
+		return 0;
+}
+
 
 void drive_to_next()
 {
