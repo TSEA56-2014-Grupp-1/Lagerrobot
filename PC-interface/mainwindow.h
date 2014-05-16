@@ -38,6 +38,8 @@ public:
 
     void update_linesensor_plot(QByteArray*);
 
+    void disable_buttons();
+    void enable_buttons();
 
 private slots:
     void keyPressEvent(QKeyEvent *key_pressed);
@@ -135,8 +137,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    void disable_buttons();
-    void enable_buttons();
+
 
     void set_up_graphs();
     void draw_graphs();

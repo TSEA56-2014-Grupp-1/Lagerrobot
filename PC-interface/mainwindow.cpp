@@ -529,7 +529,14 @@ void MainWindow::request_data() {
 void MainWindow::send_heartbeat()
 {
     if (port != nullptr) {
+
+        if (port->lost_heartbeats > 2) {
+            print_on_log("No response from robot. Attempting to reconnect...");
+            disable_buttons();
+        }
         port->send_packet(PKT_HEARTBEAT);
+        port->lost_heartbeats++;
+
         heartbeat_timer->start();
     }
 }

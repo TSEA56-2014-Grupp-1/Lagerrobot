@@ -21,6 +21,8 @@ uint8_t process_heartbeat(){
 	TCNT3 = 0;
 	heartbeat_counter = 0;
 	sei();
+	
+	send_packet(PKT_HEARTBEAT, 0);
 	return 0;
 }
 

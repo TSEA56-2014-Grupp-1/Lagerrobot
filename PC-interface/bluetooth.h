@@ -25,7 +25,7 @@ private:
     void process_packet();
 
 public:
-
+    quint8 lost_heartbeats = 0;
     bluetooth(QString, MainWindow*);
     ~bluetooth();
 

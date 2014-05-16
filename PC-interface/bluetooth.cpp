@@ -95,7 +95,10 @@ void bluetooth::process_packet()
         window->print_on_log(QString::number(parameters[0], 16)
                                 .append(QString::number(parameters[1], 16)));
         break;
-
+    case PKT_HEARTBEAT:
+        lost_heartbeats = 0;
+        window->enable_buttons();
+        break;
     }
 }
 
@@ -199,7 +202,7 @@ void bluetooth::send_packet(char packet_id, int num_args, ...) {
 
     parameter[0] = packet_id;
 	checksum += (uint8_t)packet_id;
-	parameter[1] = num_args;
+    parameter[1] = num_args;
 	checksum += (uint8_t)num_args;
 
     va_start(param_list, num_args);
