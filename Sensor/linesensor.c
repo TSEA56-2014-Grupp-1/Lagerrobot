@@ -33,7 +33,7 @@ uint8_t linesensor_channel;
 /*
  * Holds the values of individual sensors.
  */
-uint8_t sensor_values[11];
+uint8_t sensor_values[11] = {0,0,0,0,0,0,0,0,0,0,0};
 
 /*
  * The center of mass of the line.
@@ -56,31 +56,34 @@ uint8_t tape_reference = 150;
 uint16_t pickup_iterator = 0;
 
 /*
+ *	Send center of mass and station data to chassi.
+ */
+void send_line_data(uint8_t id, uint16_t metadata)
+{
+	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+	station_type chassi_output = 1;
+	if(pickup_station == Left)
+		chassi_output = Left;
+	else if(pickup_station == No)
+		chassi_output = No;
+	else if(pickup_station == Right)
+		chassi_output = Right;
+		
+	uint8_t timeout_counter = 0;
+	while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight)))
+	{
+	timeout_counter++;
+	}
+//	ADCSRA |= (1 << ADIE); // enable ADC- interrupt
+	line_init();
+}
+
+/*
  *	@brief Set the tape reference to new value.
  *
  *	@param id Bus id of the function, unused.
  *	@param input_tape_reference The new value of tape_reference.
  */
-
-void send_line_data(uint8_t id, uint16_t metadata)
-{
-		ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
-		station_type chassi_output = 1;
-		if(pickup_station == Left)
-		chassi_output = Left;
-		else if(pickup_station == No)
-		chassi_output = No;
-		else if(pickup_station == Right)
-		chassi_output = Right;
-		uint8_t timeout_counter = 0;
-		while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight)))
-		{
-			timeout_counter++;
-		}
-		//ADCSRA |= (1 << ADIE); // enable ADC- interrupt
-		line_init();
-}
-
 uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
 	tape_reference = input_tape_reference;
 	return 0;
@@ -131,7 +134,6 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 void line_init(){
 	linesensor_channel = 0;
 	ADCSRA = 0b10001111;
-	DDRD = 0b11111111;
 	DDRB = 0b11111111;
 	ADMUX = (1 << ADLAR);
 	
@@ -182,7 +184,10 @@ void calculate_line_weight()	{
 		if(current_sensor <= 10)
 			sensor_scale = sensor_scale + 256/11;
 	}
-	line_weight = temp_line_weight / tot_weight;
+	if (is_tape_left() || is_tape_right())
+		line_weight = 127;
+	else
+		line_weight = temp_line_weight / tot_weight;
 	sei();
 }
 
@@ -253,11 +258,11 @@ void pickup_station_detection() {
 		previous_pickup_station = No;
 	}
 	
-	else if (previous_pickup_station == Left && !is_tape_left() && pickup_iterator > 1950) {
+	else if (previous_pickup_station == Left && !is_tape_left() && pickup_iterator > 1450) {
 		previous_pickup_station = No;
 		pickup_iterator = 0;
 	}
-	else if (previous_pickup_station == Right && !is_tape_right() && pickup_iterator > 1950) {
+	else if (previous_pickup_station == Right && !is_tape_right() && pickup_iterator > 1450) {
 		previous_pickup_station = No;
 		pickup_iterator = 0;
 	}
@@ -268,11 +273,11 @@ void pickup_station_detection() {
 	else if (previous_pickup_station == No) {
 		if (is_tape_right()) {
 			previous_pickup_station = Right;
-			pickup_iterator = 2000;
+			pickup_iterator = 1500;
 		}
 		else if (is_tape_left()) {
 			previous_pickup_station = Left;
-			pickup_iterator = 2000;
+			pickup_iterator = 1500;
 		}
 	}
 	else if (previous_pickup_station == Left) {
@@ -354,11 +359,10 @@ void calibrate_linesensor(uint8_t id, uint16_t metadata)	{
 /*
  *	@brief Clears the pickupstation data.
  */
-void clear_pickupstation(uint8_t id, uint16_t metadata) {
+void clear_pickupstation() {
 	pickup_station = No;
 	previous_pickup_station = No;
 	pickup_iterator = 0;
-	line_init();
 }
 
 

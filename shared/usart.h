@@ -6,6 +6,7 @@
  *
  *	Shared functions for working with UART/USART communication.
  */
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>

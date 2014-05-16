@@ -85,6 +85,7 @@ uint8_t usart_read_byte(uint8_t * data) {
  *	@return 1 if there are bytes to be read from buffer else 0
  */
 uint8_t usart_has_bytes(void) {
+	_delay_ms(1);
 	return usart_buffer_read_index != usart_buffer_write_index;
 }
 

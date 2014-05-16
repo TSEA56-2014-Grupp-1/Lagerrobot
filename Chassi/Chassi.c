@@ -63,22 +63,29 @@ void read_rfid()
 	}
 	if (status_code != 0)
 	{
-		display(0,"TO read rfid");
-		display(1,"SC: %d", status_code);
+		////display(0,"TO read rfid");
+		////display(1,"SC: %d", status_code);
 	}
 }
 
-
+//XXX: Not in use?
 uint16_t request_RFID_tag()
 {
 	uint16_t tag;
+	//XXX: Callback 6 does not exist in sensor.
 	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag);
 	return tag;
 }
 
 void disable_rfid_reader()
 {
-	bus_transmit(BUS_ADDRESS_SENSOR, 7, 0);
+	uint16_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_SENSOR, 7, 0);
+		++timeout_counter;
+	}
 }
 
 void enable_rfid_reader()
@@ -92,12 +99,12 @@ void enable_rfid_reader()
 	}
 	if (status_code != 0)
 	{
-		display(0,"TO enable read");
-		display(1,"SC: %d", status_code);
+		////display(0,"TO enable read");
+		////display(1,"SC: %d", status_code);
 	}
 }
 
-void clear_sensor()
+void set_sensor_to_linefollowing()
 {
 	uint16_t timeout_counter = 0;
 	uint8_t status_code = 1;
@@ -108,36 +115,53 @@ void clear_sensor()
 	}
 	if (status_code != 0)
 	{
-		display(0,"TO clear");
-		display(1,"SC: %d", status_code);
+		//display(0,"TO clear");
+		//display(1,"SC: %d", status_code);
 	}
 }
 
 
-void send_to_arm(uint16_t arm_action_trans)
+void pickup_to_arm(uint16_t arm_action_trans)
 {
 	
 		uint16_t timeout_counter = 0;
 		uint8_t status_code = 1;
 		while (timeout_counter < 100 && status_code != 0)
 		{
-			status_code = bus_transmit(BUS_ADDRESS_ARM, 1, arm_action_trans);
+			status_code = bus_transmit(BUS_ADDRESS_ARM, 2, arm_action_trans);
 			++timeout_counter;
 		}
 		if (status_code != 0)
 		{
-			display(0,"TO to arm"); // TO = TimeOut
-			display(1,"SC: %d", status_code); // SC = Status Code
+			//display(0,"TO to arm"); // TO = TimeOut
+			//display(1,"SC: %d", status_code); // SC = Status Code
 		}
+}
+
+void put_down_to_arm(uint16_t arm_action_trans)
+{
+	
+	uint16_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_ARM, 12, arm_action_trans);
+		++timeout_counter;
+	}
+	if (status_code != 0)
+	{
+		//display(0,"TO to arm"); // TO = TimeOut
+		//display(1,"SC: %d", status_code); // SC = Status Code
+	}
 }
 
 
 uint8_t is_station(uint8_t station_data)
 {
 	if (station_data == 0 || station_data == 2)
-	return 1;
+		return 1;
 	else
-	return 0;
+		return 0;
 }
 
 
@@ -184,7 +208,7 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 
 void request_line_data()
 {
-	uint16_t timeout_counter = 0;
+	uint8_t timeout_counter = 0;
 	uint8_t status_code = 1;
 	while (timeout_counter < 100 && status_code != 0)
 	{
@@ -193,20 +217,33 @@ void request_line_data()
 	}
 	if (status_code != 0)
 	{
-		display(0,"TO req line");
-		display(1,"SC: %d", status_code);
+		//display(0,"TO req line");
+		//display(1,"SC: %d", status_code);
 	}
 }
 
 
 void decision_to_pc(uint8_t decision)
 {
-	bus_transmit(BUS_ADDRESS_COMMUNICATION, 8, decision);
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 8, decision);
+		++timeout_counter;
+	}
+	
 }
 
 void rfid_to_pc(uint8_t tag_id)
 {
-	bus_transmit(BUS_ADDRESS_COMMUNICATION, 9, tag_id);
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 9, tag_id);
+		++timeout_counter;
+	}
 }
 
 uint8_t is_pickup_station(uint8_t id)
@@ -261,7 +298,7 @@ void update_station_list(uint8_t station_id)
 	}
 }
 
-void drive(uint8_t curr_error)
+void drive(int8_t curr_error)
 {
 	pd_update(curr_error);
 	//accelerator = STEERING_MAX_SPEED; // Is now an inargument to update_steering instead of global
@@ -293,20 +330,19 @@ void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sens
 	{
 		drive(curr_error);
 	}
+	/*
 	else if (skip_station()) // returns 1 if ok to skip station
 	{
 		drive(curr_error);
 	}
+	*/
 	else if (manual_control == 1) // manual control is on.
 	{
 		stop_wheels();
 	}
 	else
 	{
-	
 	stop_wheels();
-	enable_rfid_reader();
-	_delay_ms(500);  // XXX How much delay is needed?
 	read_rfid();
 	}
 }
@@ -319,38 +355,33 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	if (station_id != 0) // rfid found!
 	{
 		stop_wheels();
-		_delay_ms(1);
-		disable_rfid_reader();
-		_delay_ms(1);
 		display_station_and_rfid(station_data, station_id);
+		display(0, "rfid found");
+		display(1, "id: %u", station_id);
 		//rfid_to_pc(station_id);
 		update_station_list(station_id);
 		command_to_arm(station_data, station_id);
 	}
-	else if (station_id == 0 && scan_count < 13) // still no id found, drive forward
+	
+	else if (station_id == 0 && scan_count < 10) // still no id found, drive forward
 	{
-		drive_left_wheels(1, 160);
-		drive_right_wheels(1, 160);
-		_delay_ms(100);
-		//stop_wheels();	
-		_delay_ms(100); // XXX How much delay is needed?
+		drive_left_wheels(1, 140);
+		drive_right_wheels(1, 140);
 		++scan_count;
+		_delay_ms(5);
 		read_rfid();
 	}
-		else if (station_id == 0 && scan_count < 35) // no id found, start backing
+	else if (station_id == 0 && scan_count < 30) // no id found, start backing
 	{
-		drive_left_wheels(0, 160);
-		drive_right_wheels(0, 160);
-		_delay_ms(100);
-		//stop_wheels();
-		_delay_ms(100); // XXX How much delay is needed? 
+		drive_left_wheels(0, 140);
+		drive_right_wheels(0, 140);
 		++scan_count;
+		_delay_ms(5);
 		read_rfid();
 	}
 	else
 	{
 		stop_wheels();
-		disable_rfid_reader();
 	//	decision_to_pc(6);
 		display_station_and_rfid(station_data, 1);
 		//drive_to_next();
@@ -372,14 +403,14 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 	else if(match == 1 && (station_data == 0)) // match with carrying and station to the right
 	{
 	//	decision_to_pc(2);
-	//	send_to_arm(2);	// 2 = put down object to the right
-	arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
+		put_down_to_arm(1);	// 1 = put down object to the right
+	//arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
 	}
 	else if(match == 1 && (station_data == 2)) // match with carrying and station to the left
 	{
 	//	decision_to_pc(3);
-	//	send_to_arm(3); // 3 = put down object to the left
-	arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
+		put_down_to_arm(0); // 0 = put down object to the left
+	//arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
 	
 	}
 	else if (carrying_rfid != 0 || pickup_station == 0) // Carrying object or not a pickupstation
@@ -391,15 +422,15 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 	{
 		carrying_rfid = station_tag;
 	//	decision_to_pc(0);
-	//	send_to_arm(0); // 0 = pick up to the right
-	arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
+		pickup_to_arm(1); // 1 = pick up to the right
+	//arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
 	}
 	else if (station_data == 2 && pickup_station == 1) // Not carrying and pickup station left
 	{
 		carrying_rfid = station_tag;
 	//	decision_to_pc(1);
-	//	send_to_arm(1); // 1 = pick up to the left
-	arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
+		pickup_to_arm(0); // 0 = pick up to the left
+	//arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
 	}
 	else
 	{
@@ -415,7 +446,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 	if (pickup_data == 0) // Arm picked up object
 	{
 		//decision_to_pc(7);
-		_delay_ms(2000);
+		//_delay_ms(2000);
 		drive_to_next();
 	}
 	else if (pickup_data == 1) // Arm put down object
@@ -424,7 +455,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 		handled_stations_list[handled_count++] = carrying_rfid + 1;
 		carrying_rfid = 0;
 	//	decision_to_pc(8);
-		_delay_ms(2000);
+	//	_delay_ms(2000);
 		drive_to_next();
 	}
 	else if (pickup_data == 2) // Arm did not find object to pick up
@@ -445,9 +476,8 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 void drive_to_next()
 {
 	scan_count = 0; // reset the scan counter
-	//enable_rfid_reader();
-	_delay_us(20);
-	clear_sensor();
+	set_sensor_to_linefollowing();
+	_delay_ms(50);
 	enable_timer_interrupts();
 }
 
@@ -456,17 +486,22 @@ void drive_to_next()
 //--------Pin Change Interrupt start-button----
 ISR(PCINT1_vect)
 {
+	if (PINB & 1)
+	{
 	disable_timer_interrupts();
 	display(0, "start button");
 	display(1, "pressed");
 	drive_to_next();
+	}
 }
 
 
 int main(void)
 {
+
 	wdt_disable();
-	bus_init(1); // 1 = BUS_ADDRESS_CHASSIS
+	bus_init(BUS_ADDRESS_CHASSIS);
+
 	_delay_ms(100);
 	engine_init();
 	regulator_init();

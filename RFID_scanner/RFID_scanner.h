@@ -18,6 +18,5 @@ void RFID_disable_reading(uint8_t id, uint16_t metadata);
 void RFID_enable_reading(uint8_t id, uint16_t metadata);
 void clear_station_RFID();
 void send_rfid(uint8_t station_tag);
-void read_rfid(uint8_t id, uint16_t metadata);
 
 #endif /* RFID-SCANNER_H_ */
