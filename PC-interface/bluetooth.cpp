@@ -80,7 +80,7 @@ void bluetooth::process_packet()
         window->pickupstation(&parameters);
         break;
 	case PKT_RANGE_DATA:
-
+        window->print_on_log(QString::number(parameters[0]).append(" ").append(QString::number(((quint16) parameters[1] << 8) | (quint16) parameters[2])));
         break;
 	case PKT_RFID_DATA:
 		window->print_on_log("Received new RFID tag");

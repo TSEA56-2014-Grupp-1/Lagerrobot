@@ -9,7 +9,7 @@
 #define PKT_ARM_STATUS			4	//		<not defined yet>
 #define PKT_CHASSIS_STATUS		5	//		<not defined yet>
 #define PKT_LINE_DATA			6	//		sensor values(1-11), line flags(12), center of mass(13), steering wheel(14-15)
-#define PKT_RANGE_DATA			7	//		ranger values(1-3), distances(4-6), angles(7-8) 
+#define PKT_RANGE_DATA			7	//		side of sensor(1), distance (2-3) 
 #define PKT_RFID_DATA			8	//		tag bytes(1)
 #define	PKT_CHASSIS_DECISION	9	//		type of decision (1)
 #define PKT_ARM_DECISION		10	//		<not defined yet>

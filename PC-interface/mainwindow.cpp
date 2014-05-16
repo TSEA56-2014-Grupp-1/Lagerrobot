@@ -399,7 +399,7 @@ void MainWindow::request_data() {
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
+        //port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
 		timer_req->start();
 	}
 }
