@@ -7,6 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "Chassi.h"
 #include "automatic_steering.h"
 #include "engine_control.h"
@@ -451,6 +452,7 @@ void drive_to_next()
 }
 
 
+
 //--------Pin Change Interrupt start-button----
 ISR(PCINT1_vect)
 {
@@ -463,7 +465,7 @@ ISR(PCINT1_vect)
 
 int main(void)
 {
-	
+	wdt_disable();
 	bus_init(1); // 1 = BUS_ADDRESS_CHASSIS
 	_delay_ms(100);
 	engine_init();
@@ -483,6 +485,7 @@ int main(void)
 	bus_register_receive(2, arm_is_done);
 	bus_register_receive(4, RFID_done);
 	bus_register_receive(1, receive_line_data);
+	bus_register_receive(0, emergency_stop);
 	
 	sei();
 	start_button_init();
@@ -492,4 +495,10 @@ int main(void)
     {
 
     }
+}
+
+void emergency_stop( uint8_t id, uint16_t status) {
+	accelerator = 0;
+	wdt_enable(WDTO_1S);
+	for(;;){}
 }

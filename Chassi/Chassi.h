@@ -69,5 +69,7 @@ uint8_t skip_station();
 void update_station_list(uint8_t station_id);
 void drive(uint8_t curr_error);
 
+void emergency_stop(uint8_t id, uint16_t metadata);
+
 
 #endif /* CHASSI_H_ */
