@@ -93,7 +93,7 @@ uint16_t get_distance(sensor sensor_id) {
 	}
 	
 	distance_value = ad_interpolate(get_median_value(distance_array, AD_CONV), sensor_id) + SCANNER_AXIS_TO_FRONT;
-	bus_transmit(BUS_ADDRESS_COMMUNICATION, 10, ((uint16_t) sensor_id << 10) | (distance_value & 0b01111111111));
+	while (bus_transmit(BUS_ADDRESS_COMMUNICATION, 10, ((uint16_t) sensor_id << 10) | (distance_value & 0b01111111111)));
 	return distance_value;
 }
 

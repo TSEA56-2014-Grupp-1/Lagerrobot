@@ -131,6 +131,16 @@ void MainWindow::connect_to_port(QString name) {
         enable_buttons();
         timer_req->start();
         time_graph->start();
+
+        times_mass.clear();
+        times_steering.clear();
+        times_range_1.clear();
+        times_range_2.clear();
+
+        value_mass.clear();
+        value_steering.clear();
+        value_range_1.clear();
+        value_range_2.clear();
     }
     else {
         print_on_log("Error opening bluetooth");
@@ -396,6 +406,7 @@ void MainWindow::enable_buttons() {
  */
 void MainWindow::request_data() {
 	if (port == NULL) {
+
 		print_on_log("No port to send to.");
 	}
 	else {
@@ -450,29 +461,43 @@ void MainWindow::set_up_graphs() {
     ui->plot_steering->xAxis->setTickStep(1);
     ui->plot_steering->yAxis->setRange(-300, 300);
 
-	ui->plot_steering->graph(0)->setLineStyle(QCPGraph::lsLine);
-    //ui->plot_steering->graph(0)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    ui->plot_steering->graph(0)->setLineStyle(QCPGraph::lsLine);
 	ui->plot_steering->graph(0)->setName("Center of mass");
 
-	ui->plot_steering->graph(1)->setLineStyle(QCPGraph::lsLine);
-    //ui->plot_steering->graph(1)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    ui->plot_steering->graph(1)->setLineStyle(QCPGraph::lsLine);
 	ui->plot_steering->graph(1)->setPen(QPen(QColor(204,0,0)));
 	ui->plot_steering->graph(1)->setName("Steering");
 
 	QFont legendFont = font();
 	legendFont.setPointSize(11);
 	ui->plot_steering->legend->setFont(legendFont);
-	ui->plot_steering->legend->setVisible(true);
+    ui->plot_steering->legend->setVisible(true);
+    ui->plot_steering->axisRect()->insetLayout()->addElement(ui->plot_steering->legend, Qt::AlignLeft);
 
 	//XXX: Set up graph for sensor (plot_sensor)
 	ui->plot_sensor->addGraph();
+    ui->plot_sensor->addGraph();
 
-	ui->plot_sensor->xAxis->setLabel("Time");
+    ui->plot_sensor->xAxis->setLabel("Time");
 	ui->plot_sensor->xAxis->setAutoTickStep(false);
 	ui->plot_sensor->xAxis->setTickStep(1);
 
-	ui->plot_sensor->graph()->setLineStyle(QCPGraph::lsLine);
-	ui->plot_sensor->graph()->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, 5));
+    ui->plot_sensor->yAxis->setRange(0,335);
+    ui->plot_sensor->yAxis->setLabel("Distance [mm]");
+    ui->plot_sensor->yAxis->setAutoTickStep(false);
+    ui->plot_sensor->yAxis->setTickStep(100);
+
+    ui->plot_sensor->graph(0)->setLineStyle(QCPGraph::lsLine);
+    ui->plot_sensor->graph(0)->setName("Left sensor");
+
+    ui->plot_sensor->graph(1)->setLineStyle(QCPGraph::lsLine);
+    ui->plot_sensor->graph(1)->setPen(QPen(QColor(204,0,0)));
+    ui->plot_sensor->graph(1)->setName("Right sensor");
+
+    ui->plot_sensor->legend->setFont(legendFont);
+    ui->plot_sensor->legend->setVisible(true);
+    ui->plot_sensor->axisRect()->insetLayout()->addElement(ui->plot_sensor->legend, Qt::AlignLeft);
+
 
     ui->graphicsView_linesensor->setScene(linesensor_plot);
     ui->graphicsView_linesensor->show();
@@ -496,10 +521,20 @@ void MainWindow::add_mass_data(int new_data) {
 }
 
 void MainWindow::add_steering_data(int new_data) {
-	times_steering.push_back((double)time_graph->elapsed()/1000);
-    print_on_log(QString::number(new_data));
-    value_steering.push_back(new_data / 10);
+    times_steering.push_back((double)time_graph->elapsed()/1000);
+    value_steering.push_back((double) new_data / 10);
 	draw_graphs();
+}
+
+void MainWindow::add_range_data(quint8 sensor, quint16 new_data) {
+    if (sensor == 0) {
+        times_range_1.push_back((double)time_graph->elapsed()/1000);
+        value_range_1.push_back((double)new_data);
+    } else if (sensor == 1) {
+        times_range_2.push_back((double)time_graph->elapsed()/1000);
+        value_range_2.push_back((double)new_data);
+    }
+    draw_graphs();
 }
 
 /*
@@ -520,6 +555,8 @@ void MainWindow::draw_graphs() {
     ui->plot_sensor->xAxis->setRange(((double)time_graph->elapsed()/1000) - 10,
                                      (double)time_graph->elapsed()/1000);
 
+    ui->plot_sensor->graph(0)->setData(times_range_1, value_range_1);
+    ui->plot_sensor->graph(1)->setData(times_range_2, value_range_2);
     ui->plot_steering->replot();
 	ui->plot_sensor->replot();
     ui->horizontalScrollBar_graphs->setRange(0,(double)time_graph->elapsed()/100); //Setting the scrollbar value times 10 to make scrolling smooth

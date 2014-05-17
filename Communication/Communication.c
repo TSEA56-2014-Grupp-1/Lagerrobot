@@ -157,7 +157,7 @@ void forward_RFID(uint8_t id, uint16_t data) {
 	send_packet(PKT_RFID_DATA, 1, data);
 }
 
-void forward_RANGE(uint8_t id, uint16_t data) { // MSB indicates which sensor is scanning
+void forward_range(uint8_t id, uint16_t data) { // MSB indicates which sensor is scanning
 	send_packet(PKT_RANGE_DATA, 3, (uint8_t) (data >> 10), (uint8_t) ((data & 0b01100000000) >> 8), (uint8_t) data);
 }
 
@@ -177,7 +177,7 @@ int main(void)
 
 	bus_register_receive(8, forward_decision);
 	bus_register_receive(9, forward_RFID);
-	bus_register_receive(10, forward_RANGE);
+	bus_register_receive(10, forward_range);
 
 	
 	display(0, "Ouroborobot");

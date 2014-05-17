@@ -46,8 +46,7 @@ public:
 
 	//XXX: should be private
 
-
-
+    void add_range_data(quint8 sensor, quint16 new_data);
 private slots:
     void keyPressEvent(QKeyEvent *key_pressed);
 
@@ -161,6 +160,7 @@ private:
 
 	QVector<double> times_mass, value_mass;
 	QVector<double> times_steering, value_steering;
+    QVector<double> times_range_1, times_range_2, value_range_1, value_range_2;
 
     QGraphicsScene* linesensor_plot = new QGraphicsScene();
 
