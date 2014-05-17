@@ -80,10 +80,11 @@ void bluetooth::process_packet()
         window->pickupstation(&parameters);
         break;
 	case PKT_RANGE_DATA:
-
+        window->add_range_data(parameters[0], ((quint16) ((quint8) parameters[1])) << 8 | (quint16) ((quint8) parameters[2]));
         break;
 	case PKT_RFID_DATA:
-		window->print_on_log("Received new RFID tag");
+        window->print_on_log(QString("Received new RFID tag: ")
+                                .append(QString::number((quint8)parameters[0])));
 		window->set_RFID(QString::number(parameters[0]));
         break;
 	case PKT_CALIBRATION_DATA:
@@ -92,7 +93,7 @@ void bluetooth::process_packet()
         break;
 	case PKT_SPOOFED_RESPONSE:
         window->print_on_log(QString::number(parameters[0], 16).append(" ")
-                                .append(QString::number(static_cast<char>(parameters[1]), 16)));
+                                .append(QString::number(parameters[1], 16)));
         break;
     case PKT_HEARTBEAT:
         lost_heartbeats = 0;

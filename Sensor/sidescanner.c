@@ -84,14 +84,17 @@ void sidescanner_init(sensor sensor_id)
 uint16_t get_distance(sensor sensor_id) {
 
 	uint16_t distance_array[AD_CONV];
-
+	uint16_t distance_value;
 	for (uint8_t i = 0; i < AD_CONV; ++i) {
 		ADCSRA |= (1 << ADSC);
 		while (ADCSRA & (1 << ADSC));
 		ADCSRA &= ~(1 << ADIF);
 		distance_array[i] = ADC;
 	}
-	return ad_interpolate(get_median_value(distance_array, AD_CONV), sensor_id) + SCANNER_AXIS_TO_FRONT;
+	
+	distance_value = ad_interpolate(get_median_value(distance_array, AD_CONV), sensor_id) + SCANNER_AXIS_TO_FRONT;
+	while (bus_transmit(BUS_ADDRESS_COMMUNICATION, 10, ((uint16_t) sensor_id << 10) | (distance_value & 0b01111111111)));
+	return distance_value;
 }
 
 uint8_t find_first_angle(uint16_t *object_angle, sensor sensor_id)

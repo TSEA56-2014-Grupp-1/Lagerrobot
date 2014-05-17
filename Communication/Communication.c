@@ -180,6 +180,10 @@ void emergency_stop() {
 }
 
 
+void forward_range(uint8_t id, uint16_t data) { // MSB indicates which sensor is scanning
+	send_packet(PKT_RANGE_DATA, 3, (uint8_t) (data >> 10), (uint8_t) ((data & 0b01100000000) >> 8), (uint8_t) data);
+}
+
 int main(void)
 {
 	init();
@@ -187,15 +191,17 @@ int main(void)
 	bus_init(BUS_ADDRESS_COMMUNICATION);
 	usart_init(0x0009);
 	
-	//bus_register_receive(10,forward_calibration_data);
 	bus_register_receive(2, lcd_sensor_line1);
 	bus_register_receive(3, lcd_sensor_line2);
 	bus_register_receive(4, lcd_arm_line1);
 	bus_register_receive(5, lcd_arm_line2);
 	bus_register_receive(6, lcd_chassi_line1);
 	bus_register_receive(7, lcd_chassi_line2);
+
 	bus_register_receive(8, forward_decision);
 	bus_register_receive(9, forward_RFID);
+	bus_register_receive(10, forward_range);
+
 	
 	display(0, "Ouroborobot");
 	display(1, "Soon...");
@@ -226,7 +232,7 @@ int main(void)
 	
 		else {
 			process_packet();
-			usart_reset_buffer();
+			usart_clear_buffer();
 
 		}
 	}

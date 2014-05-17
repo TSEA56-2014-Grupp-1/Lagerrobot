@@ -7,7 +7,6 @@
 
 #include "usart.h"
 
-
 uint8_t usart_receive_buffer[256];
 uint8_t usart_buffer_read_index = 0;
 uint8_t usart_buffer_write_index = 0;
@@ -15,7 +14,6 @@ uint8_t usart_buffer_write_index = 0;
 /**
  *	Interrupt vector to add received data to ring buffer
  */
-
 ISR(USART0_RX_vect) {
 	usart_receive_buffer[usart_buffer_write_index++] = UDR0;
 }
@@ -88,11 +86,6 @@ uint8_t usart_read_byte(uint8_t * data) {
 uint8_t usart_has_bytes(void) {
 	_delay_ms(1);
 	return usart_buffer_read_index != usart_buffer_write_index;
-}
-
-void usart_reset_buffer(void) {
-	usart_buffer_read_index = 0;
-	usart_buffer_write_index = 0;
 }
 
 /**

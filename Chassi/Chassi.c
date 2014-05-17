@@ -536,14 +536,14 @@ int main(void)
 	number_of_stations = 0;
 	station_count = 0;
 	
+	bus_register_receive(0, emergency_stop);
+	bus_register_receive(1, receive_line_data);
+	bus_register_receive(2, arm_is_done);
+	bus_register_receive(4, RFID_done);
+	bus_register_response(5, got_steering_request);
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
-	bus_register_receive(2, arm_is_done);
-	bus_register_receive(4, RFID_done);
-	bus_register_receive(1, receive_line_data);
-	bus_register_receive(0, emergency_stop);
-	bus_register_response(5, got_steering_request);
 	
 	sei();
 	start_button_init();
