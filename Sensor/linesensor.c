@@ -58,7 +58,7 @@ uint16_t pickup_iterator = 0;
 /*
  *	Send center of mass and station data to chassi.
  */
-void send_line_data(uint8_t id, uint16_t metadata)
+uint16_t send_line_data(uint8_t id, uint16_t metadata)
 {
 	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
 	station_type chassi_output = 1;
@@ -69,13 +69,8 @@ void send_line_data(uint8_t id, uint16_t metadata)
 	else if(pickup_station == Right)
 		chassi_output = Right;
 		
-	uint8_t timeout_counter = 0;
-	while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight)))
-	{
-	timeout_counter++;
-	}
-//	ADCSRA |= (1 << ADIE); // enable ADC- interrupt
 	line_init();
+	return (((uint16_t)(chassi_output) << 8) | line_weight);
 }
 
 /*
