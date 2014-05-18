@@ -14,7 +14,7 @@
  */
 void line_init();
 
-void send_line_data(uint8_t id, uint16_t metadata);
+uint16_t send_line_data(uint8_t id, uint16_t metadata);
 
 
 /*

@@ -98,7 +98,7 @@ int main(void)
 	bus_register_receive(8, RFID_enable_reading);	
 	bus_register_receive(9, set_task);
 	bus_register_receive(10, read_rfid);
-	bus_register_receive(11, send_line_data);
+	bus_register_response(11, send_line_data);
 	
 // 	scanner_set_position(180,sensor_right);
 // 	_delay_ms(6000);

@@ -20,8 +20,8 @@
 
 /**
  *	Flag that sets whether we may continue startup procedure or not. Set by
- *	communication unit once PC-interface connection is established. Data = 1
- *	means reset, data = 0 means can start.
+ *	communication unit once PC-interface connection is established. Data = 0
+ *	means reset, data = 1 means can start.
  */
 uint8_t can_start = 0;
 
@@ -29,12 +29,13 @@ uint8_t can_start = 0;
  *	Handle emergency stop and startup procedures from communication unit
  */
 void emergency_handler(uint8_t callback_id, uint16_t data) {
-	if (data == 0) {
+	if (data == 1) {
 		can_start = 1;
 	} else {
 		// Cease all arm movement
 		arm_stop();
-
+		TWCR &= ~(1 << TWEA | 1 << TWIE);
+		TWCR |= (1 << TWINT);
 		// Trigger restart after 1 second and wait for it to happen
 		wdt_enable(WDTO_1S);
 		for (;;) { }

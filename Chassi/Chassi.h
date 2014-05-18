@@ -60,7 +60,7 @@ void start_button_init();
 void disable_timer_interrupts();
 void enable_timer_interrupts();
 void receive_line_data(uint8_t id, uint16_t line_data);
-void request_line_data();
+uint16_t request_line_data();
 void drive_to_next();
 uint8_t station_is_handled(uint8_t tag);
 void decision_to_pc(uint8_t decision);
