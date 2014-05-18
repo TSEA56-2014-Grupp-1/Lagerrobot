@@ -205,23 +205,6 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 	return (carrying_rfid + 1 == current_station);
 }
 
-void request_line_data()
-{
-	uint8_t timeout_counter = 0;
-	uint8_t status_code = 1;
-	while (timeout_counter < 100 && status_code != 0)
-	{
-		status_code = bus_transmit(BUS_ADDRESS_SENSOR, 11, 0);
-		++timeout_counter;
-	}
-	if (status_code != 0)
-	{
-		//display(0,"TO req line");
-		//display(1,"SC: %d", status_code);
-	}
-}
-
-
 void decision_to_pc(uint8_t decision)
 {
 	uint8_t timeout_counter = 0;
@@ -315,13 +298,8 @@ void clear_station_list()
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {	
 	disable_timer_interrupts();
-	request_line_data();
-}
-
-//Sensor calls receive_line_data as a response to request_line_data
-
-void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sensor
-{
+	uint16_t line_data = 0;
+	line_data = request_line_data();
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
 	
@@ -349,6 +327,59 @@ void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sens
 	read_rfid();
 	}
 }
+
+uint16_t request_line_data()
+{
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	uint16_t data = 0;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_request(BUS_ADDRESS_SENSOR, 11, 0, &data);
+		++timeout_counter;
+		
+	}
+	if (status_code != 0)
+	{
+		//display(0,"TO req line");
+		//display(1,"SC: %d", status_code);
+	}
+	return data;
+}
+
+
+//Sensor calls receive_line_data as a response to request_line_data
+/*
+void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sensor
+{
+	int8_t curr_error = (uint8_t)(line_data) - 127;
+	uint8_t station_data = (uint8_t)(line_data >> 8);
+	
+	if(PINA & PINA1) {
+		manual_control = 1;
+	}
+	
+	if (!is_station(station_data) && (manual_control != 1))	// robot is not on station and linefollowing is on
+	{
+		drive(curr_error);
+	}
+	
+	else if (skip_station()) // returns 1 if ok to skip station
+	{
+		drive(curr_error);
+	}
+	
+	else if (manual_control == 1) // manual control is on.
+	{
+		stop_wheels();
+	}
+	else
+	{
+	stop_wheels();
+	read_rfid();
+	}
+}
+*/
 
 // Sensor calls RFID_done as a response to read_rfid
 void RFID_done(uint8_t id, uint16_t id_and_station)
@@ -533,7 +564,7 @@ int main(void)
 	bus_register_receive(12, engine_set_kd);
 	bus_register_receive(2, arm_is_done);
 	bus_register_receive(4, RFID_done);
-	bus_register_receive(1, receive_line_data);
+	//bus_register_receive(1, receive_line_data);
 	
 	sei();
 	start_button_init();
