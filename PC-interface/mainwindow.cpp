@@ -744,6 +744,9 @@ void MainWindow::pickupstation(QByteArray* data) {
 		}
 		station = true;
 	}
+	else if (data->at(11) == 3) {
+		print_on_log("Break in line.");
+	}
 }
 
 bool MainWindow::validate_spoof() {
