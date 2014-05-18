@@ -39,6 +39,7 @@ uint8_t lcd_rotation_counter;
 uint8_t lcd_rotation_flag;
 
 uint8_t heartbeat_counter;
+uint8_t is_in_stop_mode;
 /**
  * @brief Forces the display to display the page of a certain module.
  * @details Resets the rotation counter and outputs the page of a certain module to the display.

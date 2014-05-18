@@ -514,9 +514,9 @@ ISR(TWI_vect) {
 			break;
 
 		case 0xa0: // Stop or repeated start received
+			TWCR |= (1 << TWINT) | (1 << TWEA);
 			bus_call_receive(
 				bus_translate_id(bus_data), bus_translate_metadata(bus_data));
-			TWCR |= (1 << TWINT) | (1 << TWEA);
 			break;
 
 		// Slave transmit

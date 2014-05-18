@@ -229,6 +229,9 @@ void update_manual_control(uint8_t id, uint16_t data) {
 
 int main(void) {
 	// Disable watchdog reset timer to prevent continious resets
+	uint8_t reset_flags;
+	reset_flags = MCUSR;
+	MCUSR = 0;
 	wdt_disable();
 
 	uint8_t status;
@@ -261,11 +264,12 @@ int main(void) {
 	arm_init();
 
 	// Wait for communication unit to say we can continue initialising
-	/*while (!can_start) {
+	if (reset_flags & (1 << WDRF)) {
+	while (!can_start) {
 		// Delay is needed when looping flags such as this
 		_delay_us(1);
-	}*/
-
+	}
+	}
 	_delay_ms(1000);
 
 	// Make sure claw is open and arm is in a well defined state
