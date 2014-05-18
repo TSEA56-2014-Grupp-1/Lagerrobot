@@ -97,6 +97,4 @@ void stop_wheels();
  */
 void update_steering(uint16_t speed);
 
-
-
 #endif

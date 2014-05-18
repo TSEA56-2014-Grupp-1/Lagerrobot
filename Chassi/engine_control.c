@@ -176,4 +176,3 @@ void stop_wheels()
 	drive_left_wheels(1, 0);
 	drive_right_wheels(1, 0);
 }
-

@@ -75,10 +75,10 @@ void lcd_arm_line2(uint8_t id, uint16_t metadata) {
 void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) {
 	uint8_t position;
 	uint8_t symbol;
-	
+
 	position = (uint8_t) (metadata >> 7); // bits 7-10 contains position data
 	symbol = (uint8_t) metadata & 0b01111111; // lowest 7 bits contains ascii symbol
-	
+
 	// Check for null character. If null then the message is finished and the rest of the line should be cleared
 	// Otherwise simply fill the message map with the character
 	if (line_number == 1){
@@ -103,7 +103,6 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) 
 			message_map_line2[module][position] = symbol;
 		}
 	}
-
 }
 
 
@@ -127,8 +126,8 @@ void clear_message(uint8_t unit, uint8_t line_number) {
 		}
 		message_map_line2[unit][16] = '\0';
 	}
-	
-	
+
+
 }
 
 
@@ -208,7 +207,7 @@ int main(void)
 	
 	display(0, "Ouroborobot");
 	display(1, "Soon...");
-	
+
 	char current_message_map1[17];
 	char current_message_map2[17];
 	uint8_t lcd_current_sender;
@@ -240,4 +239,3 @@ int main(void)
 		}
 	}
 }
-

@@ -79,5 +79,4 @@ void emergency_stop(uint8_t id, uint16_t metadata);
 
 uint16_t got_steering_request(uint8_t id, uint16_t metadata);
 
-
 #endif /* CHASSI_H_ */

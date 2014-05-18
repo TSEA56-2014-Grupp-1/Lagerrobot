@@ -69,6 +69,7 @@ uint16_t ad_interpolate(uint16_t ad_in, sensor sensor_id)	{
 	
 	//Distance is in range, interpolate:
 	for(uint8_t i = 1; i <= 25; ++i)	{
+
 		double distance_1_internal = get_distance_sensor(i - 1, sensor_id);
 		double distance_2_internal = get_distance_sensor(i, sensor_id);
 		

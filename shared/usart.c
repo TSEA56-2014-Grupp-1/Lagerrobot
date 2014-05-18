@@ -7,9 +7,10 @@
 
 #include "usart.h"
 
-uint8_t usart_receive_buffer[256];
+volatile uint8_t usart_receive_buffer[256];
 uint8_t usart_buffer_read_index = 0;
 uint8_t usart_buffer_write_index = 0;
+
 
 /**
  *	Interrupt vector to add received data to ring buffer

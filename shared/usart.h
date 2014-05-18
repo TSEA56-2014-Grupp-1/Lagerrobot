@@ -23,4 +23,5 @@ uint8_t usart_has_bytes(void);
 uint8_t usart_ready_to_write(void);
 uint8_t usart_tx_complete(void);
 
-#endif
+#endif 
+

@@ -10,6 +10,7 @@
 #include "engine_control.h"
 
 void pd_update(int8_t curr_error);
+
 void regulator_init();
 
 #endif

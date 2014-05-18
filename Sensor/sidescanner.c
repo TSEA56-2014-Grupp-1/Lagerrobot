@@ -45,6 +45,7 @@ uint8_t scanner_set_position(uint8_t angle, sensor sensor_id) {
 	return 0;
 }
 
+
 void sidescanner_init(sensor sensor_id)
 {
 	DDRB |= 0b11000000;	//Set port direction
@@ -71,7 +72,7 @@ void sidescanner_init(sensor sensor_id)
 		ADMUX = 0b00000001;
 	else if(sensor_id == sensor_right)
 		ADMUX = 0b00000010;
-	
+
 
 	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_left);
 	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_right);
@@ -85,6 +86,7 @@ uint16_t get_distance(sensor sensor_id) {
 
 	uint16_t distance_array[AD_CONV];
 	uint16_t distance_value;
+	
 	for (uint8_t i = 0; i < AD_CONV; ++i) {
 		ADCSRA |= (1 << ADSC);
 		while (ADCSRA & (1 << ADSC));
