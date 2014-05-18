@@ -23,6 +23,7 @@ uint8_t process_heartbeat(){
 	sei();
 	
 	send_packet(PKT_HEARTBEAT, 0);
+	send_all_clear();
 	return 0;
 }
 

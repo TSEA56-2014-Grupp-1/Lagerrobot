@@ -60,5 +60,6 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata);
 void clear_message(uint8_t unit, uint8_t line_number);
 
 void emergency_stop();
+void send_all_clear();
 #endif /* COMMUNICATION_H_ */
 

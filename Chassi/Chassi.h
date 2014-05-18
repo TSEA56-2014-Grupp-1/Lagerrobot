@@ -45,6 +45,7 @@ uint8_t number_of_stations;
  * @param station_data The station information to be checked. 0 or 2 indicates a station.
  * @return 1 if the information indicates a station, 0 otherwise.
  */
+
 uint8_t is_station(uint8_t station_data);
 void clear_sensor();
 uint16_t request_rfid_tag();

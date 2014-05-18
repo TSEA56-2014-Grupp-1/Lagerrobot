@@ -517,11 +517,17 @@ ISR(PCINT1_vect)
 	}
 }
 
+uint8_t can_start;
 
 int main(void)
 {
-
+	uint8_t reset_flags;
+	reset_flags = MCUSR;
+	MCUSR = 0;
 	wdt_disable();
+	
+	can_start = 0;
+	
 	bus_init(BUS_ADDRESS_CHASSIS);
 
 	_delay_ms(100);
@@ -546,17 +552,32 @@ int main(void)
 	bus_register_receive(12, engine_set_kd);
 	
 	sei();
+	
+	// If there was a watchdog reset, wait for communication unit to say we can continue initialising
+	if (reset_flags & (1<<WDRF)) {
+		while (!can_start) {
+			// Delay is needed when looping flags such as this
+			_delay_us(1);
+		}
+	}
+	
 	start_button_init();
 	timer_interrupt_init();
 
     while(1)
     {
-
+		
     }
 }
 
 void emergency_stop( uint8_t id, uint16_t status) {
-	accelerator = 0;
-	wdt_enable(WDTO_1S);
-	for(;;){}
+	if (status == 1) {
+		can_start = 1;
+	}
+	else {
+		can_start = 0;
+		accelerator = 0;
+		wdt_enable(WDTO_1S);
+		for(;;){}
+	}
 }

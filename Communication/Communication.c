@@ -179,6 +179,9 @@ void emergency_stop() {
 	bus_transmit(0, 0, 0); // general call to stop
 }
 
+void send_all_clear() {
+	bus_transmit(0, 0, 1);
+}
 
 void forward_range(uint8_t id, uint16_t data) { // MSB indicates which sensor is scanning
 	send_packet(PKT_RANGE_DATA, 3, (uint8_t) (data >> 10), (uint8_t) ((data & 0b01100000000) >> 8), (uint8_t) data);
