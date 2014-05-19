@@ -89,30 +89,6 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
 }
 
 /*
- *      @brief Linking w, a, s and d to forward, left, back and right buttons key_released_event
- *
- *      @param key_pressed Key that was currently released
- */
-void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
-    if (key_released->key() == Qt::Key_W) {
-        on_pushButton_forward_released();
-    }
-    else if (key_released->key() == Qt::Key_S) {
-        on_pushButton_back_released();
-
-    }
-    else if (key_released->key() == Qt::Key_A) {
-        on_pushButton_left_released();
-        //on_pushButton_base_left_released();
-    }
-    else if (key_released->key() == Qt::Key_D) {
-        on_pushButton_right_released();
-        //on_pushButton_base_right_released();
-    }
-}
-
-
-/*
  *      @brief Setting new port for program to communicate with robot
  *
  *      @param new_connection Bluetooth port to robot
@@ -175,15 +151,6 @@ void MainWindow::on_pushButton_back_pressed()
 	}
 }
 
-void MainWindow::on_pushButton_forward_released()
-{
-    //Stop going forward
-}
-
-void MainWindow::on_pushButton_back_released()
-{
-    //Stop going backwards
-}
 
 void MainWindow::on_pushButton_left_pressed()
 {
@@ -195,11 +162,6 @@ void MainWindow::on_pushButton_left_pressed()
 	}
 }
 
-void MainWindow::on_pushButton_left_released()
-{
-    //Stop turning left
-}
-
 void MainWindow::on_pushButton_right_pressed()
 {
 	if (port == NULL) {
@@ -208,11 +170,6 @@ void MainWindow::on_pushButton_right_pressed()
 	else {
 		port->send_packet(PKT_CHASSIS_COMMAND, 2, CMD_CHASSIS_MOVEMENT, 3);
 	}
-}
-
-void MainWindow::on_pushButton_right_released()
-{
-    //Stop going right
 }
 
 void MainWindow::on_pushButton_start_line_clicked()
@@ -716,7 +673,7 @@ void MainWindow::on_pushButton_send_arm_pos_clicked()
 	quint16 y = ui->lineEdit_y_cord->text().toInt(&y_check);
 	qint16 angle = ui->lineEdit_angle->text().toInt(&angle_check);
 	float angle_rad = angle*M_PI/180;
-	int16_t angle_to_send = angle_rad*1000;
+	int16_t angle_to_send = angle_rad*500;
     if (port == NULL) {
         print_on_log("No port to send to.");
         return;
@@ -763,6 +720,9 @@ void MainWindow::pickupstation(QByteArray* data) {
 			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
 		}
 		station = true;
+	}
+	else if (data->at(11) == 3) {
+		print_on_log("Break in line.");
 	}
 }
 

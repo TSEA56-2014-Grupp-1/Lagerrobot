@@ -66,7 +66,7 @@ void sidescanner_init(sensor sensor_id)
 
 	//Enable adc, Set ADIF flag, Set ADC Interreupt enable, set prescaler
 	ADCSRA = 0b10011111;
-	
+
 	//set AD-channel 1 if sensor left, 2 if sensor right
 	if (sensor_id == sensor_left)
 		ADMUX = 0b00000001;
@@ -124,13 +124,13 @@ uint8_t find_end(uint16_t *object_distance, uint16_t *object_angle, uint16_t sta
 
 	uint16_t distance = 400;
 	uint16_t angle = start_angle;
-	
+
 	uint8_t i = 0;
 	uint16_t distance_array[100];
 
 	while (angle <= SENSOR_SCANNER_ANGLE_LAST){
 		distance = get_distance(sensor_id);
-		
+
 		if(distance <= ZONE_SIZE) {
 			*object_angle = angle;
 			distance_array[i] = distance;
@@ -140,7 +140,7 @@ uint8_t find_end(uint16_t *object_distance, uint16_t *object_angle, uint16_t sta
 			*object_distance = get_median_value(distance_array, i+1);
 			return 1;
 		}
-		
+
 		angle += STEP;
 		scanner_set_position(angle, sensor_id);
 		_delay_ms(100);
@@ -149,21 +149,37 @@ uint8_t find_end(uint16_t *object_distance, uint16_t *object_angle, uint16_t sta
 	return 0;
 }
 
-double calculate_angle_coordinate(uint16_t angle, uint16_t distance)	{
-	double alfa = angle*M_PI/180;
+double calculate_angle_coordinate(uint16_t angle, uint16_t distance, sensor sensor_id)	{
+	double alfa = angle * M_PI / 180;
 	double x_coord;
 	double y_coord;
-	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*sin(alfa);
-	y_coord = distance*cos(alfa);
+
+	x_coord = distance * sin(alfa);
+	y_coord = distance * cos(alfa);
+
+	if (sensor_id == sensor_left) {
+		x_coord += ORIGO_TO_SCANNER_DISTANCE_LEFT;
+	} else {
+		x_coord += ORIGO_TO_SCANNER_DISTANCE_RIGHT;
+	}
+
 	return atan2(x_coord, y_coord);
 }
 
-double calculate_distance_coordinate(uint16_t angle, uint16_t distance)	{
-	double alfa = angle*M_PI/180;
+double calculate_distance_coordinate(uint16_t angle, uint16_t distance, sensor sensor_id)	{
+	double alfa = angle * M_PI / 180;
 	double x_coord;
 	double y_coord;
-	x_coord = ORIGO_TO_SCANNER_DISTANCE + distance*sin(alfa);
-	y_coord = distance*cos(alfa);
+
+	x_coord = distance * sin(alfa);
+	y_coord = distance * cos(alfa);
+
+	if (sensor_id == sensor_left) {
+		x_coord += ORIGO_TO_SCANNER_DISTANCE_LEFT;
+	} else {
+		x_coord += ORIGO_TO_SCANNER_DISTANCE_RIGHT;
+	}
+
 	return sqrt((x_coord*x_coord) + (y_coord*y_coord));
 }
 
@@ -191,23 +207,24 @@ void object_detection(sensor sensor_id)
 		angle = 180 - angle;
 	}
 
- 	double object_angle = calculate_angle_coordinate(angle, distance);
- 	double object_distance = calculate_distance_coordinate(angle, distance);
+	double object_angle = calculate_angle_coordinate(angle, distance, sensor_id);
+	double object_distance = calculate_distance_coordinate(angle, distance, sensor_id);
 
 	uint8_t send_status;
 	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_left);
 	scanner_set_position(SENSOR_SCANNER_ANGLE_FIRST, sensor_right);
 	do {
 		send_status = 0;
-		send_status += bus_transmit(BUS_ADDRESS_ARM,3, (uint16_t)(object_angle*1000));
+		send_status += bus_transmit(BUS_ADDRESS_ARM,3 , (uint16_t)(object_angle * 500));
 		_delay_ms(50);
-		send_status += bus_transmit(BUS_ADDRESS_ARM,4, (uint16_t)object_distance);
+		send_status += bus_transmit(BUS_ADDRESS_ARM,4 , (uint16_t)object_distance);
 		_delay_ms(50);
 		if (send_status == 0) {
-			send_status += bus_transmit(BUS_ADDRESS_ARM,5, !!distance); //send 1 if object found, 0 if not found
+			// Send 1 if object found, 0 if not found so arm can move on
+			send_status += bus_transmit(BUS_ADDRESS_ARM, 5, !!distance);
 		}
 	} while (send_status != 0);
-	
+
 	//scanner_set_position(SENSOR_SCANNER_ANGLE_START, sensor_id);
 
 }

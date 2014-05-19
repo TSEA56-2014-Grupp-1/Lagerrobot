@@ -11,6 +11,10 @@
 
 #include <avr/io.h>
 
+#ifndef F_CPU
+	#define F_CPU 18432000UL
+#endif
+
 #define COMM 0
 #define SENS 1
 #define ARM 2
