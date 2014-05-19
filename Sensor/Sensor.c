@@ -10,7 +10,7 @@
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
-#include "../RFID_scanner/RFID_scanner.h"
+#include "RFID_scanner.h"
 #include "../shared/LCD_interface.h"
 #include "../shared/usart.h"
 #include "sidescanner.h"

@@ -123,18 +123,6 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\RFID_scanner\RFID_scanner.c">
-      <SubType>compile</SubType>
-      <Link>RFID_scanner.c</Link>
-    </Compile>
-    <Compile Include="..\RFID_scanner\RFID_scanner.h">
-      <SubType>compile</SubType>
-      <Link>RFID_scanner.h</Link>
-    </Compile>
-    <Compile Include="..\RFID_scanner\rfid_tags.h">
-      <SubType>compile</SubType>
-      <Link>rfid_tags.h</Link>
-    </Compile>
     <Compile Include="..\shared\bus.c">
       <SubType>compile</SubType>
       <Link>bus.c</Link>
@@ -171,6 +159,15 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="linesensor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RFID_scanner.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="RFID_scanner.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="rfid_tags.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Sensor.c">
