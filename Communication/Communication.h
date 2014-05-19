@@ -32,7 +32,7 @@ char message_map_line1[4][17];
 char message_map_line2[4][17];
 
 /**
- * Identifier of the unit that is currently being displayed.
+ * Identifier of the unit that will be displayed next.
  */
 uint8_t lcd_next_sender;
 
@@ -41,7 +41,16 @@ uint8_t lcd_next_sender;
  */
 uint8_t lcd_rotation_counter;
 
+/*
+* Indicates to the main loop that it should switch pages.	
+*/
 uint8_t lcd_rotation_flag;
+
+/*
+* Keeps track of how many times the heartbeat timer has overflown
+*/
+uint8_t heartbeat_counter;
+
 /**
  * @brief Forces the display to display the page of a certain module.
  * @details Resets the rotation counter and outputs the page of a certain module to the display.
@@ -60,4 +69,8 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata);
  * @param unit The identifier of the module whose page is to be cleared.
  */
 void clear_message(uint8_t unit, uint8_t line_number);
+
+void send_emergency_stop();
+
+void send_all_clear();
 #endif /* COMMUNICATION_H_ */

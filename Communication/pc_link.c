@@ -16,6 +16,17 @@
 #include <stdarg.h>
 #include <util/delay.h>
 
+uint8_t process_heartbeat(){
+	cli();
+	TCNT3 = 0;
+	sei();
+	send_packet(PKT_HEARTBEAT, 0);
+	send_all_clear();
+	heartbeat_counter = 0;
+	
+	return 0;
+}
+
 uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 	if (!data_length) {
 		return 1;
@@ -306,6 +317,8 @@ uint8_t process_packet(void) {
 			return process_spoofed_request(packet_length-1, packet_data);
 		case PKT_SPOOFED_TRANSMIT:
 			return process_spoofed_transmit(packet_length-1, packet_data);
+		case PKT_HEARTBEAT:
+			return process_heartbeat();
 	}
 
 	// Unknown packet ID

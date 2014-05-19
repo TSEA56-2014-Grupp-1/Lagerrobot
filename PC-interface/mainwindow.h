@@ -46,6 +46,9 @@ public:
 
     void add_range_data(quint8 sensor, quint16 new_data);
 
+    void disable_buttons();
+    void enable_buttons();
+
 private slots:
     void keyPressEvent(QKeyEvent *key_pressed);
 
@@ -86,6 +89,8 @@ private slots:
     void on_connect_action_triggered();
 
     void request_data();
+
+    void send_heartbeat();
 
     void draw_graphs();
 
@@ -128,12 +133,9 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    void disable_buttons();
-    void enable_buttons();
-
     void set_up_graphs();
 
-
+    QTimer *timer_heartbeat = new QTimer();
     QTimer *timer_req = new QTimer();
     QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
     QTimer *timer_graph = new QTimer();

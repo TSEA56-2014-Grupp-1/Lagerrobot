@@ -7,6 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "Chassi.h"
 #include "automatic_steering.h"
 #include "engine_control.h"
@@ -529,9 +530,16 @@ ISR(PCINT1_vect)
 	}
 }
 
+uint8_t can_start;
 
 int main(void)
 {
+	uint8_t reset_flags;
+	reset_flags = MCUSR;
+	MCUSR = 0;
+	wdt_disable();
+	
+	can_start = 0;
 
 	bus_init(BUS_ADDRESS_CHASSIS);
 	_delay_ms(100);
@@ -547,6 +555,7 @@ int main(void)
 	station_count = 0;
 
 	// bus_register_receive(1, receive_line_data);
+	bus_register_receive(0, emergency_stop);
 	bus_register_receive(2, arm_is_done);
 	bus_register_receive(3, control_line_following);
 	bus_register_receive(4, RFID_done);
@@ -556,6 +565,15 @@ int main(void)
 	bus_register_receive(12, engine_set_kd);
 
 	sei();
+	
+	// If there was a watchdog reset, wait for communication unit to say we can continue initialising
+	if (reset_flags & (1<<WDRF)) {
+		while (!can_start) {
+			// Delay is needed when looping flags such as this
+			_delay_us(1);
+		}
+	}
+	
 	start_button_init();
 	timer_interrupt_init();
 
@@ -563,4 +581,19 @@ int main(void)
     {
 
     }
+}
+
+void emergency_stop( uint8_t id, uint16_t status) {
+	if (status == 1) {
+		can_start = 1;
+	}
+	else {
+		can_start = 0;
+		update_steering(0);
+		TWCR &= ~(1 << TWEA | 1 << TWIE);
+		TWCR |= (1 << TWINT);
+		disable_timer_interrupts();
+		wdt_enable(WDTO_1S);
+		for(;;){}
+	}
 }

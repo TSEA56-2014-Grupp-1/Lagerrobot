@@ -27,6 +27,16 @@ ISR(TIMER1_OVF_vect) {
 	
 }
 
+ISR(TIMER3_OVF_vect) {
+	if (heartbeat_counter > 5){
+		send_emergency_stop(); // heartbeat has been lost, issue stop command
+		heartbeat_counter = 0;
+	}
+	else {
+		++heartbeat_counter;
+	}
+}
+
 /**
  * @brief Forces the display to display the page of a certain module.
  * @details Resets the rotation counter and outputs the page of a certain module to the display.
@@ -134,11 +144,17 @@ void init(){
 	
 	TIMSK1 = (1 << TOIE1);
 	TCCR1A = 0x00; // normal mode
-	TCCR1B = 0b00000010; // normal mode, max prescaler;
+	TCCR1B = 0b00000010; // normal mode, prescaler 1/8;
+	
+	TIMSK3 = (1 << TOIE3);
+	TCCR3A = 0x00;
+	TCCR3B = 0b00000011; // normal mode, prescaler 1/256
 	
 	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;
 	lcd_rotation_flag = 0;
+	heartbeat_counter = 0;
+	
 	clear_message(COMM, 0);
 	clear_message(COMM, 1);
 	clear_message(SENS, 0);
@@ -147,6 +163,14 @@ void init(){
 	clear_message(CHAS, 1);
 	clear_message(ARM, 0);
 	clear_message(ARM, 1);
+}
+
+void send_emergency_stop() {
+	bus_transmit(0, 0, 0); // general call to stop
+}
+
+void send_all_clear() {
+	bus_transmit(0, 0, 1);
 }
 
 void forward_decision(uint8_t id, uint16_t data) {
