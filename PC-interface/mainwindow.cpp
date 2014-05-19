@@ -226,7 +226,7 @@ void MainWindow::on_pushButton_stop_line_clicked()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSI_STOP);
+        port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_STOP);
 	}
 }
 
@@ -415,7 +415,7 @@ void MainWindow::send_heartbeat()
 {
     if (port != nullptr) {
 
-        if (port->lost_heartbeats > 2) {
+        if (port->lost_heartbeats > 10) {
             print_on_log("No response from robot. Attempting to reconnect...");
             disable_buttons();
         }
