@@ -57,16 +57,17 @@
     </com_atmel_avrdbg_tool_jtagice3plus>
     <avrtoolinterface>JTAG</avrtoolinterface>
     <com_atmel_avrdbg_tool_simulator>
-      <ToolOptions xmlns="">
+      <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
         </InterfaceProperties>
-        <InterfaceName>JTAG</InterfaceName>
+        <InterfaceName>
+        </InterfaceName>
       </ToolOptions>
-      <ToolType xmlns="">com.atmel.avrdbg.tool.simulator</ToolType>
-      <ToolNumber xmlns="">
+      <ToolType>com.atmel.avrdbg.tool.simulator</ToolType>
+      <ToolNumber>
       </ToolNumber>
-      <ToolName xmlns="">Simulator</ToolName>
+      <ToolName>Simulator</ToolName>
     </com_atmel_avrdbg_tool_simulator>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -109,6 +110,7 @@
         <avrgcc.compiler.symbols.DefSymbols>
           <ListValues>
             <Value>DEBUG</Value>
+            <Value>F_CPU=18432000UL</Value>
           </ListValues>
         </avrgcc.compiler.symbols.DefSymbols>
         <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
@@ -133,6 +135,24 @@
     <Compile Include="..\shared\bus.h">
       <SubType>compile</SubType>
       <Link>bus.h</Link>
+    </Compile>
+    <Compile Include="..\shared\packets.h">
+      <SubType>compile</SubType>
+      <Link>packets.h</Link>
+    </Compile>
+    <Compile Include="..\shared\usart.c">
+      <SubType>compile</SubType>
+      <Link>usart.c</Link>
+    </Compile>
+    <Compile Include="..\shared\usart.h">
+      <SubType>compile</SubType>
+      <Link>usart.h</Link>
+    </Compile>
+    <Compile Include="pc_link.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="pc_link.h">
+      <SubType>compile</SubType>
     </Compile>
     <Compile Include="Communication.c">
       <SubType>compile</SubType>

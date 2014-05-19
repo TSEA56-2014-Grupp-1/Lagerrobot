@@ -484,7 +484,6 @@ uint8_t bus_get_address() {
 	return TWAR >> 1;
 }
 
-
 /**
  *	Handle interrupts from other masters
  */

@@ -88,10 +88,6 @@ uint8_t usart_has_bytes(void) {
 	return usart_buffer_read_index != usart_buffer_write_index;
 }
 
-void usart_reset_buffer() {
-	usart_buffer_read_index = 0;
-	usart_buffer_write_index = 0;
-}
 
 /**
  *	Determines if writing can be done

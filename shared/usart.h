@@ -19,7 +19,6 @@ uint8_t usart_has_bytes(void);
 uint8_t usart_ready_to_write(void);
 void usart_tx_frame(void);
 uint8_t usart_tx_complete(void);
-void usart_reset_buffer(void);
 uint8_t usart_has_bytes(void);
 uint8_t usart_ready_to_write(void);
 uint8_t usart_tx_complete(void);
