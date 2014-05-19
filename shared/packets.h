@@ -1,7 +1,7 @@
 #ifndef PACKETS_H_
 #define PACKETS_H_
 
-/*	packets					|	packet_id | packet contents (byte numbers)			*/			
+/*	packets					|	packet_id | packet contents (byte numbers)			*/
 #define PKT_STOP				0	//		none
 #define PKT_ARM_COMMAND			1	//		command type(1), data(2-10)
 #define PKT_CHASSIS_COMMAND		2	//		command type(1), data(2-3)
@@ -9,7 +9,7 @@
 #define PKT_ARM_STATUS			4	//		<not defined yet>
 #define PKT_CHASSIS_STATUS		5	//		<not defined yet>
 #define PKT_LINE_DATA			6	//		sensor values(1-11), line flags(12), center of mass(13), steering wheel(14-15)
-#define PKT_RANGE_DATA			7	//		side of sensor(1), distance (2-3) 
+#define PKT_RANGE_DATA			7	//		side of sensor(1), distance (2-3)
 #define PKT_RFID_DATA			8	//		tag bytes(1)
 #define	PKT_CHASSIS_DECISION	9	//		type of decision (1)
 #define PKT_ARM_DECISION		10	//		<not defined yet>
@@ -20,7 +20,7 @@
 #define PKT_CALIBRATION_DATA    15  //      calibration value (1)
 #define PKT_HEARTBEAT           16  //      none
 
-/*	commands (in packets)	|	cmd_id	  |	command data					*/ 
+/*	commands (in packets)	|	cmd_id	  |	command data					*/
 #define CMD_ARM_MOVE			0	//		coordinate(1) [x = 0, y = 1, angle = 2], direction(2) [1=up, 0=down], start/stop(3) [start = 1, stop = 0]
 #define CMD_ARM_GRIP			1	//		none
 #define CMD_ARM_RELEASE			2	//		none
@@ -33,6 +33,7 @@
 #define	CMD_CHASSIS_START		2	//		none
 #define CMD_CHASSIS_PARAMETERS	3	//		Kp value(1), Kd value(2)
 #define CMD_CHASSIS_MOVEMENT    4   //      command
+#define CMD_CHASSIS_STOP        5   //      none
 
 
 /*	 calibration commands	cmd_id			parameters			*/
@@ -51,5 +52,6 @@
 #define DEC_ARM_PUT_DOWN		8	//Arm has put down the object
 #define DEC_OBJECT_NOT_FOUND	9	//Object was not found by arm
 #define DEC_UNKOWN_ERROR		10	//An unkown error has occured
+#define DEC_ARM_FAILED          11  //Arm failed pickup
 
 #endif /* PACKETS_H_*/
