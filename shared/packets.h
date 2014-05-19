@@ -35,7 +35,6 @@
 #define CMD_CHASSIS_MOVEMENT    4   //      command
 #define CMD_CHASSIS_STOP        5   //      none
 
-
 /*	 calibration commands	cmd_id			parameters			*/
 #define CAL_LINE				1	//		tape or no tape(1)
 #define CAL_RANGE				2	//		distance to object(1)

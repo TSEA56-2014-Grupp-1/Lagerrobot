@@ -52,6 +52,8 @@ public:
 private slots:
     void keyPressEvent(QKeyEvent *key_pressed);
 
+	void keyReleaseEvent(QKeyEvent *key_released);
+
     void on_pushButton_forward_pressed();
 
     void on_pushButton_back_pressed();
@@ -77,10 +79,6 @@ private slots:
     void on_pushButton_open_gripper_clicked();
 
     void on_pushButton_start_position_arm_clicked();
-
-    void on_pushButton_put_down_right_clicked();
-
-    void on_pushButton_put_down_left_clicked();
 
     void on_pushButton_calibrate_tape_clicked();
 
@@ -129,6 +127,10 @@ private slots:
 	void on_pushButton_x_up_released();
 
 	void on_pushButton_x_down_released();
+
+	void on_pushButton_pickup_right_clicked();
+
+	void on_pushButton_pickup_left_clicked();
 
 private:
     Ui::MainWindow *ui;
