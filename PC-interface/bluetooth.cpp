@@ -98,6 +98,7 @@ void bluetooth::process_packet()
     case PKT_HEARTBEAT:
         lost_heartbeats = 0;
         window->enable_buttons();
+        has_connection = true;
         break;
     }
 }
@@ -182,8 +183,13 @@ void bluetooth::handle_ready_read() {
  *
  *      @param data Data that will be written
  */
-void bluetooth::write(QByteArray data) {
-    serialport->write(data);
+qint64 bluetooth::write(QByteArray data) {
+    return serialport->write(data);
+}
+
+QSerialPort *bluetooth::get_serialport()
+{
+    return this->serialport;
 }
 
 /*

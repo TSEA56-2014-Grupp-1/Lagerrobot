@@ -134,7 +134,6 @@ private:
     Ui::MainWindow *ui;
 
 
-
     void set_up_graphs();
 
 

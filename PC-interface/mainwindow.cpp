@@ -29,13 +29,13 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
 
-    heartbeat_timer->setInterval(1000);
+    heartbeat_timer->setInterval(200); // robot will emergency stop after ~1.1 seconds, after about ten missed heartbeats
     connect(heartbeat_timer, SIGNAL(timeout()), this, SLOT(send_heartbeat()));
 
     timer_req->setInterval(250);
     connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
 
-    timer_com->setInterval(500); // robot will emergency stop after ~1.1 seconds, after two missed heartbeats
+    timer_com->setInterval(500);
     connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
     ui->lcdTimer->setDigitCount(10);
 
@@ -94,6 +94,7 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
  *      @param new_connection Bluetooth port to robot
  */
 void MainWindow::new_connection(bluetooth *new_connection) {
+        delete port;
 		port = new_connection;
 }
 
@@ -109,6 +110,7 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
+        port->has_connection = true;
 
         heartbeat_timer->start();
         timer_req->start();
@@ -368,10 +370,7 @@ void MainWindow::enable_buttons() {
  *      @details Function that will request line data from robot, will also reset the timer so that interupt will happen again.
  */
 void MainWindow::request_data() {
-    if (port == NULL) {
-        print_on_log("No port to send to.");
-    }
-    else {
+    if (port != nullptr && port->has_connection) {
         port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
         timer_req->start();
     }
@@ -384,11 +383,15 @@ void MainWindow::send_heartbeat()
         if (port->lost_heartbeats > 2) {
             print_on_log("No response from robot. Attempting to reconnect...");
             disable_buttons();
+            port->has_connection = false;
+            connect_to_port(port->get_serialport()->objectName());
         }
+        if (port != nullptr) {
         port->send_packet(PKT_HEARTBEAT);
         port->lost_heartbeats++;
 
         heartbeat_timer->start();
+        }
     }
 }
 

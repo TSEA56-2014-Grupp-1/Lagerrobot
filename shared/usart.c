@@ -72,7 +72,6 @@ uint8_t usart_read_byte(uint8_t * data) {
 		if (timeout_counter++ >= USART_RECEIVE_TIMEOUT_COUNT) {
 			return 1;
 		}
-		_delay_us(1);
 	}
 
 	*data = usart_receive_buffer[usart_buffer_read_index++];
@@ -85,7 +84,7 @@ uint8_t usart_read_byte(uint8_t * data) {
  *	@return 1 if there are bytes to be read from buffer else 0
  */
 uint8_t usart_has_bytes(void) {
-	_delay_ms(1);
+	_delay_us(1);
 	return usart_buffer_read_index != usart_buffer_write_index;
 }
 

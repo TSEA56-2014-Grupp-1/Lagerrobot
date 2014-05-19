@@ -570,7 +570,7 @@ void emergency_stop( uint8_t id, uint16_t status) {
 	}
 	else {
 		can_start = 0;
-		accelerator = 0;
+		update_steering(0);
 		TWCR &= ~(1 << TWEA | 1 << TWIE);
 		TWCR |= (1 << TWINT);
 		disable_timer_interrupts();

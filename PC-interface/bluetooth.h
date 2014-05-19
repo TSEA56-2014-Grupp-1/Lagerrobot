@@ -29,9 +29,11 @@ public:
     bluetooth(QString, MainWindow*);
     ~bluetooth();
 
-    void write(QByteArray);
-
+    qint64 write(QByteArray);
+    QSerialPort* get_serialport();
     bool open_port();
+
+    bool has_connection = false;
 
     void send_packet(char packet_id, int num_params = 0, ...);
 

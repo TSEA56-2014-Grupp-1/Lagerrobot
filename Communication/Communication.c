@@ -31,6 +31,7 @@ ISR(TIMER3_OVF_vect) {
 	if (heartbeat_counter > 5){
 		emergency_stop(); // heartbeat has been lost, issue stop command
 		is_in_stop_mode = 1;
+		heartbeat_counter = 0;
 	}
 	else {
 		++heartbeat_counter;
@@ -176,7 +177,7 @@ void forward_RFID(uint8_t id, uint16_t data) {
 }
 
 void emergency_stop() {
-		bus_transmit(0, 0, 0); // general call to stop	
+	bus_transmit(0, 0, 0); // general call to stop	
 }
 
 void send_all_clear() {
@@ -216,7 +217,7 @@ int main(void)
 	while(1)
 	{
 		while(!lcd_rotation_flag && !usart_has_bytes());
-
+		
 		if (lcd_rotation_flag) {
 			cli();
 			lcd_rotation_flag = 0;
