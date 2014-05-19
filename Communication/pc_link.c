@@ -31,11 +31,11 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 			data[2] = direction [1 = up, 0 = down]
 			data[3] = start/stop [start = 1, stop = 0]
 			*/
-			
-			uint8_t packet_to_send =  (uint8_t)(data[2] & 0x01) | (uint8_t)((data[3] & 0x01) << 1) | (uint8_t)((data[1] & 0x03) << 2);
-			
-			bus_transmit(BUS_ADDRESS_ARM, 2, (uint16_t)packet_to_send);
-			
+
+			bus_transmit(
+				BUS_ADDRESS_ARM,
+				11,
+				(data[2] & 0x01) | ((data[3] & 0x01) << 1) | ((data[1] & 0x03) << 2));
 			break;
 		case CMD_ARM_GRIP:
 			bus_transmit(BUS_ADDRESS_ARM, 1, 0);
@@ -46,15 +46,7 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 			if (data_length != 2) {
 				return 1;
 			}
-			// TODO: Write this
-			// XXX: data[1] == predefined position id
-			break;
-		case CMD_ARM_STOP:
-			if (data_length != 2) {
-				return 1;
-			}
-
-			bus_transmit(BUS_ADDRESS_ARM, 3, (uint16_t)data[1]);
+			bus_transmit(BUS_ADDRESS_ARM, 13, data[1]);
 			break;
 		case CMD_ARM_MOVE_POS:
 			if (data_length != 7) {
@@ -67,13 +59,13 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 			data[3] == y_high
 			data[4] == y_low
 			data[5] == angle */
-			
+
 			uint16_t x = (uint16_t)(data[1] << 8) | (uint16_t)data[2];
 			uint16_t y = (uint16_t)((0x01 & data[3]) << 8) | (uint16_t)data[4];
 			int16_t angle = (int16_t)(uint16_t)(data[5] << 8) | (uint16_t)(data[6]);
-		
+
 			uint8_t bus_check = 0;
-			
+
 			bus_check += bus_transmit(BUS_ADDRESS_ARM, 6, x);
 			_delay_ms(1);
 			bus_check += bus_transmit(BUS_ADDRESS_ARM, 7, y);
@@ -115,6 +107,9 @@ uint8_t process_chassis_command(uint8_t data_length, uint8_t data[]) {
 			// data[1] == steering power
 			break;
 		case CMD_CHASSIS_START:
+			bus_transmit(BUS_ADDRESS_CHASSIS, 3, 1);
+			break;
+		case CMD_CHASSIS_STOP:
 			bus_transmit(BUS_ADDRESS_CHASSIS, 3, 0);
 			break;
 		case CMD_CHASSIS_PARAMETERS:
@@ -195,7 +190,7 @@ uint8_t process_packet_request(uint8_t data_length, uint8_t data[]) {
 			bus_request(BUS_ADDRESS_SENSOR, 4, 0, &temp_flags_and_center);
 			center_mass = (uint8_t) temp_flags_and_center;
 			flags = (uint8_t) (temp_flags_and_center >> 8);
-			
+
 			bus_request(BUS_ADDRESS_CHASSIS, 5, 0, &steering_wheel);
 
 			send_packet(PKT_LINE_DATA,

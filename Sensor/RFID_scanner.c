@@ -10,7 +10,7 @@
 
 #define F_CPU 20000000UL
 #include <util/delay.h>
-#include "../RFID_scanner/RFID_scanner.h"
+#include "RFID_scanner.h"
 #include "../shared/usart.h"
 #include "../shared/bus.h"
 #include "../Sensor/linesensor.h"
