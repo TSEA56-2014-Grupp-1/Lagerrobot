@@ -444,32 +444,50 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 // Arm calls to arm_is_done as a response to send_to_arm
 void arm_is_done(uint8_t id, uint16_t pickup_data)
 {
-	if (pickup_data == 0) // Arm picked up object
-	{
-		decision_to_pc(7);
+	switch (pickup_data) {
+		case 0: // Arm picked up object
+			decision_to_pc(7);
+			drive_to_next();
+			break;
+		case 1: // Arm put down an object
+			// Mark station as handled
+			handled_stations_list[handled_count++] = carrying_rfid;
+			handled_stations_list[handled_count++] = carrying_rfid + 1;
+
+			carrying_rfid = 0;
+			decision_to_pc(8);
+
+			// Check if all stations are handled
+			if (!is_mission_complete()) {
+				drive_to_next();
+			}
+		case 2: // Arm did not find an object to pick up
+			decision_to_pc(9);
+			carrying_rfid = 0;
+
+			display(0, "arm found");
+			display(1, "nothing");
+			break;
+		case 3: // Arm found object but failed to pick it up
+			decision_to_pc(11);
+			break;
+		default:
+			decision_to_pc(10); // 10 = unkown error
+
+			display(0, "error");
+			display(1, "arm_is_done");
+			break;
+	}
+}
+
+/**
+ *	Start and stop line following
+ */
+void control_line_following(uint8_t id, uint16_t data) {
+	if (data) {
 		drive_to_next();
-	}
-	else if (pickup_data == 1) // Arm put down object
-	{
-		handled_stations_list[handled_count++] = carrying_rfid;
-		handled_stations_list[handled_count++] = carrying_rfid + 1;
-		carrying_rfid = 0;
-		decision_to_pc(8);
-	if (!is_mission_complete())
-		drive_to_next();
-	}
-	else if (pickup_data == 2) // Arm did not find object to pick up
-	{
-		decision_to_pc(9);
-		carrying_rfid = 0;
-		display(0, "arm found");
-		display(1, "nothing");
-	}
-	else
-	{
-		decision_to_pc(10); // 10 = unkown error
-		display(0, "error");
-		display(1, "arm_is_done");
+	} else {
+		stop_wheels();
 	}
 }
 
@@ -487,7 +505,9 @@ uint8_t is_mission_complete()
 		return 0;
 }
 
-
+/**
+ *	Initiate linefollowing to the next station
+ */
 void drive_to_next()
 {
 	scan_count = 0; // reset the scan counter
@@ -496,16 +516,16 @@ void drive_to_next()
 	enable_timer_interrupts();
 }
 
-
-//--------Pin Change Interrupt start-button----
+/**
+ *	Handle start button press
+ */
 ISR(PCINT1_vect)
 {
-	if (PINB & 1)
-	{
-	disable_timer_interrupts();
-	display(0, "start button");
-	display(1, "pressed");
-	drive_to_next();
+	if (PINB & 1) {
+		disable_timer_interrupts();
+		display(0, "start button");
+		display(1, "pressed");
+		drive_to_next();
 	}
 }
 
@@ -527,12 +547,13 @@ int main(void)
 	station_count = 0;
 
 	// bus_register_receive(1, receive_line_data);
+	bus_register_receive(2, arm_is_done);
+	bus_register_receive(3, control_line_following);
+	bus_register_receive(4, RFID_done);
+	bus_register_response(5, got_steering_request);
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
-	bus_register_receive(2, arm_is_done);
-	bus_register_response(5, got_steering_request);
-	bus_register_receive(4, RFID_done);
 
 	sei();
 	start_button_init();
