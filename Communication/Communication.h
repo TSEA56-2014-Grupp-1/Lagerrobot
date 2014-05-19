@@ -11,7 +11,9 @@
 
 #include <avr/io.h>
 
-#define F_CPU 18432000UL
+#ifndef F_CPU
+	#define F_CPU 18432000UL
+#endif
 
 
 #define COMM 0

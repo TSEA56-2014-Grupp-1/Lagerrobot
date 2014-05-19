@@ -3,14 +3,14 @@
  *
  * Created: 2014-03-27 09:08:16
  *  Author: Karl & Philip
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "linesensor.h"
 #include "../shared/bus.h"
 
-//Defining different datatypes	
+//Defining different datatypes
 typedef uint8_t surface_type;
 enum {Floor, Tape};
 
@@ -46,7 +46,7 @@ uint8_t line_weight = 127;
 uint8_t previous_pickup_station = No;
 
 /*
- * Determines what is percieved as tape and floor. Set in linesensor_calibration(). 
+ * Determines what is percieved as tape and floor. Set in linesensor_calibration().
  */
 uint8_t tape_reference = 150;
 
@@ -58,7 +58,7 @@ uint16_t pickup_iterator = 0;
 /*
  *	Send center of mass and station data to chassi.
  */
-void send_line_data(uint8_t id, uint16_t metadata)
+/*uint16_t send_line_data(uint8_t id, uint16_t metadata)
 {
 	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
 	station_type chassi_output = 1;
@@ -68,15 +68,10 @@ void send_line_data(uint8_t id, uint16_t metadata)
 		chassi_output = No;
 	else if(pickup_station == Right)
 		chassi_output = Right;
-		
-	uint8_t timeout_counter = 0;
-	while (timeout_counter < 10 && bus_transmit(BUS_ADDRESS_CHASSIS, 1, (((uint16_t)(chassi_output) << 8) | line_weight)))
-	{
-	timeout_counter++;
-	}
-//	ADCSRA |= (1 << ADIE); // enable ADC- interrupt
+
 	line_init();
-}
+	return (((uint16_t)(chassi_output) << 8) | line_weight);
+}*/
 
 /*
  *	@brief Set the tape reference to new value.
@@ -111,21 +106,36 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
 
 /*
  *	@brief Formats the output to accomodate the chassi and transmits it on the bus.
- *	
+ *
  *	@param id Bus id for the function, unused.
  *	@param metadata Metadata from the bus, unesed.
- * 
+ *
  *	@return High byte: Station data. Low byte: Center of mass of the line.
  */
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
-	station_type chassi_output = 1;
-	if(pickup_station == Left)
-		chassi_output = Left;
-	else if(pickup_station == No)
-		chassi_output = No;
-	else if(pickup_station == Right)
-		chassi_output = Right;
-	return (((uint16_t)(chassi_output) << 8) | line_weight);
+	// Disable ADC interrupts
+	ADCSRA &= ~(1 << ADIE);
+
+	uint8_t current_line_weight = line_weight;
+	station_type chassi_output = No;
+	switch (pickup_station) {
+		case Left:
+			chassi_output = Left;
+			break;
+		case Right:
+			chassi_output = Right;
+			break;
+		default:
+			// Check if we have tape at all
+			if (get_tape_width() == 0) {
+				chassi_output = 3;
+				current_line_weight = 127;
+			}
+			break;
+	}
+
+	line_init();
+	return (((uint16_t)(chassi_output) << 8) | current_line_weight);
 }
 
 /*
@@ -136,7 +146,7 @@ void line_init(){
 	ADCSRA = 0b10001111;
 	DDRB = 0b11111111;
 	ADMUX = (1 << ADLAR);
-	
+
 	PORTB = linesensor_channel;
 	ADCSRA |= (1 << ADSC);
 }
@@ -146,10 +156,10 @@ void line_init(){
  */
 void update_linesensor_values() {
 	sensor_values[linesensor_channel] = ADCH;
-	
+
 	linesensor_channel = (linesensor_channel + 1) % 11;
 	PORTB = linesensor_channel;
-			
+
 	ADCSRA |= (1 << ADSC);
 }
 
@@ -176,7 +186,7 @@ void calculate_line_weight()	{
 	uint16_t tot_weight = 0;
 	uint16_t sensor_scale = 11;
 	uint8_t current_sensor = 0;
-	
+
 	while(current_sensor<=10)	{
 		tot_weight = tot_weight + sensor_values[current_sensor];
 		temp_line_weight = temp_line_weight + sensor_values[current_sensor] * sensor_scale;
@@ -201,7 +211,7 @@ uint8_t get_tape_width()	{
 	uint8_t current_sensor;
 	tape_width = 0;
 	current_sensor = 0;
-	
+
 	while(current_sensor <=10)	{
 		tape_width = tape_width + get_sensor_surface(current_sensor);
 		current_sensor++;
@@ -257,7 +267,7 @@ void pickup_station_detection() {
 	else if (previous_pickup_station == Right && is_tape_left()) {
 		previous_pickup_station = No;
 	}
-	
+
 	else if (previous_pickup_station == Left && !is_tape_left() && pickup_iterator > 1450) {
 		previous_pickup_station = No;
 		pickup_iterator = 0;
@@ -269,7 +279,7 @@ void pickup_station_detection() {
 	else if (pickup_iterator > 0) {
 		--pickup_iterator;
 	}
-	
+
 	else if (previous_pickup_station == No) {
 		if (is_tape_right()) {
 			previous_pickup_station = Right;
@@ -281,7 +291,7 @@ void pickup_station_detection() {
 		}
 	}
 	else if (previous_pickup_station == Left) {
-		pickup_station = Left;	
+		pickup_station = Left;
 	}
 	else if (previous_pickup_station == Right) {
 		pickup_station = Right;
@@ -324,7 +334,7 @@ uint8_t line_read_sensor(uint8_t sensor_id) {
 		ADCSRA &= ~(1 << ADIF);
 		sensor_references += ADCH;
 	}
-	return (uint8_t)(sensor_references / 10);	
+	return (uint8_t)(sensor_references / 10);
 }
 
 /*
@@ -333,12 +343,12 @@ uint8_t line_read_sensor(uint8_t sensor_id) {
  *	@param id Bus id of the function, unused.
  *	@param metadata Metadata to the function, unused.
  */
-void calibrate_linesensor(uint8_t id, uint16_t metadata)	{	
+void calibrate_linesensor(uint8_t id, uint16_t metadata)	{
 	cli();
 	uint8_t sensor_max = 0;
 	uint8_t sensor_min = 0;
 	init_linesensor_calibration();
-	
+
 	uint8_t sensor_value;
 	for (uint8_t j = 0; j <= 9; j++) {
 		sensor_value = line_read_sensor(j);

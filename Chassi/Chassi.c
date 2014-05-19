@@ -3,7 +3,7 @@
  *
  * Created: 3/28/2014 3:41:09 PM
  *  Author: johli887
- */ 
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -32,10 +32,10 @@ void timer_interrupt_init()
 	//enable timer interrupts for ocie0a
 	//TIMSK0 |= (1 << OCIE0A);
 	TIFR0 |= (1 << OCF0A);
-	
+
 	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
 	OCR0A = 0x80;
-	
+
 	// set to mode 2 (CTC) => clear TCNT0 on compare match
 	TCCR0A |= (1 << WGM01 | 0 << WGM00);
 	TCCR0B |= (0 << WGM02);
@@ -122,7 +122,7 @@ void set_sensor_to_linefollowing()
 
 void pickup_to_arm(uint16_t arm_action_trans)
 {
-	
+
 		uint16_t timeout_counter = 0;
 		uint8_t status_code = 1;
 		while (timeout_counter < 100 && status_code != 0)
@@ -139,7 +139,7 @@ void pickup_to_arm(uint16_t arm_action_trans)
 
 void put_down_to_arm(uint16_t arm_action_trans)
 {
-	
+
 	uint16_t timeout_counter = 0;
 	uint8_t status_code = 1;
 	while (timeout_counter < 100 && status_code != 0)
@@ -158,15 +158,10 @@ uint16_t got_steering_request(uint8_t id, uint16_t metadata) {
 	return (uint16_t)steering_wheel;
 }
 
-
 uint8_t is_station(uint8_t station_data)
 {
-	if (station_data == 0 || station_data == 2)
-		return 1;
-	else
-		return 0;
+	return station_data == 0 || station_data == 2;
 }
-
 
 void display_station_and_rfid(uint8_t station_data, uint8_t tag)
 {
@@ -209,23 +204,6 @@ uint8_t station_match_with_carrying(uint8_t current_station)
 	return (carrying_rfid + 1 == current_station);
 }
 
-void request_line_data()
-{
-	uint8_t timeout_counter = 0;
-	uint8_t status_code = 1;
-	while (timeout_counter < 100 && status_code != 0)
-	{
-		status_code = bus_transmit(BUS_ADDRESS_SENSOR, 11, 0);
-		++timeout_counter;
-	}
-	if (status_code != 0)
-	{
-		//display(0,"TO req line");
-		//display(1,"SC: %d", status_code);
-	}
-}
-
-
 void decision_to_pc(uint8_t decision)
 {
 	uint8_t timeout_counter = 0;
@@ -235,7 +213,7 @@ void decision_to_pc(uint8_t decision)
 		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 8, decision);
 		++timeout_counter;
 	}
-	
+
 }
 
 void rfid_to_pc(uint8_t tag_id)
@@ -286,7 +264,7 @@ void update_station_list(uint8_t station_id)
 	{
 		lap_finished = 1;
 		number_of_stations = station_count;
-		station_count = 0;
+		station_count = 1;
 	}
 	else
 	{
@@ -317,41 +295,57 @@ void clear_station_list()
 //----------------------------------Timer interrupt (Start of main program)----------------------------------------
 
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
-{	
-	disable_timer_interrupts();
-	request_line_data();
-}
-
-//Sensor calls receive_line_data as a response to request_line_data
-
-void receive_line_data(uint8_t id, uint16_t line_data) // Gets called on by Sensor
 {
+	disable_timer_interrupts();
+	uint16_t line_data = 0;
+	line_data = request_line_data();
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
-	
-	if(PINA & PINA1) {
-		manual_control = 1;
-	}
-	
-	if (!is_station(station_data) && (manual_control != 1))	// robot is not on station and linefollowing is on
+
+	// Determine if we're in manual mode or not
+	manual_control = PINA & PINA1;
+
+	if (!is_station(station_data) && manual_control != 1)
 	{
+		// Robot is not on station and linefollowing is on
 		drive(curr_error);
 	}
-	/*
-	else if (skip_station()) // returns 1 if ok to skip station
+	else if (skip_station())
 	{
+		// Just continue if station should be skipped
 		drive(curr_error);
 	}
-	*/
-	else if (manual_control == 1) // manual control is on.
+	else if (manual_control == 1)
 	{
+		// Stop wheels when in manual control mode
 		stop_wheels();
 	}
 	else
 	{
-	stop_wheels();
-	read_rfid();
+		// New unknown station
+		stop_wheels();
+		read_rfid();
 	}
+}
+
+uint16_t request_line_data()
+{
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	uint16_t data = 0;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_request(BUS_ADDRESS_SENSOR, 11, 0, &data);
+		++timeout_counter;
+
+	}
+	if (status_code != 0)
+	{
+		//display(0,"TO req line");
+		//display(1,"SC: %d", status_code);
+	}
+
+	return data;
 }
 
 // Sensor calls RFID_done as a response to read_rfid
@@ -399,7 +393,7 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 {
 	uint8_t match = station_match_with_carrying(station_tag);
 	uint8_t pickup_station = is_pickup_station(station_tag);
-	
+
 	if (station_is_handled(station_tag))
 	{
 		display(0, "st allready");
@@ -418,7 +412,7 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 		decision_to_pc(3);
 		put_down_to_arm(0); // 0 = put down object to the left
 	//arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
-	
+
 	}
 	else if (carrying_rfid != 0 || pickup_station == 0) // Carrying object or not a pickupstation
 	{
@@ -471,7 +465,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 		display(0, "arm found");
 		display(1, "nothing");
 	}
-	else 
+	else
 	{
 		decision_to_pc(10); // 10 = unkown error
 		display(0, "error");
@@ -488,7 +482,7 @@ uint8_t is_mission_complete()
 		display(0, "Mission");
 		display(1, "Complete!!");
 		return 1;
-	}	
+	}
 	else
 		return 0;
 }
@@ -518,12 +512,12 @@ ISR(PCINT1_vect)
 
 int main(void)
 {
-	
+
 	bus_init(BUS_ADDRESS_CHASSIS);
 	_delay_ms(100);
 	engine_init();
 	regulator_init();
-	
+
 	carrying_rfid = 0;
 	handled_count = 0;
 	manual_control = 0;
@@ -531,14 +525,14 @@ int main(void)
 	lap_finished = 0;
 	number_of_stations = 0;
 	station_count = 0;
-	
+
+	// bus_register_receive(1, receive_line_data);
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
 	bus_register_receive(2, arm_is_done);
 	bus_register_response(5, got_steering_request);
 	bus_register_receive(4, RFID_done);
-	bus_register_receive(1, receive_line_data);
 
 	sei();
 	start_button_init();

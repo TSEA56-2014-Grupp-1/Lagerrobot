@@ -3,13 +3,16 @@
  *
  * Created: 3/31/2014 1:38:34 PM
  *  Author: johli887
- */ 
+ */
 
 
 #ifndef CHASSI_H_
 #define CHASSI_H_
 
-#define F_CPU 16000000UL
+#ifndef F_CPU
+	#define F_CPU 16000000UL
+#endif
+
 #include <math.h>
 #include <util/delay.h>
 #include <stdlib.h>
@@ -35,13 +38,13 @@ uint8_t number_of_stations;
  * @brief Requests line data from the sensor unit.
  * @details Performs a bus request to the sensor unit for data on the center
  * of mass and station information.
- * @return The data returned by the Sensor unit. High byte contains station information, 
+ * @return The data returned by the Sensor unit. High byte contains station information,
  * low byte contains the value of the center of mass for the line sensor.
  */
 
 /**
  * @brief Checks if provided station information indicates a station.
- * 
+ *
  * @param station_data The station information to be checked. 0 or 2 indicates a station.
  * @return 1 if the information indicates a station, 0 otherwise.
  */
@@ -60,7 +63,7 @@ void start_button_init();
 void disable_timer_interrupts();
 void enable_timer_interrupts();
 void receive_line_data(uint8_t id, uint16_t line_data);
-void request_line_data();
+uint16_t request_line_data();
 void drive_to_next();
 uint8_t station_is_handled(uint8_t tag);
 void decision_to_pc(uint8_t decision);
