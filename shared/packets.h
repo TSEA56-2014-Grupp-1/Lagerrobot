@@ -32,6 +32,7 @@
 #define	CMD_CHASSIS_START		2	//		none
 #define CMD_CHASSIS_PARAMETERS	3	//		Kp value(1), Kd value(2)
 #define CMD_CHASSIS_MOVEMENT    4   //      command
+#define CMD_CHASSI_STOP			5	//		stop linefollowing
 
 
 /*	 calibration commands	cmd_id			parameters			*/

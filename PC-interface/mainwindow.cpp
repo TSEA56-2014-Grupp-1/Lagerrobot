@@ -73,15 +73,52 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
     }
     else if (key_pressed->key() == Qt::Key_A) {
         on_pushButton_left_pressed();
-        //on_pushButton_base_left_pressed();
     }
     else if (key_pressed->key() == Qt::Key_D) {
         on_pushButton_right_pressed();
-        //on_pushButton_base_right_pressed();
     }
     else if (key_pressed->key() == Qt::Key_Escape) {
         on_pushButton_stop_pressed();
     }
+	else if (key_pressed->key() == Qt::Key_Z) {
+		on_pushButton_base_left_pressed();
+	}
+	else if (key_pressed->key() == Qt::Key_X) {
+		on_pushButton_base_right_pressed();
+	}
+	else if (key_pressed->key() == Qt::Key_Up) {
+		on_pushButton_y_upp_pressed();
+	}
+	else if (key_pressed->key() == Qt::Key_Down) {
+		on_pushButton_y_down_pressed();
+	}
+	else if (key_pressed->key() == Qt::Key_Left) {
+		on_pushButton_x_down_pressed();
+	}
+	else if (key_pressed->key() == Qt::Key_Right) {
+		on_pushButton_x_up_pressed();
+	}
+}
+
+void MainWindow::keyReleaseEvent(QKeyEvent *key_released) {
+	if (key_released->key() == Qt::Key_Z) {
+		on_pushButton_base_left_released();
+	}
+	else if (key_released->key() == Qt::Key_X) {
+		on_pushButton_base_right_released();
+	}
+	else if (key_released->key() == Qt::Key_Up) {
+		on_pushButton_y_upp_released();
+	}
+	else if (key_released->key() == Qt::Key_Down) {
+		on_pushButton_y_down_released();
+	}
+	else if (key_released->key() == Qt::Key_Left) {
+		on_pushButton_x_down_released();
+	}
+	else if (key_released->key() == Qt::Key_Right) {
+		on_pushButton_x_up_released();
+	}
 }
 
 /*
@@ -180,23 +217,22 @@ void MainWindow::on_pushButton_start_line_clicked()
 
 void MainWindow::on_pushButton_stop_line_clicked()
 {
-    //XXX: Sending packet to stop robot. Maybe should implement another packet to only stop linefollowing?
 	if (port == NULL) {
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_STOP,0);
+		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSI_STOP);
 	}
 }
 
 void MainWindow::on_pushButton_close_gripper_clicked()
 {
-	port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 1, 6);
+	port->send_packet(PKT_ARM_COMMAND, 1, CMD_ARM_GRIP);
 }
 
 void MainWindow::on_pushButton_open_gripper_clicked()
 {
-	port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 0, 6);
+	port->send_packet(PKT_ARM_COMMAND, 1, CMD_ARM_RELEASE);
 }
 
 void MainWindow::on_pushButton_base_left_pressed()
@@ -205,7 +241,7 @@ void MainWindow::on_pushButton_base_left_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 2, 1, 1);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 2, 1, 1);
 	}
 }
 
@@ -215,7 +251,7 @@ void MainWindow::on_pushButton_base_left_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_MOVE, 2, 1, 0);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 2, 1, 0);
 	}
 }
 
@@ -225,7 +261,7 @@ void MainWindow::on_pushButton_base_right_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 3, CMD_ARM_MOVE, 2, 0, 1);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 2, 0, 1);
 	}
 }
 
@@ -235,23 +271,18 @@ void MainWindow::on_pushButton_base_right_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_MOVE, 2, 0, 0);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 2, 0, 0);
 	}
 }
 
 void MainWindow::on_pushButton_start_position_arm_clicked()
 {
-    //Move arm to starting position
-}
-
-void MainWindow::on_pushButton_put_down_right_clicked()
-{
-    //Leave object to the right
-}
-
-void MainWindow::on_pushButton_put_down_left_clicked()
-{
-    //Leave object to the left
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_PREDEFINED_POS, 1);
+	}
 }
 
 void MainWindow::on_pushButton_calibrate_tape_clicked()
@@ -307,8 +338,8 @@ void MainWindow::disable_buttons() {
 	ui->pushButton_forward->setEnabled(false);
     ui->pushButton_left->setEnabled(false);
     ui->pushButton_open_gripper->setEnabled(false);
-    ui->pushButton_put_down_left->setEnabled(false);
-    ui->pushButton_put_down_right->setEnabled(false);
+	ui->pushButton_pickup_left->setEnabled(false);
+	ui->pushButton_pickup_right->setEnabled(false);
     ui->pushButton_right->setEnabled(false);
     ui->pushButton_start_line->setEnabled(false);
     ui->pushButton_start_position_arm->setEnabled(false);
@@ -338,8 +369,8 @@ void MainWindow::enable_buttons() {
     ui->pushButton_forward->setEnabled(true);
     ui->pushButton_left->setEnabled(true);
     ui->pushButton_open_gripper->setEnabled(true);
-    ui->pushButton_put_down_left->setEnabled(true);
-    ui->pushButton_put_down_right->setEnabled(true);
+	ui->pushButton_pickup_left->setEnabled(true);
+	ui->pushButton_pickup_right->setEnabled(true);
     ui->pushButton_right->setEnabled(true);
     ui->pushButton_start_line->setEnabled(true);
     ui->pushButton_start_position_arm->setEnabled(true);
@@ -366,8 +397,11 @@ void MainWindow::request_data() {
 
 		print_on_log("No port to send to.");
 	}
+	else if (update_graph){
+		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
+		timer_req->start();
+	}
 	else {
-        //port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
 		timer_req->start();
 	}
 }
@@ -416,7 +450,7 @@ void MainWindow::set_up_graphs() {
     ui->plot_steering->xAxis->setLabel("Time");
     ui->plot_steering->xAxis->setAutoTickStep(false);
     ui->plot_steering->xAxis->setTickStep(1);
-    ui->plot_steering->yAxis->setRange(-300, 300);
+	ui->plot_steering->yAxis->setRange(-200, 200);
 
     ui->plot_steering->graph(0)->setLineStyle(QCPGraph::lsLine);
 	ui->plot_steering->graph(0)->setName("Center of mass");
@@ -696,6 +730,7 @@ void MainWindow::pickupstation(QByteArray* data) {
 	}
 	else if (data->at(11) == 0 && !station) {
 		print_on_log("Station right");
+		update_graph = false;
 		for (int i = 0; i < 11; ++i) {
 			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
 		}
@@ -805,7 +840,7 @@ void MainWindow::on_pushButton_y_upp_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 1, 1);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 1, 1);
 	}
 }
 
@@ -815,7 +850,7 @@ void MainWindow::on_pushButton_y_down_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 0, 1);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 0, 1);
 	}
 }
 
@@ -825,7 +860,7 @@ void MainWindow::on_pushButton_x_up_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 1, 1);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 1, 1);
 	}
 }
 
@@ -835,7 +870,7 @@ void MainWindow::on_pushButton_x_down_pressed()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 0, 1);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 0, 1);
 	}
 }
 
@@ -845,7 +880,7 @@ void MainWindow::on_pushButton_y_upp_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 1, 0);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 1, 0);
 	}
 }
 
@@ -855,7 +890,7 @@ void MainWindow::on_pushButton_y_down_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 0, 0);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 0, 0);
 	}
 }
 
@@ -865,7 +900,7 @@ void MainWindow::on_pushButton_x_up_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 1, 0);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 1, 0);
 	}
 }
 
@@ -875,6 +910,26 @@ void MainWindow::on_pushButton_x_down_released()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 1, 0, 0);
+		port->send_packet(PKT_ARM_COMMAND, 4, CMD_ARM_MOVE, 0, 0, 0);
+	}
+}
+
+void MainWindow::on_pushButton_pickup_right_clicked()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_PREDEFINED_POS, 3);
+	}
+}
+
+void MainWindow::on_pushButton_pickup_left_clicked()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_PREDEFINED_POS, 2);
 	}
 }

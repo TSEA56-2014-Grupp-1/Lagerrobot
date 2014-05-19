@@ -383,16 +383,16 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_put_down_right">
+      <widget class="QPushButton" name="pushButton_pickup_right">
        <property name="text">
-        <string>Lämna höger</string>
+        <string>Plocka höger</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton_put_down_left">
+      <widget class="QPushButton" name="pushButton_pickup_left">
        <property name="text">
-        <string>Lämna vänster</string>
+        <string>Plocka vänster</string>
        </property>
       </widget>
      </item>
@@ -685,8 +685,8 @@
   <tabstop>pushButton_base_left</tabstop>
   <tabstop>pushButton_base_right</tabstop>
   <tabstop>pushButton_start_position_arm</tabstop>
-  <tabstop>pushButton_put_down_right</tabstop>
-  <tabstop>pushButton_put_down_left</tabstop>
+  <tabstop>pushButton_pickup_right</tabstop>
+  <tabstop>pushButton_pickup_left</tabstop>
   <tabstop>listWidget_log</tabstop>
  </tabstops>
  <resources/>
