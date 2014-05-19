@@ -61,10 +61,10 @@ void manual_target(uint8_t callback_id, uint16_t data) {
 			manual_target_position.y = (int16_t)data + ARM_FLOOR_LEVEL;
 			break;
 		case 8:
-			manual_target_position.angle = (float)data / 1000;
+			manual_target_position.angle = (float)data / 500;
 			break;
 		case 9:
-			manual_target_position.angle = (float)data / -1000;
+			manual_target_position.angle = (float)data / -500;
 			break;
 		case 10:
 			has_manual_target = 1;
@@ -117,10 +117,10 @@ void object_pickup(uint8_t id, uint16_t data) {
 		case 3: // Angle received
 			switch (object_side) {
 				case LEFT:
-					object_position.angle = (float)data / 1000;
+					object_position.angle = (float)data / 500;
 					break;
 				case RIGHT:
-					object_position.angle = (float)data / -1000;
+					object_position.angle = (float)data / -500;
 					break;
 			}
 			break;
@@ -178,6 +178,14 @@ void control_claw(uint8_t id, uint16_t data) {
 }
 
 /**
+ *	State of manual control. 0 means no control, 2 means that reference position
+ *	should be recalculated and 1 means normal operation
+ */
+uint8_t manual_control_state = 0;
+
+arm_coordinate manual_control_reference;
+
+/**
  *	Increase current position with values in this struct when controlling manually.
  */
 arm_coordinate manual_control_change = {
@@ -194,9 +202,9 @@ void update_manual_control(uint8_t id, uint16_t data) {
 		case 0: // x
 			if (data & 2) {
 				if (data & 1) {
-					manual_control_change.x = 1;
+					manual_control_change.x = 10;
 				} else {
-					manual_control_change.x = -1;
+					manual_control_change.x = -10;
 				}
 			} else {
 				manual_control_change.x = 0;
@@ -205,9 +213,9 @@ void update_manual_control(uint8_t id, uint16_t data) {
 		case 1: // y
 			if (data & 2) {
 				if (data & 1) {
-					manual_control_change.y = 1;
+					manual_control_change.y = 10;
 				} else {
-					manual_control_change.y = -1;
+					manual_control_change.y = -10;
 				}
 			} else {
 				manual_control_change.y = 0;
@@ -223,6 +231,46 @@ void update_manual_control(uint8_t id, uint16_t data) {
 			} else {
 				manual_control_change.angle = 0;
 			}
+			break;
+	}
+
+	if (
+		manual_control_change.x != 0 ||
+		manual_control_change.y != 0 ||
+		manual_control_change.angle != 0)
+	{
+		// We went from resting state to moving
+		if (manual_control_state == 0) {
+			manual_control_state = 2;
+		}
+	} else {
+		manual_control_state = 0;
+	}
+}
+
+/**
+ *	Predefined positions to handle:
+ *
+ *	- 0 is no action
+ *	- 1 is resting position
+ *	- 2 is pickup left
+ *	- 3 is pickup right
+ */
+uint8_t predefined_position_move = 0;
+
+/**
+ *	Move arm to predefined positions
+ */
+void predefined_positions(uint8_t id, uint16_t data) {
+	switch (data) {
+		case 2:
+			object_pickup(2, 0);
+			break;
+		case 3:
+			object_pickup(2, 1);
+			break;
+		default:
+			predefined_position_move = data;
 			break;
 	}
 }
@@ -255,6 +303,7 @@ int main(void) {
 	bus_register_receive(11, update_manual_control);
 
 	bus_register_receive(12, object_return);
+	bus_register_receive(13, predefined_positions);
 
 	// Wait for servos to power on before setting initial parameters
 	_delay_ms(100);
@@ -303,6 +352,7 @@ int main(void) {
 					} else {
 						display(0, "Failed pickup");
 						arm_resting_position();
+						arm_claw_open();
 
 						has_object = 0;
 
@@ -357,26 +407,35 @@ int main(void) {
 			}
 			object_drop_off = 0;
 		} else if (has_manual_target) {
-			display(1, "X:%d,Y:%d",
+			display(1, "%d,%d,%d",
 				manual_target_position.x,
-				manual_target_position.y);
+				manual_target_position.y,
+				(uint16_t)(manual_target_position.angle * 1000));
 
-			arm_move_to_coordinate(manual_target_position);
-			arm_move_perform_block();
+			status = arm_move_to_coordinate(manual_target_position);
+
+			if (status) {
+				display(0, "Error %u", status);
+			} else {
+				arm_move_perform_block();
+			}
 
 			has_manual_target = 0;
-		} else if (
-			manual_control_change.x != 0 ||
-			manual_control_change.y != 0 ||
-			manual_control_change.angle != 0)
-		{
-			if (!arm_position(&current_position)) {
-				current_position.x += manual_control_change.x;
-				current_position.y += manual_control_change.y;
-				current_position.angle += manual_control_change.angle;
+		} else if (manual_control_state) {
+			// Update reference position when we start manual movement
+			if (manual_control_state == 2) {
+				arm_position(&manual_control_reference);
+				manual_control_state = 1;
+			}
 
-				arm_move_to_coordinate(current_position);
+			manual_control_reference.x += manual_control_change.x;
+			manual_control_reference.y += manual_control_change.y;
+			manual_control_reference.angle += manual_control_change.angle;
+
+			if (!arm_move_to_coordinate(manual_control_reference)) {
+				//arm_move_perform_block();
 				arm_move_perform();
+				_delay_ms(100);
 			}
 		} else if (manual_control_claw) {
 			if (manual_control_claw == 1) {
@@ -387,6 +446,13 @@ int main(void) {
 				arm_claw_open();
 			}
 			manual_control_claw = 0;
+		} else if (predefined_position_move) {
+			switch (predefined_position_move) {
+				case 1:
+					arm_resting_position();
+					break;
+			}
+			predefined_position_move = 0;
 		}
 	}
 }

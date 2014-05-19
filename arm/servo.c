@@ -197,6 +197,9 @@ void vservo_send(
 	// Disable interrupts while writing data
 	cli();
 
+	// Clear buffer before sending to be sure there is not junk
+	usart_clear_buffer();
+
 	servo_enable_write();
 	for (i = 0; i < packet_length; i++) {
 		usart_write_byte(packet[i]);

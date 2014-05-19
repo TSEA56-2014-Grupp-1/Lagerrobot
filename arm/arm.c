@@ -292,7 +292,7 @@ uint8_t arm_claw_close(void) {
 				status_code = servo_read_uint16(
 					ARM_SERVO_CLAW, SERVO_PRESENT_POSITION_L, &current_position);
 
-				if (!status_code && initial_position - current_position < 10) {
+				if (!status_code && initial_position - current_position < 20) {
 					continue;
 				}
 
@@ -333,6 +333,7 @@ void arm_resting_position(void) {
 	arm_move_add(ARM_JOINT_BASE, 511);
 	arm_move_add(ARM_JOINT_SHOULDER, ARM_JOINT_SHOULDER_ANGLE_MIN);
 	arm_move_add(ARM_JOINT_ELBOW, ARM_JOINT_ELBOW_ANGLE_MIN);
+	//arm_move_add(ARM_JOINT_WRIST_ROTATE, 511);
 	arm_move_perform();
 
 	// Wait for shoulder and elbow to complete movement
@@ -369,6 +370,9 @@ uint8_t arm_angles(arm_joint_angles *joint_angles) {
 	if (servo_read_uint16(
 		arm_joint_to_servo(ARM_JOINT_BASE), SERVO_PRESENT_POSITION_L, &position))
 	{
+		// Remove currently registered writes
+		servo_write_uint8(SERVO_BROADCASTING_ID, SERVO_REGISTERED_INSTRUCTION, 0);
+
 		return 1;
 	}
 	joint_angles->t0 = ik_joint_angle_to_rad(ARM_JOINT_BASE, position);
@@ -376,6 +380,9 @@ uint8_t arm_angles(arm_joint_angles *joint_angles) {
 	if (servo_read_uint16(
 		arm_joint_to_servo(ARM_JOINT_SHOULDER), SERVO_PRESENT_POSITION_L, &position))
 	{
+		// Remove currently registered writes
+		servo_write_uint8(SERVO_BROADCASTING_ID, SERVO_REGISTERED_INSTRUCTION, 0);
+
 		return 2;
 	}
 	joint_angles->t1 = ik_joint_angle_to_rad(ARM_JOINT_SHOULDER, position);
@@ -383,6 +390,9 @@ uint8_t arm_angles(arm_joint_angles *joint_angles) {
 	if (servo_read_uint16(
 		arm_joint_to_servo(ARM_JOINT_ELBOW), SERVO_PRESENT_POSITION_L, &position))
 	{
+		// Remove currently registered writes
+		servo_write_uint8(SERVO_BROADCASTING_ID, SERVO_REGISTERED_INSTRUCTION, 0);
+
 		return 3;
 	}
 	joint_angles->t2 = ik_joint_angle_to_rad(ARM_JOINT_ELBOW, position);
@@ -390,6 +400,9 @@ uint8_t arm_angles(arm_joint_angles *joint_angles) {
 	if (servo_read_uint16(
 		arm_joint_to_servo(ARM_JOINT_WRIST), SERVO_PRESENT_POSITION_L, &position))
 	{
+		// Remove currently registered writes
+		servo_write_uint8(SERVO_BROADCASTING_ID, SERVO_REGISTERED_INSTRUCTION, 0);
+
 		return 4;
 	}
 	joint_angles->t3 = ik_joint_angle_to_rad(ARM_JOINT_WRIST, position);
