@@ -30,7 +30,6 @@ ISR(TIMER1_OVF_vect) {
 ISR(TIMER3_OVF_vect) {
 	if (heartbeat_counter > 5){
 		emergency_stop(); // heartbeat has been lost, issue stop command
-		heartbeat_counter = 0;
 		is_in_stop_mode = 1;
 	}
 	else {

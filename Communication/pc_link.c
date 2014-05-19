@@ -21,7 +21,7 @@ uint8_t process_heartbeat(){
 	TCNT3 = 0;
 	sei();
 	send_packet(PKT_HEARTBEAT, 0);
-	
+	if (is_in_stop_mode == 1)
 		send_all_clear();
 	heartbeat_counter = 0;
 	
