@@ -51,5 +51,6 @@
 #define DEC_OBJECT_NOT_FOUND	9	//Object was not found by arm
 #define DEC_UNKOWN_ERROR		10	//An unkown error has occured
 #define DEC_ARM_FAILED          11  //Arm failed pickup
+#define DEC_START_LINE			12	//Started linefollowing
 
 #endif /* PACKETS_H_*/

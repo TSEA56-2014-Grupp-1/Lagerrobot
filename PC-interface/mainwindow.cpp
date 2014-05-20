@@ -142,8 +142,6 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
-        timer_req->start();
-        time_graph->start();
 
         times_mass.clear();
         times_steering.clear();
@@ -210,6 +208,8 @@ void MainWindow::on_pushButton_start_line_clicked()
 	}
 	else {
 		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_START);
+		timer_req->start();
+		time_graph->start();
 		timer_com->start();
 		start_time = new QTime(QTime::currentTime());
 	}
@@ -221,7 +221,7 @@ void MainWindow::on_pushButton_stop_line_clicked()
 		print_on_log("No port to send to.");
 	}
 	else {
-		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSI_STOP);
+		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_STOP);
 	}
 }
 
@@ -394,14 +394,14 @@ void MainWindow::enable_buttons() {
  */
 void MainWindow::request_data() {
 	if (port == NULL) {
-
 		print_on_log("No port to send to.");
 	}
-	else if (update_graph){
-		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
-		timer_req->start();
-	}
+//	else if (update_graph){
+//		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
+//		timer_req->start();
+//	}
 	else {
+		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
 		timer_req->start();
 	}
 }
@@ -417,7 +417,7 @@ void MainWindow::on_actionDisconnect_triggered()
     ui->connect_action->setEnabled(true);
     disable_buttons();
 
-    timer_req->stop();
+	timer_req->stop();
     timer_graph->stop();
     delete port;
     port = NULL;
@@ -730,7 +730,7 @@ void MainWindow::pickupstation(QByteArray* data) {
 	}
 	else if (data->at(11) == 0 && !station) {
 		print_on_log("Station right");
-		update_graph = false;
+//		update_graph = false;
 		for (int i = 0; i < 11; ++i) {
 			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
 		}
@@ -831,6 +831,11 @@ void MainWindow::handle_decision(quint8 decision) {
 	}
 	else if (decision == DEC_UNKOWN_ERROR) {
 		print_on_log("Unkown error in chassi");
+	}
+	else if (decision == DEC_START_LINE) {
+		print_on_log("Started linefollowing");
+		timer_req->start();
+		time_graph->start();
 	}
 }
 
