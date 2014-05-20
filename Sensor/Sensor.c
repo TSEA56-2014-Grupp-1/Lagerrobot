@@ -25,11 +25,47 @@ ISR(ADC_vect) {
 	}
 }
 
+uint8_t broadcast_line_data;
+
+void timer_init() {
+	// Set number of counts until TIMER1_COMPA_vect is triggered
+	uint16_t timer_limit = 1951;
+	//uint16_t timer_limit = 5000;
+	OCR1AH = (uint8_t)(timer_limit >> 8);
+	OCR1AL = (uint8_t)timer_limit;
+
+	TIMSK1 = 1 << OCIE1A;
+
+	// Set prescaler
+	TCCR1B = (1 << WGM12) | (1 << CS10) | (1 << CS12);
+
+	broadcast_line_data = 0;
+}
+
+ISR(TIMER1_COMPA_vect) {
+	broadcast_line_data = 1;
+}
+
 void sensor_task_manager()	{
+	uint8_t i;
 	uint8_t status;
+	uint16_t sensor_tape = 0;
+
 	switch (sensor_task)	{
 		case 0:
 			calculate_line_weight();
+			if (broadcast_line_data) {
+				bus_transmit(
+					BUS_ADDRESS_COMMUNICATION, 11, return_line_weight(0, 0));
+				/*
+				for (i = 1; i < 11; i++) {
+					sensor_tape |= get_sensor_surface(i) << i;
+				}
+
+				bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_task);*/
+
+				broadcast_line_data = 0;
+			}
 			break;
 		case 1:
 			object_detection(sensor_left);
@@ -55,7 +91,7 @@ void sensor_task_manager()	{
 				display(1, "id: %u", id);
 				send_rfid(identify_station_RFID());
 			}
-			
+
 			TWCR |= 1 << TWEN;
 
 			sensor_task = 4;
@@ -107,9 +143,12 @@ int main(void)
 // 	scanner_set_position(180,sensor_right);
 // 	_delay_ms(6000);
 
+	timer_init();
+
 	sei();
     while(1)
     {
 		sensor_task_manager();
+		_delay_ms(10);
     }
 }

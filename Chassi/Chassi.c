@@ -262,7 +262,8 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	disable_timer_interrupts();
 	uint16_t line_data = 0;
-	line_data = request_line_data();
+	line_data = 0x100 + 127;
+	//line_data = request_line_data();
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
 

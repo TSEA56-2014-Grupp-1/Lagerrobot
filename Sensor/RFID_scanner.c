@@ -2,8 +2,8 @@
  * GccApplication3.c
  *
  * Created: 2014-04-03 11:13:39
- *  Author: Erik 
- */ 
+ *  Author: Erik
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -30,21 +30,17 @@ void RFID_enable_reading(uint8_t id, uint16_t metadata)
 {
 	usart_clear_buffer();
 	PORTD &= ~(1 << PORTD2); // Enable reading
-	PORTD &= ~(1 << PORTD3); // XXX FOr debugging
-	PORTD &= ~(1 << PORTD4); // XXX FOr debugging
 }
 
 void RFID_scanner_init()
 {
 	DDRD = 0b00011100; // Set PD2 as Output XXX pd3 & pd4 for debugging
 	PORTD |= (1 << PORTD2); // Disable reading
-	PORTD |= (1 << PORTD3);
 }
 
 uint8_t RFID_read_usart()
 {
 	usart_clear_buffer();
-	PORTD |= (1 << PORTD4); // XXX FOr debugging
 	PORTD &= ~(1 << PORTD2); // Enable reading
 	uint8_t i;
 	_delay_ms(150);
@@ -60,16 +56,16 @@ uint8_t RFID_read_usart()
 		display(1, "%u", UCSR0B);
 		return 1;
 	}
-	
+
 	// Wait for complete response and disable reading
 	_delay_ms(50);
 	PORTD |= (1 << PORTD2); // Disable reading
-	
+
 	// Read start byte
 	if (usart_read_byte(&station_RFID[0])) {
 		return 2;
 	}
-	
+
 	if (station_RFID[0] != 0x0a) {
 		return 3;
 	}
@@ -81,17 +77,17 @@ uint8_t RFID_read_usart()
 			return 4;
 		}
 	}
-	
+
 	if (usart_read_byte(&station_RFID[11])) {
 		return 5;
 	}
-	
+
 	if (station_RFID[11] != 0x0d) {
 		return 6;
 	}
-	
+
 	return 0;
-	
+
 }
 
 void clear_station_RFID()
@@ -112,7 +108,7 @@ void send_rfid(uint8_t station_tag)
 		if (bus_transmit(BUS_ADDRESS_CHASSIS, 4, tag_and_station) == 0) {
 			return;
 		}
-		++timeout_counter;	
+		++timeout_counter;
 	}
 }
 

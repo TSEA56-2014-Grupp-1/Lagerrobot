@@ -104,7 +104,7 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
 	else {
 		return (uint16_t) sensor_values[2*sensor_pair];
 	}
-		
+
 }
 
 /*
@@ -170,7 +170,7 @@ void update_linesensor_values() {
  *
  *	@return Tape if the sensor has tape under itself, otherwise returns floor.
  */
-station_type get_sensor_surface(uint8_t sensor_id)	{
+surface_type get_sensor_surface(uint8_t sensor_id)	{
 	if(sensor_values[sensor_id] >= tape_reference)
 		return Tape;
 	else

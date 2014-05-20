@@ -24,7 +24,7 @@ ISR(TIMER1_OVF_vect) {
 	}
 	else
         ++lcd_rotation_counter;
-	
+
 }
 
 /**
@@ -65,10 +65,10 @@ void lcd_arm_line2(uint8_t id, uint16_t metadata) {
 void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) {
 	uint8_t position;
 	uint8_t symbol;
-	
+
 	position = (uint8_t) (metadata >> 7); // bits 7-10 contains position data
 	symbol = (uint8_t) metadata & 0b01111111; // lowest 7 bits contains ascii symbol
-	
+
 	// Check for null character. If null then the message is finished and the rest of the line should be cleared
 	// Otherwise simply fill the message map with the character
 	if (line_number == 1){
@@ -93,7 +93,7 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) 
 			message_map_line2[module][position] = symbol;
 		}
 	}
-	
+
 }
 
 
@@ -116,8 +116,8 @@ void clear_message(uint8_t unit, uint8_t line_number) {
 		}
 		message_map_line2[unit][16] = '\0';
 	}
-	
-	
+
+
 }
 
 
@@ -131,11 +131,11 @@ void init(){
 	DDRB = 0xff;
 	PORTB = 0b00000000;
 	PORTA = 0x0;
-	
+
 	TIMSK1 = (1 << TOIE1);
 	TCCR1A = 0x00; // normal mode
 	TCCR1B = 0b00000010; // normal mode, max prescaler;
-	
+
 	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;
 	lcd_rotation_flag = 0;
@@ -161,13 +161,21 @@ void forward_range(uint8_t id, uint16_t data) { // MSB indicates which sensor is
 	send_packet(PKT_RANGE_DATA, 3, (uint8_t) (data >> 10), (uint8_t) ((data & 0b01100000000) >> 8), (uint8_t) data);
 }
 
+void forward_line_data(uint8_t id, uint16_t data) {
+	if (id == 11) {
+		send_packet(PKT_LINE_WEIGHT, 1, (uint8_t)data);
+	} else {
+		send_packet(PKT_LINE_DATA, 2, (uint8_t)(data >> 8), (uint8_t)data);
+	}
+}
+
 int main(void)
 {
 	init();
 	lcd_init();
 	usart_init(0x0009);
 	bus_init(BUS_ADDRESS_COMMUNICATION);
-	
+
 	bus_register_receive(2, lcd_sensor_line1);
 	bus_register_receive(3, lcd_sensor_line2);
 	bus_register_receive(4, lcd_arm_line1);
@@ -178,15 +186,17 @@ int main(void)
 	bus_register_receive(8, forward_decision);
 	bus_register_receive(9, forward_RFID);
 	bus_register_receive(10, forward_range);
+	bus_register_receive(11, forward_line_data);
+	bus_register_receive(12, forward_line_data);
 
-	
+
 	display(0, "Ouroborobot");
 	display(1, "Soon...");
-	
+
 	char current_message_map1[17];
 	char current_message_map2[17];
 	uint8_t lcd_current_sender;
-	
+
 	while(1)
 	{
 		while(!lcd_rotation_flag && !usart_has_bytes());
@@ -198,15 +208,15 @@ int main(void)
 			memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
 			memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
 			sei();
-			
+
 			lcd_display(lcd_current_sender,
 			current_message_map1,
 			current_message_map2);
-			
+
 			if (!lcd_rotation_flag)
 			lcd_next_sender = (lcd_next_sender + 1) % 4;
 		}
-	
+
 		else {
 			process_packet();
 			usart_clear_buffer();

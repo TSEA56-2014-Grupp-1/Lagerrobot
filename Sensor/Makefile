@@ -1,6 +1,6 @@
 TARGET = sensor
 
-SRC = Sensor.c linesensor.c sidescanner.c distance_sensors.c ../RFID_scanner/RFID_scanner.c ../shared/usart.c ../shared/LCD_interface.c ../shared/bus.c
+SRC = Sensor.c linesensor.c sidescanner.c distance_sensors.c RFID_scanner.c ../shared/usart.c ../shared/LCD_interface.c ../shared/bus.c
 OBJ = $(SRC:.c=.o)
 
 MCU = "atmega1284p"
