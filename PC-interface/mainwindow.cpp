@@ -28,9 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-    timer_req->setInterval(250);
-    connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
-
     timer_com->setInterval(100);
     connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
     ui->lcdTimer->setDigitCount(10);
@@ -52,7 +49,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 //    delete port;
-//    delete timer_req;
 //    delete timer_com;
 //    delete start_time;
 //    delete time_graph;
@@ -208,7 +204,6 @@ void MainWindow::on_pushButton_start_line_clicked()
 	}
 	else {
 		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_START);
-		timer_req->start();
 		time_graph->start();
 		timer_com->start();
 		start_time = new QTime(QTime::currentTime());
@@ -389,24 +384,6 @@ void MainWindow::enable_buttons() {
 }
 
 /*
- *      @brief Function that will reqeuset line data from robot.
- *      @details Function that will request line data from robot, will also reset the timer so that interupt will happen again.
- */
-void MainWindow::request_data() {
-	if (port == NULL) {
-		print_on_log("No port to send to.");
-	}
-//	else if (update_graph){
-//		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
-//		timer_req->start();
-//	}
-	else {
-		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
-		timer_req->start();
-	}
-}
-
-/*
  *      @brief Callback for diconnect button.
  *      @details Callback for disconnect button, will disconnect and delete the QSerialPort. Will also disable all buttons to aviod calls to nullpointer.
  */
@@ -417,7 +394,6 @@ void MainWindow::on_actionDisconnect_triggered()
     ui->connect_action->setEnabled(true);
     disable_buttons();
 
-	timer_req->stop();
     timer_graph->stop();
     delete port;
     port = NULL;
@@ -666,11 +642,16 @@ void MainWindow::add_to_lcdtimer() {
  *
  *      @param sensor_values QByteArray with the sensor values.
  */
-void MainWindow::update_linesensor_plot(QByteArray* sensor_values) {
+void MainWindow::update_linesensor_plot(QByteArray* parameters) {
     QBrush* brush = new QBrush(Qt::SolidPattern);
-    for (int i = 0; i < 11; ++i) {
-        brush->setColor(QColor(0,0,0,(quint8)sensor_values->at(i)));
-        linesensor_circels[i]->setBrush(*brush);
+	int mask = 1;
+	quint16 sensor_values = ((quint16)parameters->at(0) << 8) | (quint16)parameters->at(1);
+	brush->setColor(QColor(0,0,0,255));
+	for (int i = 0; i < 11; ++i) {
+		if (sensor_values & mask) {
+			linesensor_circels[i]->setBrush(*brush);
+		}
+		mask = mask << 1;
     }
     delete brush;
 }
@@ -834,7 +815,6 @@ void MainWindow::handle_decision(quint8 decision) {
 	}
 	else if (decision == DEC_START_LINE) {
 		print_on_log("Started linefollowing");
-		timer_req->start();
 		time_graph->start();
 	}
 }

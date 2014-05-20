@@ -38,7 +38,7 @@ public:
 
     void set_RFID(QString);
 
-	void update_linesensor_plot(QByteArray*);
+	void update_linesensor_plot(QByteArray*parameters);
 
 	void pickupstation(QByteArray*);
 
@@ -82,8 +82,6 @@ private slots:
     void on_pushButton_calibrate_floor_clicked();
 
     void on_connect_action_triggered();
-
-    void request_data();
 
     void draw_graphs();
 
@@ -135,8 +133,6 @@ private:
 
     void set_up_graphs();
 
-
-    QTimer *timer_req = new QTimer();
     QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
     QTimer *timer_graph = new QTimer();
 
