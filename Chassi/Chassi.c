@@ -13,6 +13,7 @@
 #include "automatic_steering.h"
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
+#include "../shared/packets.h"
 
 
 
