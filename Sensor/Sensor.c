@@ -55,6 +55,7 @@ void sensor_task_manager()	{
 		case 0:
 			calculate_line_weight();
 			if (broadcast_line_data) {
+				ADCSRA &= ~(1 << ADIE);
 				bus_transmit(
 					BUS_ADDRESS_COMMUNICATION, 11, return_line_weight(0, 0));
 				/*
@@ -65,6 +66,7 @@ void sensor_task_manager()	{
 				bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_task);*/
 
 				broadcast_line_data = 0;
+				ADCSRA |= 1 << ADIE;
 			}
 			break;
 		case 1:
