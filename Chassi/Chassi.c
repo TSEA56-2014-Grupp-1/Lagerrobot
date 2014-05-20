@@ -486,6 +486,7 @@ ISR(PCINT1_vect)
 {
 	if (PINB & 1) {
 		disable_timer_interrupts();
+		decision_to_pc(DEC_START_LINE);
 		display(0, "start button");
 		display(1, "pressed");
 		drive_to_next();
