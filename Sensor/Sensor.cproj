@@ -42,12 +42,12 @@
       <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-          <JtagDbgClock>1000000</JtagDbgClock>
+          <JtagDbgClock>200000</JtagDbgClock>
         </InterfaceProperties>
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
-      <ToolNumber>J30200008936</ToolNumber>
+      <ToolNumber>J30200013317</ToolNumber>
       <ToolName>JTAGICE3</ToolName>
     </com_atmel_avrdbg_tool_jtagice3plus>
     <avrtoolinterface>JTAG</avrtoolinterface>
@@ -163,12 +163,15 @@
     </Compile>
     <Compile Include="RFID_scanner.c">
       <SubType>compile</SubType>
+      <Link>RFID_scanner.c</Link>
     </Compile>
     <Compile Include="RFID_scanner.h">
       <SubType>compile</SubType>
+      <Link>RFID_scanner.h</Link>
     </Compile>
     <Compile Include="rfid_tags.h">
       <SubType>compile</SubType>
+      <Link>rfid_tags.h</Link>
     </Compile>
     <Compile Include="Sensor.c">
       <SubType>compile</SubType>

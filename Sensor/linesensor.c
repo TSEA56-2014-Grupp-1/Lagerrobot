@@ -98,10 +98,13 @@ uint8_t get_station_data()
  *	@return High byte: value of the first sensor. Low byte: value of the second sensor.
  */
 uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
-	if (sensor_pair != 5)
-	return ((uint16_t)sensor_values[2*sensor_pair + 1] << 8) | (uint16_t) sensor_values[2*sensor_pair];
-	else
-	return (uint16_t) sensor_values[2*sensor_pair];
+	if (sensor_pair != 5) {
+		return ((uint16_t)sensor_values[2*sensor_pair + 1] << 8) | (uint16_t) sensor_values[2*sensor_pair];
+	}
+	else {
+		return (uint16_t) sensor_values[2*sensor_pair];
+	}
+		
 }
 
 /*
@@ -114,7 +117,6 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
  */
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 	// Disable ADC interrupts
-	ADCSRA &= ~(1 << ADIE);
 
 	uint8_t current_line_weight = line_weight;
 	station_type chassi_output = No;
@@ -133,8 +135,6 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 			}
 			break;
 	}
-
-	line_init();
 	return (((uint16_t)(chassi_output) << 8) | current_line_weight);
 }
 

@@ -41,6 +41,7 @@ void sensor_task_manager()	{
 			break;
 		case 3:
 			ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+			TWCR &= ~(1 << TWEN);
 			clear_station_RFID();
 
 			status = RFID_read_usart();
@@ -54,6 +55,8 @@ void sensor_task_manager()	{
 				display(1, "id: %u", id);
 				send_rfid(identify_station_RFID());
 			}
+			
+			TWCR |= 1 << TWEN;
 
 			sensor_task = 4;
 		default:
