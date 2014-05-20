@@ -183,7 +183,7 @@ double calculate_distance_coordinate(uint16_t angle, uint16_t distance, sensor s
 
 void object_detection(sensor sensor_id)
 {
-
+	cli();
 	uint16_t first_angle = 0;
 	uint16_t distance = 0;
 	uint16_t second_angle = 0;
@@ -222,6 +222,7 @@ void object_detection(sensor sensor_id)
 			send_status += bus_transmit(BUS_ADDRESS_ARM, 5, !!distance);
 		}
 	} while (send_status != 0);
+	sei();
 
 	//scanner_set_position(SENSOR_SCANNER_ANGLE_START, sensor_id);
 
