@@ -338,7 +338,8 @@ void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t pa
 		param_arr[i] = va_arg(parameters, int);
 	}
 	va_end(parameters);
-
+	
+	cli();
 	usart_write_byte(packet_id);
 	checksum += packet_id;
 
@@ -351,4 +352,5 @@ void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t pa
 	}
 
 	usart_write_byte(~checksum);
+	sei();
 }

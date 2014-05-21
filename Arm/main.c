@@ -20,21 +20,22 @@
 
 /**
  *	Flag that sets whether we may continue startup procedure or not. Set by
- *	communication unit once PC-interface connection is established. Data = 1
- *	means reset, data = 0 means can start.
+ *	communication unit once PC-interface connection is established. Data = 0
+ *	means reset, data = 1 means can start.
  */
-uint8_t can_start = 0;
+uint8_t can_start;
 
 /**
  *	Handle emergency stop and startup procedures from communication unit
  */
 void emergency_handler(uint8_t callback_id, uint16_t data) {
-	if (data == 0) {
+	if (data == 1) {
 		can_start = 1;
 	} else {
 		// Cease all arm movement
 		arm_stop();
-
+		TWCR &= ~(1 << TWEA | 1 << TWIE);
+		TWCR |= (1 << TWINT);
 		// Trigger restart after 1 second and wait for it to happen
 		wdt_enable(WDTO_1S);
 		for (;;) { }
@@ -276,8 +277,12 @@ void predefined_positions(uint8_t id, uint16_t data) {
 }
 
 int main(void) {
-	// Disable watchdog reset timer to prevent continious resets
+	uint8_t reset_flags;
+	reset_flags = MCUSR;
+	MCUSR = 0;
 	wdt_disable();
+	
+	can_start = 0;
 
 	uint8_t status;
 	arm_coordinate current_position;
@@ -309,11 +314,13 @@ int main(void) {
 	_delay_ms(100);
 	arm_init();
 
-	// Wait for communication unit to say we can continue initialising
-	/*while (!can_start) {
-		// Delay is needed when looping flags such as this
-		_delay_us(1);
-	}*/
+	// If there was a watchdog reset, wait for communication unit to say we can continue initialising
+	if (reset_flags & (1<<WDRF)) {
+		while (!can_start) {
+			// Delay is needed when looping flags such as this
+			_delay_us(1);
+		}
+	}
 
 	_delay_ms(1000);
 

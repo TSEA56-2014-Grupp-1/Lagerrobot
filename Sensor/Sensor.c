@@ -89,6 +89,7 @@ int main(void)
 	uint8_t i;
 	uint8_t status;
 	uint16_t sensor_tape = 0;
+	uint8_t could_not_send_line_data = 0;
 	
 	while(1)
 	{
@@ -105,7 +106,16 @@ int main(void)
 				pickup_station_detection();
 			
 				calculate_line_weight();
-			
+				/*
+				if (could_not_send_line_data) {
+					if (bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_tape)) {
+						could_not_send_line_data = 1;
+					}
+					else {
+						could_not_send_line_data = 0;
+					}
+				}*/
+				
 				if (broadcast_line_data) {
 					bus_transmit(
 					BUS_ADDRESS_COMMUNICATION, 11, return_line_weight(0, 0));
@@ -113,9 +123,16 @@ int main(void)
 					for (i = 1; i < 11; i++) {
 					sensor_tape |= get_sensor_surface(i) << i;
 					}
+					
+					
 
-					bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_tape);
-
+					/*if (bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_tape)) {
+						could_not_send_line_data = 1;
+					}
+					else {
+						could_not_send_line_data = 0;
+					}*/
+					
 					broadcast_line_data = 0;
 				
 				}
