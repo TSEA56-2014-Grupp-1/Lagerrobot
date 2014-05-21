@@ -109,12 +109,12 @@ int main(void)
 				if (broadcast_line_data) {
 					bus_transmit(
 					BUS_ADDRESS_COMMUNICATION, 11, return_line_weight(0, 0));
-					/*
+					
 					for (i = 1; i < 11; i++) {
 					sensor_tape |= get_sensor_surface(i) << i;
 					}
 
-					bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_task);*/
+					bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_tape);
 
 					broadcast_line_data = 0;
 				
