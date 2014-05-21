@@ -60,7 +60,7 @@ void bus_init(uint8_t address) {
  *
  *	@return Status code
  */
-uint8_t bus_start() {
+uint8_t bus_start(void) {
 	uint8_t status_code;
 	cli();
 	TWCR = (1 << TWINT) | (1 << TWSTA) | (1 << TWEN) | (1 << TWIE) | (1 << TWEA);
@@ -93,7 +93,7 @@ uint8_t bus_start() {
 /**
  *	Let go of the control over the buss
  */
-void bus_stop() {
+void bus_stop(void) {
 	TWCR |= (1 << TWINT) | (1 << TWSTO) | (1 << TWEA);
 }
 

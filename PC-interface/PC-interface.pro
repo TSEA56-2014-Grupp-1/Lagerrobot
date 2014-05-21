@@ -21,13 +21,13 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     bluetooth.cpp \
     dialog_connect.cpp \
-    qcustomplot/qcustomplot.cpp
+    qcustomplot.cpp
 
 HEADERS  += mainwindow.h \
     bluetooth.h \
     ../shared/packets.h \
     dialog_connect.h \
-    qcustomplot/qcustomplot.h
+    qcustomplot.h
 
 
 FORMS    += mainwindow.ui \

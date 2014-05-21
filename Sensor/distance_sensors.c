@@ -13,15 +13,15 @@ uint16_t get_distance_sensor(int8_t index, sensor sensor_id)	{
 		319, 301, 286, 271, 260, 249, 240, 229, 221, 212, 204,
 		195, 187, 183, 175, 171, 167, 160, 156, 153, 149};
 	
-	const uint16_t DISTANCE_SENSOR_2[25] = {
-		542, 462, 398, 370, 322, 288, 267, 246, 232, 210,
-		196, 185, 177, 165, 157, 149, 140, 136, 128, 124,
-		120, 116, 107, 104, 103};
+	const uint16_t DISTANCE_SENSOR_2[26] = {
+		490, 406, 365, 322, 290, 265, 240, 224, 210, 193,
+		182, 170, 158, 141, 134, 123, 112, 109, 97, 89,
+		80, 75, 71, 63, 59, 55};
 		
 	const uint16_t DISTANCE_SENSOR_3[26] = {
-		437, 390, 334, 297, 264, 236, 217, 204, 189, 173,
-		161, 154, 142, 134, 126, 122, 115, 111, 103, 99,
-		95, 92, 87, 84, 83, 79};
+		473, 395, 343, 303, 275, 247, 225, 210, 193, 177,
+		161, 145, 133, 121, 106, 95, 84, 75, 72, 63, 55,
+		51, 44, 40, 38, 37};
 	
 	switch(sensor_id) {
 		case(sensor_arm): 		
@@ -68,7 +68,7 @@ uint16_t ad_interpolate(uint16_t ad_in, sensor sensor_id)	{
 	}
 	
 	//Distance is in range, interpolate:
-	for(uint8_t i = 1; i <= 24; ++i)	{
+	for(uint8_t i = 1; i <= 25; ++i)	{
 		double distance_1_internal = get_distance_sensor(i - 1, sensor_id);
 		double distance_2_internal = get_distance_sensor(i, sensor_id);
 		

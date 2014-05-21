@@ -8,15 +8,14 @@
 
 #include "Communication.h"
 #include "LCD.h"
-
-#include "pc_link.h"
-#include "../shared/usart.h"
 #include "../shared/bus.h"
+#include "pc_link.h"
+#include "../shared/packets.h"
+#include "../shared/usart.h"
 #include <avr/io.h>
-#include <avr/interrupt.h>
 #include <string.h>
 #include <util/delay.h>
-#include "../shared/packets.h"
+#include <avr/interrupt.h>
 
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
@@ -24,8 +23,8 @@ ISR(TIMER1_OVF_vect) {
 		lcd_rotation_flag = 1;
 	}
 	else
-	++lcd_rotation_counter;
-
+        ++lcd_rotation_counter;
+	
 }
 
 /**
@@ -36,7 +35,7 @@ ISR(TIMER1_OVF_vect) {
  */
 void lcd_force_display_update(uint8_t module) {
 	lcd_rotation_counter = ROTATE_INTERVAL;
-	lcd_current_sender = module;
+	lcd_next_sender = module;
 }
 
 void lcd_chassi_line1(uint8_t id, uint16_t metadata) {
@@ -94,15 +93,16 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) 
 			message_map_line2[module][position] = symbol;
 		}
 	}
+	
 }
 
 
 /**
-* @brief Clears the display page of a unit.
-* @details Clears the stored display page of a unit, but does not update the display.
-*
-* @param unit The identifier of the module whose page is to be cleared.
-*/
+ * @brief Clears the display page of a unit.
+ * @details Clears the stored display page of a unit, but does not update the display.
+ *
+ * @param unit The identifier of the module whose page is to be cleared.
+ */
 void clear_message(uint8_t unit, uint8_t line_number) {
 	if (line_number == 0) {
 		for (int i = 0; i<16; ++i){
@@ -122,21 +122,21 @@ void clear_message(uint8_t unit, uint8_t line_number) {
 
 
 /**
-* @brief Initializes the communication unit.
-* @details Sets up the ports for the display communication, the timers for
-* page rotation and clears the lcd variables and messages.
-*/
+ * @brief Initializes the communication unit.
+ * @details Sets up the ports for the display communication, the timers for
+ * page rotation and clears the lcd variables and messages.
+ */
 void init(){
 	DDRA = 0xff;
 	DDRB = 0xff;
 	PORTB = 0b00000000;
 	PORTA = 0x0;
-
+	
 	TIMSK1 = (1 << TOIE1);
 	TCCR1A = 0x00; // normal mode
 	TCCR1B = 0b00000010; // normal mode, max prescaler;
-
-	lcd_current_sender = 0;
+	
+	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;
 	lcd_rotation_flag = 0;
 	clear_message(COMM, 0);
@@ -149,18 +149,25 @@ void init(){
 	clear_message(ARM, 1);
 }
 
-void forward_calibration_data(uint8_t id, uint16_t metadata)	{
-	send_packet(PKT_CALIBRATION_DATA,1,(uint8_t)metadata);
+void forward_decision(uint8_t id, uint16_t data) {
+	send_packet(PKT_CHASSIS_DECISION, 1, (uint8_t)data);
+}
+
+void forward_RFID(uint8_t id, uint16_t data) {
+	send_packet(PKT_RFID_DATA, 1, data);
+}
+
+void forward_range(uint8_t id, uint16_t data) { // MSB indicates which sensor is scanning
+	send_packet(PKT_RANGE_DATA, 3, (uint8_t) (data >> 10), (uint8_t) ((data & 0b01100000000) >> 8), (uint8_t) data);
 }
 
 int main(void)
 {
-	uint8_t pp_status = 0;
 	init();
 	lcd_init();
-
+	usart_init(0x0009);
 	bus_init(BUS_ADDRESS_COMMUNICATION);
-
+	
 	bus_register_receive(2, lcd_sensor_line1);
 	bus_register_receive(3, lcd_sensor_line2);
 	bus_register_receive(4, lcd_arm_line1);
@@ -168,35 +175,42 @@ int main(void)
 	bus_register_receive(6, lcd_chassi_line1);
 	bus_register_receive(7, lcd_chassi_line2);
 
+	bus_register_receive(8, forward_decision);
+	bus_register_receive(9, forward_RFID);
+	bus_register_receive(10, forward_range);
 
-
+	
 	display(0, "Ouroborobot");
 	display(1, "Soon...");
 
 	char current_message_map1[17];
 	char current_message_map2[17];
-
-	for(;;)
+	uint8_t lcd_current_sender;
+	
+	while(1)
 	{
-		while(!lcd_rotation_flag) {
-			_delay_us(1);
+		while(!lcd_rotation_flag && !usart_has_bytes());
+
+		if (lcd_rotation_flag) {
+			cli();
+			lcd_rotation_flag = 0;
+			lcd_current_sender = lcd_next_sender;
+			memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
+			memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
+			sei();
+			
+			lcd_display(lcd_current_sender,
+			current_message_map1,
+			current_message_map2);
+			
+			if (!lcd_rotation_flag)
+			lcd_next_sender = (lcd_next_sender + 1) % 4;
 		}
-		lcd_rotation_flag = 0;
-		cli();
+	
+		else {
+			process_packet();
+			usart_clear_buffer();
 
-
-		memcpy(current_message_map1, message_map_line1[lcd_current_sender], 17);
-		memcpy(current_message_map2, message_map_line2[lcd_current_sender], 17);
-		sei();
-
-
-		lcd_display(lcd_current_sender,
-					current_message_map1,
-					current_message_map2);
-
-		if (lcd_current_sender == 3)
-		lcd_current_sender = 0;
-		else
-		++lcd_current_sender;
+		}
 	}
 }

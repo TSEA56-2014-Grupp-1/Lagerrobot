@@ -7,6 +7,7 @@
 
 #include "LCD.h"
 #include "Communication.h"
+
 #include <util/delay.h>
 #include <avr/io.h>
 #include <stdarg.h>
@@ -16,31 +17,20 @@
 
 /**
  * @brief Initializes the lcd display controller.
+ * @details Follows the initialization flowchart in the JM162A datasheet.
  */
 void lcd_init() {
-
-	//initialize reset in controller
-	PORTB &= ~(1 << PORTB0);
-	PORTA = 0b00110000;
-	PORTB |= 1 << PORTB2;
-	_delay_ms(4.1);
-	PORTB &= ~(1 << PORTB2);
-	//PORTA = 0b00110000;
-	PORTB |= 1 << PORTB2;
-	_delay_us(100);
-	PORTB &= ~(1 << PORTB2);
-	//PORTA = 0b00110000;
-	PORTB |= 1 << PORTB2;
-	_delay_us(100);
-	PORTB &= ~(1 << PORTB2);
+	_delay_ms(30);
 
 	lcd_send_command(0b00111000); // 8 bit, 2 lines
+	_delay_us(39);
 	lcd_send_command(0b00001000); // display off
+	_delay_us(39);
 	lcd_clear();
+	_delay_ms(1.53);
 	lcd_send_command(0b00000110); // left-to-right, no shift
 
 	lcd_send_command(0b00001100); // display on
-
 }
 
 /**

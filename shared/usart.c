@@ -9,7 +9,7 @@
 
 volatile uint8_t usart_receive_buffer[256];
 uint8_t usart_buffer_read_index = 0;
-volatile uint8_t usart_buffer_write_index = 0;
+uint8_t usart_buffer_write_index = 0;
 
 /**
  *	Interrupt vector to add received data to ring buffer
@@ -64,8 +64,8 @@ void usart_write_byte(uint8_t data) {
  *	@return 1 if read timed out or 0 if successful
  */
 uint8_t usart_read_byte(uint8_t * data) {
-	uint8_t timeout_counter = 0;
-	uint8_t USART_RECEIVE_TIMEOUT_COUNT = 1000;
+	uint16_t timeout_counter = 0;
+	uint16_t USART_RECEIVE_TIMEOUT_COUNT = 1000;
 
 	while (!usart_has_bytes()) {
 		if (timeout_counter++ >= USART_RECEIVE_TIMEOUT_COUNT) {
@@ -84,13 +84,10 @@ uint8_t usart_read_byte(uint8_t * data) {
  *	@return 1 if there are bytes to be read from buffer else 0
  */
 uint8_t usart_has_bytes(void) {
+	_delay_ms(1);
 	return usart_buffer_read_index != usart_buffer_write_index;
 }
 
-void usart_reset_buffer() {
-	usart_buffer_read_index = 0;
-	usart_buffer_write_index = 0;
-}
 
 /**
  *	Determines if writing can be done

@@ -68,31 +68,31 @@ void bluetooth::process_packet()
 
         break;
 	case PKT_CHASSIS_DECISION:
-
+		window->handle_decision(parameters[0]);
         break;
 	case PKT_CHASSIS_STATUS:
 
         break;
 	case PKT_LINE_DATA:
-		window->add_steering_data(parameters[12]);
+        window->add_mass_data(parameters[12]);
+        window->add_steering_data((qint16)((((quint16)parameters[13]) << 8) | (quint16) parameters[14]));
 		window->update_linesensor_plot(&parameters);
+        window->pickupstation(&parameters);
         break;
 	case PKT_RANGE_DATA:
-
+        window->add_range_data(parameters[0], ((quint16) ((quint8) parameters[1])) << 8 | (quint16) ((quint8) parameters[2]));
         break;
 	case PKT_RFID_DATA:
-		window->print_on_log("Received new RFID tag");
-		for (int i = 1; i < 13; ++i) {
-			RFID.append(parameters.at(i));
-		}
-		window->set_RFID(RFID);
+        window->print_on_log(QString("Received new RFID tag: ")
+                                .append(QString::number((quint8)parameters[0])));
+		window->set_RFID(QString::number(parameters[0]));
         break;
 	case PKT_CALIBRATION_DATA:
         window->print_on_log(QString("Calibration, new tape reference: ")
                                 .append(QString::number((quint8)parameters[0])));
         break;
 	case PKT_SPOOFED_RESPONSE:
-        window->print_on_log(QString::number(parameters[0], 16)
+        window->print_on_log(QString::number(parameters[0], 16).append(" ")
                                 .append(QString::number(parameters[1], 16)));
         break;
 
@@ -195,25 +195,25 @@ void bluetooth::send_packet(char packet_id, int num_args, ...) {
     va_list param_list;
 	quint8 checksum = 0;
 
-    QByteArray parameter = QByteArray(num_args + 1, 0);
+    QByteArray bytes_to_send = QByteArray(num_args + 3, 0);
 
-    parameter[0] = packet_id;
+    bytes_to_send[0] = packet_id;
 	checksum += (uint8_t)packet_id;
-	parameter[1] = num_args;
-	checksum += (uint8_t)num_args;
+	bytes_to_send[1] = num_args + 1;
+	checksum += (uint8_t)num_args + 1;
 
     va_start(param_list, num_args);
 
 	for (int i = 2; i < num_args + 2; ++i) {
-		parameter[i] = va_arg(param_list, int);
-		checksum += (uint8_t)parameter[i];
+		bytes_to_send[i] = va_arg(param_list, int);
+		checksum += (uint8_t)bytes_to_send[i];
     }
 
-	parameter[num_args + 2] = (quint8)~checksum;
+	bytes_to_send[num_args + 2] = (quint8)~checksum;
 
     va_end(param_list);
 
-    write(parameter);
+    write(bytes_to_send);
 }
 
 /*

@@ -2,108 +2,191 @@
  * linesensor.c
  *
  * Created: 2014-03-27 09:08:16
- *  Author: Karl
- */ 
+ *  Author: Karl & Philip
+ */
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include "linesensor.h"
+#include "../shared/bus.h"
 
-// #define F_CPU 20000000UL;
-// #include <util/delay.h>
-//ska flyttas in i calibrate
-	uint8_t tape_sensor_references[11][10];
-	uint8_t floor_sensor_references[11][10];
-	uint16_t tape_average[11];
-	uint16_t floor_average[11];
-	uint16_t total_tape_average;
-	uint16_t total_floor_average;
-
+//Defining different datatypes
 typedef uint8_t surface_type;
-enum {floor, tape};
+enum {Floor, Tape};
 
+/*
+ *	variable type used when handling stations, either station to the left, no station or to the right
+ */
 typedef uint8_t station_type;
 enum station_type {Left, No, Right};
 
-typedef uint8_t line_type;
-enum line_type {line, interrupt, crossing};
+/*
+ * Is set to wheter we are at a pickupstation or not, and where the station is.
+ */
+station_type pickup_station = No;
 
-//Hemmagjorda datatyper
-line_type line_status;
-surface_type sensor_surface_types[11];	
-station_type pickup_station;
+/*
+ * The next sensor to be updated.
+ */
+uint8_t linesensor_channel;
 
-//Heltal
-uint8_t sensor_channel;
-uint8_t sensor_values[11];
-uint8_t temp_sensor_values[11];
-uint8_t line_weight;
-double sensor_scale[11];
-// for (uint8_t i = 0; i <= 10 ;i++)	{
-// 	sensor_scale[i] = 1;
-// }
+/*
+ * Holds the values of individual sensors.
+ */
+uint8_t sensor_values[11] = {0,0,0,0,0,0,0,0,0,0,0};
 
-uint8_t tape_reference = 100;
+/*
+ * The center of mass of the line.
+ */
+uint8_t line_weight = 127;
 
+/*
+ * Variable used in the pickup station detection
+ */
+uint8_t previous_pickup_station = No;
 
-uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
-	return (uint16_t)line_weight;
+/*
+ * Determines what is percieved as tape and floor. Set in linesensor_calibration().
+ */
+uint8_t tape_reference = 150;
+
+/*
+ * Used as a delay in pickup_staton_detection()
+ */
+uint16_t pickup_iterator = 0;
+
+/*
+ *	Send center of mass and station data to chassi.
+ */
+/*uint16_t send_line_data(uint8_t id, uint16_t metadata)
+{
+	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+	station_type chassi_output = 1;
+	if(pickup_station == Left)
+		chassi_output = Left;
+	else if(pickup_station == No)
+		chassi_output = No;
+	else if(pickup_station == Right)
+		chassi_output = Right;
+
+	line_init();
+	return (((uint16_t)(chassi_output) << 8) | line_weight);
+}*/
+
+/*
+ *	@brief Set the tape reference to new value.
+ *
+ *	@param id Bus id of the function, unused.
+ *	@param input_tape_reference The new value of tape_reference.
+ */
+uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
+	tape_reference = input_tape_reference;
+	return 0;
 }
 
-void line_init(){
-	sensor_channel = 0;
-	ADCSRA = 0b10001111;
-	DDRB = 0b11111111;
-	DDRD = 0b11111111;
-	ADMUX = (1 << ADLAR);
-	PORTB = sensor_channel;
-	ADCSRA |= (1 << ADSC);
+uint8_t get_station_data()
+{
+	return pickup_station;
 }
-void update_linesensor_values() {
-	temp_sensor_values[sensor_channel] = ADCH;
-	
-	if (sensor_channel == 10) {
-		sensor_channel = 0;
-		for(uint8_t i = 0; i<=10;i++)	{
-//			if(sensor_scale<temp_sensor_values[i])	{
-				sensor_values[i]=temp_sensor_values[i] - sensor_scale[i];
-// 			}
-// 			else
-// 			{
-// 				sensor_values[i] = temp_sensor_values;//sensor_values[i] = sensor_scale - temp_sensor_values[i];
-//  			}
-		}
+
+/*
+ *	@brief Will return the values of a pair of sensors, 0 - 5.
+ *
+ *	@param id Bus id of the function, unused.
+ *	@param sensor_pair The pair that will be returned.
+ *
+ *	@return High byte: value of the first sensor. Low byte: value of the second sensor.
+ */
+uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
+	if (sensor_pair != 5) {
+		return ((uint16_t)sensor_values[2*sensor_pair + 1] << 8) | (uint16_t) sensor_values[2*sensor_pair];
 	}
 	else {
-		sensor_channel = sensor_channel + 1;
+		return (uint16_t) sensor_values[2*sensor_pair];
 	}
-	PORTB = sensor_channel;
-			
+		
+}
+
+/*
+ *	@brief Formats the output to accomodate the chassi and transmits it on the bus.
+ *
+ *	@param id Bus id for the function, unused.
+ *	@param metadata Metadata from the bus, unesed.
+ *
+ *	@return High byte: Station data. Low byte: Center of mass of the line.
+ */
+uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
+	// Disable ADC interrupts
+
+	uint8_t current_line_weight = line_weight;
+	station_type chassi_output = No;
+	switch (pickup_station) {
+		case Left:
+			chassi_output = Left;
+			break;
+		case Right:
+			chassi_output = Right;
+			break;
+		default:
+			// Check if we have tape at all
+			if (get_tape_width() == 0) {
+				chassi_output = 3;
+				current_line_weight = 127;
+			}
+			break;
+	}
+	return (((uint16_t)(chassi_output) << 8) | current_line_weight);
+}
+
+/*
+ *	@brief Set up ADC and direction ports for the linesensor.
+ */
+void line_init(){
+	linesensor_channel = 0;
+	ADCSRA = 0b10001111;
+	DDRB = 0b11111111;
+	ADMUX = (1 << ADLAR);
+
+	PORTB = linesensor_channel;
 	ADCSRA |= (1 << ADSC);
-	
 }
-void update_linesensor_surfaces()	{
-	uint8_t current_sensor;
-	current_sensor = 0;
-	while(current_sensor <=10)	{
-		if(sensor_values[current_sensor] >= tape_reference)
-			sensor_surface_types[current_sensor] = tape;
-		else
-			sensor_surface_types[current_sensor] = floor;
-		current_sensor++;
-	}
-	
+
+/*
+ *	@brief Saves the current value of ADCH in sensor_values.
+ */
+void update_linesensor_values() {
+	sensor_values[linesensor_channel] = ADCH;
+
+	linesensor_channel = (linesensor_channel + 1) % 11;
+	PORTB = linesensor_channel;
+
+	ADCSRA |= (1 << ADSC);
 }
+
+/*
+ *	@brief Check if the current sensor has tape or floor under itself.
+ *
+ *	@param sensor_id Sensor to check.
+ *
+ *	@return Tape if the sensor has tape under itself, otherwise returns floor.
+ */
+station_type get_sensor_surface(uint8_t sensor_id)	{
+	if(sensor_values[sensor_id] >= tape_reference)
+		return Tape;
+	else
+		return Floor;
+}
+
+/*
+ *	@brief Calculate the center of mass of the tape, will save the result in the global line_weight.
+ */
 void calculate_line_weight()	{
 	cli();
-	uint32_t temp_line_weight;
-	uint16_t tot_weight;
-	uint16_t sensor_scale;
-	uint8_t current_sensor;
-	current_sensor = 0;
-	tot_weight = 0;
-	sensor_scale = 11;
-	temp_line_weight = 0;
+	uint32_t temp_line_weight = 0;
+	uint16_t tot_weight = 0;
+	uint16_t sensor_scale = 11;
+	uint8_t current_sensor = 0;
+
 	while(current_sensor<=10)	{
 		tot_weight = tot_weight + sensor_values[current_sensor];
 		temp_line_weight = temp_line_weight + sensor_values[current_sensor] * sensor_scale;
@@ -111,132 +194,185 @@ void calculate_line_weight()	{
 		if(current_sensor <= 10)
 			sensor_scale = sensor_scale + 256/11;
 	}
-	line_weight = temp_line_weight / tot_weight;
+	if (is_tape_left() || is_tape_right())
+		line_weight = 127;
+	else
+		line_weight = temp_line_weight / tot_weight;
 	sei();
 }
-void pickup_station_detection() {
-	uint8_t current_sensor;
-	uint8_t tape_width;
 
-	tape_width =0;
+/*
+ *	@breif Returns the width of the tape.
+ *
+ *	@return The width of the tape, will be integer between 0 and 11.
+ */
+uint8_t get_tape_width()	{
+	uint8_t tape_width;
+	uint8_t current_sensor;
+	tape_width = 0;
 	current_sensor = 0;
 
 	while(current_sensor <=10)	{
-		tape_width = tape_width + sensor_surface_types[current_sensor];
+		tape_width = tape_width + get_sensor_surface(current_sensor);
 		current_sensor++;
 	}
-	
-	if((tape_width > 4 )&& (line_weight < 127) && (line_status == 0))
-		pickup_station = Left;
-	else if ((tape_width > 4) && (line_weight > 127) && (line_status == 0))
-		pickup_station = Right;
-	else
-		pickup_station = No;
-}
-void line_break_detection()	{	
-	cli();
-	uint8_t current_sensor;
-	uint8_t total_tape;
-	total_tape = 0;
-	current_sensor = 0;
-	line_status = interrupt;
-	while(current_sensor <= 10)	{
-		if(sensor_surface_types[current_sensor] == tape)	{
-			line_status = line;
-			total_tape++;
-		}
-		current_sensor++;
-	}
-	if(total_tape == 11)
-		line_status = crossing;
-	sei();
-	};
-void update_linesensor()	{
-	update_linesensor_values();
-	update_linesensor_surfaces();
-	calculate_line_weight();
-	pickup_station_detection();
-	line_break_detection();
+	return tape_width;
 }
 
-void calibrate_linesensor()	{	//should set sensor_scale-values and tape_reference
-	cli();	
-	uint8_t sensor_scale_temp_floor;
-	uint8_t sensor_scale_temp_tape;
-	//setup ADC for calibration-routine
+/*
+ *	@brief Check if there is tape to mark a pickupstation right.
+ *
+ *	@return 1 if the 4 sensors furthest to the right has tape underneath, otherwise 0.
+ */
+uint8_t is_tape_right()	{
+	uint8_t number_of_tape_sensors = 0;
+	for(uint8_t i = 7; i<=10; i++)	{
+		if (get_sensor_surface(i) == 1)
+		number_of_tape_sensors++;
+	}
+	if(number_of_tape_sensors >= 4)
+		return 1;
+	else
+		return 0;
+}
+
+/*
+ *	@brief Check if there is tape to mark a pickupstation left.
+ *
+ *	@return 1 if the 4 sensors furthest to the left has tape underneath, otherwise 0.
+ */
+uint8_t is_tape_left()	{
+	uint8_t number_of_tape_sensors = 0;
+	for(uint8_t i = 0; i<5; i++)	{
+		if (get_sensor_surface(i) == 1)
+		number_of_tape_sensors++;
+	}
+	if(number_of_tape_sensors >= 4)
+		return 1;
+	else
+		return 0;
+}
+
+/*
+ *	@brief Check if there is a pickupstation or not.
+ *	@detailed Will check if there is tape on either side, if there is a iterator (pickup_iterator) will start counting down.
+ *		If there is tape on the opposite side on any of these iterations, it will be considered a crossing and start over.
+ *		If the iterator is zero it will return pickupstation.
+ */
+void pickup_station_detection() {
+	cli();
+	if (previous_pickup_station == Left && is_tape_right()) {
+		previous_pickup_station = No;
+	}
+	else if (previous_pickup_station == Right && is_tape_left()) {
+		previous_pickup_station = No;
+	}
+
+	else if (previous_pickup_station == Left && !is_tape_left() && pickup_iterator > 1450) {
+		previous_pickup_station = No;
+		pickup_iterator = 0;
+	}
+	else if (previous_pickup_station == Right && !is_tape_right() && pickup_iterator > 1450) {
+		previous_pickup_station = No;
+		pickup_iterator = 0;
+	}
+	else if (pickup_iterator > 0) {
+		--pickup_iterator;
+	}
+
+	else if (previous_pickup_station == No) {
+		if (is_tape_right()) {
+			previous_pickup_station = Right;
+			pickup_iterator = 1500;
+		}
+		else if (is_tape_left()) {
+			previous_pickup_station = Left;
+			pickup_iterator = 1500;
+		}
+	}
+	else if (previous_pickup_station == Left) {
+		pickup_station = Left;
+	}
+	else if (previous_pickup_station == Right) {
+		pickup_station = Right;
+	}
+	sei();
+}
+
+/*
+ *	@brief Updates the linesensor, calculates line weight and detects pickup stations.
+ */
+void update_linesensor()	{
+	update_linesensor_values();
+	calculate_line_weight();
+	pickup_station_detection();
+}
+
+/*
+ *	@brief Setup ADC for calibration-routine.
+ */
+void init_linesensor_calibration()	{
 	ADCSRA = 0b10000111;
 	ADCSRA |= (1 << ADEN);
 	ADMUX = 0b00100000;
 	DDRB = 0b11111111;
-	calibrate_tape();
-	
-	calibrate_floor();
-	
-	//code for calculating sensor_scale-needs testing!
-	for(uint8_t i = 0; i<=10; i++)	{
-		if(tape_average[i] < total_tape_average)
-			sensor_scale_temp_tape = total_tape_average - tape_average[i];
-		else
-			sensor_scale_temp_tape = 0;//tape_average[i] - total_tape_average;
-		if(floor_average[i] < total_floor_average)
-			sensor_scale_temp_floor = total_floor_average - floor_average[i];
-		else
-			sensor_scale_temp_floor = 0;//floor_average[i] - total_floor_average;
-			
-		sensor_scale[i] = (sensor_scale_temp_floor + sensor_scale_temp_tape)/2;	
+}
+
+/*
+ *	@brief Read 10 values from one sensor, will return the average.
+ *
+ *	@param sensor_id ID of the sensor.
+ *
+ *	@return The average value of 10 readings.
+ */
+uint8_t line_read_sensor(uint8_t sensor_id) {
+	uint16_t sensor_references = 0;
+	PORTB = sensor_id;
+	for (uint8_t i = 0; i <= 10; i++) {
+		ADCSRA |= 0b01000000;
+		while (ADCSRA &(1<<ADSC));
+		ADCSRA &= ~(1 << ADIF);
+		sensor_references += ADCH;
 	}
-	//calculate tape_reference
-	tape_reference = (total_floor_average + total_tape_average)/2;
+	return (uint8_t)(sensor_references / 10);
+}
+
+/*
+ *	@brief Calibrate the tape reference.
+ *
+ *	@param id Bus id of the function, unused.
+ *	@param metadata Metadata to the function, unused.
+ */
+void calibrate_linesensor(uint8_t id, uint16_t metadata)	{
+	cli();
+	uint8_t sensor_max = 0;
+	uint8_t sensor_min = 0;
+	init_linesensor_calibration();
+
+	uint8_t sensor_value;
+	for (uint8_t j = 0; j <= 9; j++) {
+		sensor_value = line_read_sensor(j);
+		if (sensor_value > sensor_max) {
+			sensor_max = sensor_value;
+		}
+		else if (sensor_value < sensor_min) {
+			sensor_min = sensor_value;
+		}
+	}
+	tape_reference = (sensor_max + sensor_min) / 2;
+	ADCSRA &= ~(1 << ADIF);
+	bus_transmit(BUS_ADDRESS_COMMUNICATION,10,(uint16_t)tape_reference);
+	line_init();
 	sei();
 }
 
-void calibrate_tape()	{
-
-for(uint8_t j = 0; j <= 9; j++)	{	
-		for(uint8_t i = 0; i <= 10; i++)		{
-			PORTB = i;
-			ADCSRA |= 0b01000000;
-			while (ADCSRA &(1<<ADSC)){}
-			tape_sensor_references[i][j] = ADCH;
-		}	
-	}
-	
-	for(uint8_t i = 0; i<=10;i++)	{
-		for(uint8_t j = 0; j<=9;j++)	{
-			tape_average[i] = tape_average[i] + tape_sensor_references[i][j];
-			if(j==9)	{
-				tape_average[i] = tape_average[i]/10;
-			}
-		}
-	}
-	
-	for(uint8_t i = 0; i<=10;i++)	{
-		total_tape_average = total_tape_average + tape_average[i];
-		line_weight = total_tape_average;
-	}
-	total_tape_average = total_tape_average/11;
+/*
+ *	@brief Clears the pickupstation data.
+ */
+void clear_pickupstation() {
+	pickup_station = No;
+	previous_pickup_station = No;
+	pickup_iterator = 0;
 }
 
-void calibrate_floor()	{
-	for(uint8_t j = 0; j <= 9; j++)	{	
-		for(uint8_t i = 0; i <= 10; i++)		{
-			PORTB = i;
-			ADCSRA |= 0b01000000;
-			while(ADCSRA &(1<<ADSC)){}
-			floor_sensor_references[i][j] = ADCH;
-		}
-	}
-	for(uint8_t i = 0; i<=10;i++)	{
-		for(uint8_t j = 0; j<=9;j++)	{
-			floor_average[i] = floor_average[i] + floor_sensor_references[i][j];
-			if(j==9)	{
-				floor_average[i] = floor_average[i]/10;
-			}
-		}
-	}
-	for(uint8_t i = 0; i<=10; i++)	{
-		total_floor_average = total_floor_average + floor_average[i];
-		if(i == 10)
-			total_floor_average = total_floor_average/11;
-	}
-}
+

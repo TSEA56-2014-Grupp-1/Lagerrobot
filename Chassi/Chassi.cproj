@@ -37,20 +37,37 @@
         </dependencies>
       </framework-data>
     </AsfFrameworkConfig>
-    <avrtool>com.atmel.avrdbg.tool.simulator</avrtool>
+    <avrtool>com.atmel.avrdbg.tool.jtagice3plus</avrtool>
     <com_atmel_avrdbg_tool_simulator>
-      <ToolOptions xmlns="">
+      <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
         </InterfaceProperties>
-        <InterfaceName>
-        </InterfaceName>
+        <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
-      <ToolType xmlns="">com.atmel.avrdbg.tool.simulator</ToolType>
-      <ToolNumber xmlns="">
+      <ToolType>com.atmel.avrdbg.tool.simulator</ToolType>
+      <ToolNumber>
       </ToolNumber>
-      <ToolName xmlns="">Simulator</ToolName>
+      <ToolName>Simulator</ToolName>
     </com_atmel_avrdbg_tool_simulator>
+    <com_atmel_avrdbg_tool_jtagice3plus>
+      <ToolOptions>
+        <InterfaceProperties>
+          <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
+          <JtagDbgClock>32000</JtagDbgClock>
+          <JtagInChain>true</JtagInChain>
+          <JtagDevicesBefore>1</JtagDevicesBefore>
+          <JtagDevicesAfter>1</JtagDevicesAfter>
+          <JtagInstrBitsBefore>4</JtagInstrBitsBefore>
+          <JtagInstrBitsAfter>4</JtagInstrBitsAfter>
+        </InterfaceProperties>
+        <InterfaceName>JTAG</InterfaceName>
+      </ToolOptions>
+      <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
+      <ToolNumber>J30200013317</ToolNumber>
+      <ToolName>JTAGICE3</ToolName>
+    </com_atmel_avrdbg_tool_jtagice3plus>
+    <avrtoolinterface>JTAG</avrtoolinterface>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -117,6 +134,14 @@
       <SubType>compile</SubType>
       <Link>bus.h</Link>
     </Compile>
+    <Compile Include="..\shared\LCD_interface.c">
+      <SubType>compile</SubType>
+      <Link>LCD_interface.c</Link>
+    </Compile>
+    <Compile Include="..\shared\LCD_interface.h">
+      <SubType>compile</SubType>
+      <Link>LCD_interface.h</Link>
+    </Compile>
     <Compile Include="automatic_steering.c">
       <SubType>compile</SubType>
     </Compile>
@@ -133,12 +158,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="Chassi.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="steering_commands.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="steering_commands.h">
       <SubType>compile</SubType>
     </Compile>
   </ItemGroup>

@@ -13,7 +13,7 @@
 
 #ifndef F_CPU
 	#define F_CPU 18432000UL
- #endif
+#endif
 
 #define COMM 0
 #define SENS 1
@@ -33,8 +33,7 @@ char message_map_line2[4][17];
 /**
  * Identifier of the unit that is currently being displayed.
  */
-
-uint8_t lcd_current_sender;
+uint8_t lcd_next_sender;
 
 /**
  * Keeps track of when it is time to switch pages.
@@ -45,7 +44,7 @@ uint8_t lcd_rotation_flag;
 /**
  * @brief Forces the display to display the page of a certain module.
  * @details Resets the rotation counter and outputs the page of a certain module to the display.
- * 
+ *
  * @param module The identifier of the module to be displayed.
  */
 void lcd_force_display_update(uint8_t module);
