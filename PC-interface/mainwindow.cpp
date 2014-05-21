@@ -28,15 +28,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-<<<<<<< HEAD
     timer_heartbeat->setInterval(200);
     connect(timer_heartbeat, SIGNAL(timeout()), this, SLOT(send_heartbeat()));
 
-    timer_req->setInterval(250);
-    connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
-
-=======
->>>>>>> master
     timer_com->setInterval(100);
     connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
     ui->lcdTimer->setDigitCount(10);
@@ -147,13 +141,8 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
-<<<<<<< HEAD
 
         timer_heartbeat->start();
-        timer_req->start();
-        time_graph->start();
-=======
->>>>>>> master
 
         times_mass.clear();
         times_steering.clear();
@@ -407,24 +396,6 @@ void MainWindow::enable_buttons() {
     ui->pushButton_stop->setEnabled(true);
     ui->transmit_button->setEnabled(true);
     ui->request_button->setEnabled(true);
-}
-
-/*
- *      @brief Function that will reqeuset line data from robot.
- *      @details Function that will request line data from robot, will also reset the timer so that interupt will happen again.
- */
-void MainWindow::request_data() {
-	if (port == NULL) {
-
-		print_on_log("No port to send to.");
-	}
-	else if (update_graph){
-		port->send_packet(PKT_PACKET_REQUEST, 1, PKT_LINE_DATA);
-		timer_req->start();
-	}
-	else {
-		timer_req->start();
-	}
 }
 
 void MainWindow::send_heartbeat()
