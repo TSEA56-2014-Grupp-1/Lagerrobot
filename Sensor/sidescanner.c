@@ -64,7 +64,7 @@ void sidescanner_init(sensor sensor_id)
 	TCCR3B |= (0 << CS12 | 1 << CS11 | 1 << CS10);
 
 	//Enable adc, Set ADIF flag, Set ADC Interreupt enable, set prescaler
-	ADCSRA = 0b10011111;
+	ADCSRA = 0b10010111;
 
 	//set AD-channel 1 if sensor left, 2 if sensor right
 	if (sensor_id == sensor_left)
@@ -183,7 +183,6 @@ double calculate_distance_coordinate(uint16_t angle, uint16_t distance, sensor s
 
 void object_detection(sensor sensor_id)
 {
-
 	uint16_t first_angle = 0;
 	uint16_t distance = 0;
 	uint16_t second_angle = 0;

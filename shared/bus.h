@@ -14,6 +14,6 @@ uint8_t bus_transmit(uint8_t, uint8_t, uint16_t);
 uint8_t bus_register_response(uint8_t id, uint16_t (*callback)(uint8_t, uint16_t));
 uint8_t bus_register_receive(uint8_t id, void (*callback)(uint8_t, uint16_t));
 
-uint8_t bus_get_address();
+uint8_t bus_get_address(void);
 
 #endif /* BUS_H_ */

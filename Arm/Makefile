@@ -1,12 +1,12 @@
-TARGET = sensor
+TARGET = arm
 
-SRC = Sensor.c linesensor.c sidescanner.c distance_sensors.c RFID_scanner.c ../shared/usart.c ../shared/LCD_interface.c ../shared/bus.c
+SRC = main.c arm.c servo.c inverse_kinematics.c ../shared/usart.c ../shared/LCD_interface.c ../shared/bus.c
 OBJ = $(SRC:.c=.o)
 
 MCU = "atmega1284p"
-F_CPU = "20000000UL"
+F_CPU = "16000000UL"
 
-AVRDUDEFLAGS=-p m1284p -P usb -c jtag2
+AVRDUDEFLAGS=-p m1284p -P usb -c jtag2 -x jtagchain=0,2,0,8
 CFLAGS=\
 	-mmcu=$(MCU)\
 	-O1\

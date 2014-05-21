@@ -58,9 +58,9 @@ uint16_t pickup_iterator = 0;
 /*
  *	Send center of mass and station data to chassi.
  */
-/*uint16_t send_line_data(uint8_t id, uint16_t metadata)
+uint16_t send_line_data(uint8_t id, uint16_t metadata)
 {
-	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+	//ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
 	station_type chassi_output = 1;
 	if(pickup_station == Left)
 		chassi_output = Left;
@@ -71,7 +71,7 @@ uint16_t pickup_iterator = 0;
 
 	line_init();
 	return (((uint16_t)(chassi_output) << 8) | line_weight);
-}*/
+}
 
 /*
  *	@brief Set the tape reference to new value.
@@ -98,23 +98,26 @@ uint8_t get_station_data()
  *	@return High byte: value of the first sensor. Low byte: value of the second sensor.
  */
 uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
-	if (sensor_pair != 5)
-	return ((uint16_t)sensor_values[2*sensor_pair + 1] << 8) | (uint16_t) sensor_values[2*sensor_pair];
-	else
-	return (uint16_t) sensor_values[2*sensor_pair];
+	if (sensor_pair != 5) {
+		return ((uint16_t)sensor_values[2*sensor_pair + 1] << 8) | (uint16_t) sensor_values[2*sensor_pair];
+	}
+	else {
+		return (uint16_t) sensor_values[2*sensor_pair];
+	}
+
 }
 
 /*
- *	@brief Formats the output to accomodate the chassi and transmits it on the bus.
+ *	@brief Formats the output to accommodate the chassis and transmits it on the bus.
  *
  *	@param id Bus id for the function, unused.
- *	@param metadata Metadata from the bus, unesed.
+ *	@param metadata Metadata from the bus, unused.
  *
  *	@return High byte: Station data. Low byte: Center of mass of the line.
  */
+
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 	// Disable ADC interrupts
-	ADCSRA &= ~(1 << ADIE);
 
 	uint8_t current_line_weight = line_weight;
 	station_type chassi_output = No;
@@ -133,8 +136,6 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 			}
 			break;
 	}
-
-	line_init();
 	return (((uint16_t)(chassi_output) << 8) | current_line_weight);
 }
 
@@ -143,7 +144,7 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
  */
 void line_init(){
 	linesensor_channel = 0;
-	ADCSRA = 0b10001111;
+	ADCSRA = 0b10000111;
 	DDRB = 0b11111111;
 	ADMUX = (1 << ADLAR);
 
@@ -170,7 +171,7 @@ void update_linesensor_values() {
  *
  *	@return Tape if the sensor has tape under itself, otherwise returns floor.
  */
-station_type get_sensor_surface(uint8_t sensor_id)	{
+surface_type get_sensor_surface(uint8_t sensor_id)	{
 	if(sensor_values[sensor_id] >= tape_reference)
 		return Tape;
 	else

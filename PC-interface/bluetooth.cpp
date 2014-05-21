@@ -74,13 +74,18 @@ void bluetooth::process_packet()
 
         break;
 	case PKT_LINE_DATA:
-        window->add_mass_data(parameters[12]);
-        window->add_steering_data((qint16)((((quint16)parameters[13]) << 8) | (quint16) parameters[14]));
+		//window->add_steering_data((qint16)((((quint16)parameters[13]) << 8) | (quint16) parameters[14]));
+		//window->pickupstation(&parameters);
 		window->update_linesensor_plot(&parameters);
-        window->pickupstation(&parameters);
         break;
+    case PKT_LINE_WEIGHT:
+		window->add_mass_data(parameters[0]);
+		break;
 	case PKT_RANGE_DATA:
         window->add_range_data(parameters[0], ((quint16) ((quint8) parameters[1])) << 8 | (quint16) ((quint8) parameters[2]));
+        if (!window->time_graph->isValid()){
+            window->time_graph->start();
+        }
         break;
 	case PKT_RFID_DATA:
         window->print_on_log(QString("Received new RFID tag: ")

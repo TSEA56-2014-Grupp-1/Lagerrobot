@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>6.1</ProjectVersion>
     <ToolchainName>com.Atmel.AVRGCC8.C</ToolchainName>
-    <ProjectGuid>{cf1c5c29-28ec-4578-84ed-1b463fd49b83}</ProjectGuid>
+    <ProjectGuid>{7439630e-076f-47fc-a7ee-baa66dc5b63c}</ProjectGuid>
     <avrdevice>ATmega1284P</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>Executable</OutputType>
@@ -25,18 +25,6 @@
     <OverrideVtorValue>exception_table</OverrideVtorValue>
     <BootSegment>2</BootSegment>
     <eraseonlaunchrule>0</eraseonlaunchrule>
-    <AsfFrameworkConfig>
-      <framework-data xmlns="">
-        <options />
-        <configurations />
-        <files />
-        <documentation help="" />
-        <offline-documentation help="" />
-        <dependencies>
-          <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.11.0" />
-        </dependencies>
-      </framework-data>
-    </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.jtagice3plus</avrtool>
     <com_atmel_avrdbg_tool_jtagice3plus>
       <ToolOptions>
@@ -47,23 +35,22 @@
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
-      <ToolNumber>J30200008936</ToolNumber>
+      <ToolNumber>J30200013317</ToolNumber>
       <ToolName>JTAGICE3</ToolName>
     </com_atmel_avrdbg_tool_jtagice3plus>
     <avrtoolinterface>JTAG</avrtoolinterface>
-    <com_atmel_avrdbg_tool_simulator>
-      <ToolOptions>
-        <InterfaceProperties>
-          <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-        </InterfaceProperties>
-        <InterfaceName>
-        </InterfaceName>
-      </ToolOptions>
-      <ToolType>com.atmel.avrdbg.tool.simulator</ToolType>
-      <ToolNumber>
-      </ToolNumber>
-      <ToolName>Simulator</ToolName>
-    </com_atmel_avrdbg_tool_simulator>
+    <AsfFrameworkConfig>
+      <framework-data xmlns="">
+  <options />
+  <configurations />
+  <files />
+  <documentation help="" />
+  <offline-documentation help="" />
+  <dependencies>
+    <content-extension eid="atmel.asf" uuidref="Atmel.ASF" version="3.11.0" />
+  </dependencies>
+</framework-data>
+    </AsfFrameworkConfig>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -139,6 +126,10 @@
       <SubType>compile</SubType>
       <Link>LCD_interface.h</Link>
     </Compile>
+    <Compile Include="..\shared\numargs.h">
+      <SubType>compile</SubType>
+      <Link>numargs.h</Link>
+    </Compile>
     <Compile Include="..\shared\usart.c">
       <SubType>compile</SubType>
       <Link>usart.c</Link>
@@ -147,13 +138,15 @@
       <SubType>compile</SubType>
       <Link>usart.h</Link>
     </Compile>
+    <Compile Include="..\shared\utils.h">
+      <SubType>compile</SubType>
+      <Link>utils.h</Link>
+    </Compile>
     <Compile Include="distance_sensors.c">
       <SubType>compile</SubType>
-      <Link>distance_sensors.c</Link>
     </Compile>
     <Compile Include="distance_sensors.h">
       <SubType>compile</SubType>
-      <Link>distance_sensors.h</Link>
     </Compile>
     <Compile Include="linesensor.c">
       <SubType>compile</SubType>
@@ -175,12 +168,15 @@
     </Compile>
     <Compile Include="sidescanner.c">
       <SubType>compile</SubType>
-      <Link>sidescanner.c</Link>
     </Compile>
     <Compile Include="sidescanner.h">
       <SubType>compile</SubType>
-      <Link>sidescanner.h</Link>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Makefile">
+      <SubType>compile</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>

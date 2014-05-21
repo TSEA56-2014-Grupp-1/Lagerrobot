@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>6.1</ProjectVersion>
     <ToolchainName>com.Atmel.AVRGCC8.C</ToolchainName>
-    <ProjectGuid>{3101634c-eec1-4e42-9745-ecdd3e023827}</ProjectGuid>
+    <ProjectGuid>{82b34736-dc4f-45a7-a8b8-152aa2ffe0dd}</ProjectGuid>
     <avrdevice>ATmega1284P</avrdevice>
     <avrdeviceseries>none</avrdeviceseries>
     <OutputType>Executable</OutputType>
@@ -12,9 +12,9 @@
     <OutputFileName>$(MSBuildProjectName)</OutputFileName>
     <OutputFileExtension>.elf</OutputFileExtension>
     <OutputDirectory>$(MSBuildProjectDirectory)\$(Configuration)</OutputDirectory>
-    <AssemblyName>Chassi</AssemblyName>
-    <Name>Chassi</Name>
-    <RootNamespace>Chassi</RootNamespace>
+    <AssemblyName>armenhet</AssemblyName>
+    <Name>armenhet</Name>
+    <RootNamespace>armenhet</RootNamespace>
     <ToolchainFlavour>Native</ToolchainFlavour>
     <KeepTimersRunning>true</KeepTimersRunning>
     <OverrideVtor>false</OverrideVtor>
@@ -38,33 +38,21 @@
       </framework-data>
     </AsfFrameworkConfig>
     <avrtool>com.atmel.avrdbg.tool.jtagice3plus</avrtool>
-    <com_atmel_avrdbg_tool_simulator>
-      <ToolOptions>
-        <InterfaceProperties>
-          <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-        </InterfaceProperties>
-        <InterfaceName>JTAG</InterfaceName>
-      </ToolOptions>
-      <ToolType>com.atmel.avrdbg.tool.simulator</ToolType>
-      <ToolNumber>
-      </ToolNumber>
-      <ToolName>Simulator</ToolName>
-    </com_atmel_avrdbg_tool_simulator>
     <com_atmel_avrdbg_tool_jtagice3plus>
       <ToolOptions>
         <InterfaceProperties>
           <JtagEnableExtResetOnStartSession>false</JtagEnableExtResetOnStartSession>
-          <JtagDbgClock>32000</JtagDbgClock>
+          <JtagDbgClock>1000000</JtagDbgClock>
           <JtagInChain>true</JtagInChain>
-          <JtagDevicesBefore>1</JtagDevicesBefore>
-          <JtagDevicesAfter>1</JtagDevicesAfter>
-          <JtagInstrBitsBefore>4</JtagInstrBitsBefore>
-          <JtagInstrBitsAfter>4</JtagInstrBitsAfter>
+          <JtagDevicesBefore>0</JtagDevicesBefore>
+          <JtagDevicesAfter>2</JtagDevicesAfter>
+          <JtagInstrBitsBefore>0</JtagInstrBitsBefore>
+          <JtagInstrBitsAfter>8</JtagInstrBitsAfter>
         </InterfaceProperties>
         <InterfaceName>JTAG</InterfaceName>
       </ToolOptions>
       <ToolType>com.atmel.avrdbg.tool.jtagice3plus</ToolType>
-      <ToolNumber>J30200008936</ToolNumber>
+      <ToolNumber>J30200013317</ToolNumber>
       <ToolName>JTAGICE3</ToolName>
     </com_atmel_avrdbg_tool_jtagice3plus>
     <avrtoolinterface>JTAG</avrtoolinterface>
@@ -99,30 +87,31 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <AvrGcc>
-        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
-        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
-        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-        <avrgcc.compiler.symbols.DefSymbols>
-          <ListValues>
-            <Value>DEBUG</Value>
-          </ListValues>
-        </avrgcc.compiler.symbols.DefSymbols>
-        <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
-        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-        <avrgcc.linker.libraries.Libraries>
-          <ListValues>
-            <Value>libm</Value>
-          </ListValues>
-        </avrgcc.linker.libraries.Libraries>
-        <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
-      </AvrGcc>
+  <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+      <Value>F_CPU=16000000UL</Value>
+    </ListValues>
+  </avrgcc.compiler.symbols.DefSymbols>
+  <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+  <avrgcc.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </avrgcc.linker.libraries.Libraries>
+  <avrgcc.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcc.assembler.debugging.DebugLevel>
+</AvrGcc>
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
@@ -142,23 +131,50 @@
       <SubType>compile</SubType>
       <Link>LCD_interface.h</Link>
     </Compile>
-    <Compile Include="automatic_steering.c">
+    <Compile Include="..\shared\numargs.h">
+      <SubType>compile</SubType>
+      <Link>numargs.h</Link>
+    </Compile>
+    <Compile Include="..\shared\packets.h">
+      <SubType>compile</SubType>
+      <Link>packets.h</Link>
+    </Compile>
+    <Compile Include="..\shared\usart.c">
+      <SubType>compile</SubType>
+      <Link>usart.c</Link>
+    </Compile>
+    <Compile Include="..\shared\usart.h">
+      <SubType>compile</SubType>
+      <Link>usart.h</Link>
+    </Compile>
+    <Compile Include="arm.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="automatic_steering.h">
+    <Compile Include="arm.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Chassi.c">
+    <Compile Include="inverse_kinematics.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="engine_control.c">
+    <Compile Include="inverse_kinematics.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="engine_control.h">
+    <Compile Include="main.c">
+      <SubType>compile</SubType>
+      <Link>main.c</Link>
+    </Compile>
+    <Compile Include="servo.c">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Chassi.h">
+    <Compile Include="servo.h">
       <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="servo_memory.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="types.h">
+      <SubType>compile</SubType>
+      <Link>types.h</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />

@@ -28,12 +28,15 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
+<<<<<<< HEAD
     timer_heartbeat->setInterval(200);
     connect(timer_heartbeat, SIGNAL(timeout()), this, SLOT(send_heartbeat()));
 
     timer_req->setInterval(250);
     connect(timer_req, SIGNAL(timeout()), this, SLOT(request_data()));
 
+=======
+>>>>>>> master
     timer_com->setInterval(100);
     connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
     ui->lcdTimer->setDigitCount(10);
@@ -55,7 +58,6 @@ MainWindow::~MainWindow()
 {
     delete ui;
 //    delete port;
-//    delete timer_req;
 //    delete timer_com;
 //    delete start_time;
 //    delete time_graph;
@@ -145,10 +147,13 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
+<<<<<<< HEAD
 
         timer_heartbeat->start();
         timer_req->start();
         time_graph->start();
+=======
+>>>>>>> master
 
         times_mass.clear();
         times_steering.clear();
@@ -215,6 +220,17 @@ void MainWindow::on_pushButton_start_line_clicked()
 	}
 	else {
 		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_START);
+        times_mass.clear();
+        times_steering.clear();
+        times_range_1.clear();
+        times_range_2.clear();
+
+        value_mass.clear();
+        value_steering.clear();
+        value_range_1.clear();
+        value_range_2.clear();
+
+        time_graph->start();
 		timer_com->start();
 		start_time = new QTime(QTime::currentTime());
 	}
@@ -437,7 +453,6 @@ void MainWindow::on_actionDisconnect_triggered()
     ui->connect_action->setEnabled(true);
     disable_buttons();
 
-    timer_req->stop();
     timer_graph->stop();
     delete port;
     port = NULL;
@@ -686,11 +701,16 @@ void MainWindow::add_to_lcdtimer() {
  *
  *      @param sensor_values QByteArray with the sensor values.
  */
-void MainWindow::update_linesensor_plot(QByteArray* sensor_values) {
+void MainWindow::update_linesensor_plot(QByteArray* parameters) {
     QBrush* brush = new QBrush(Qt::SolidPattern);
-    for (int i = 0; i < 11; ++i) {
-        brush->setColor(QColor(0,0,0,(quint8)sensor_values->at(i)));
-        linesensor_circels[i]->setBrush(*brush);
+	int mask = 1;
+	quint16 sensor_values = ((quint16)parameters->at(0) << 8) | (quint16)parameters->at(1);
+	brush->setColor(QColor(0,0,0,255));
+	for (int i = 0; i < 11; ++i) {
+		if (sensor_values & mask) {
+			linesensor_circels[i]->setBrush(*brush);
+		}
+		mask = mask << 1;
     }
     delete brush;
 }
@@ -750,7 +770,7 @@ void MainWindow::pickupstation(QByteArray* data) {
 	}
 	else if (data->at(11) == 0 && !station) {
 		print_on_log("Station right");
-		update_graph = false;
+//		update_graph = false;
 		for (int i = 0; i < 11; ++i) {
 			print_on_log(QObject::tr("Value of %1: %2").arg(i).arg(QString::number((quint8)data->at(i))));
 		}
@@ -851,6 +871,10 @@ void MainWindow::handle_decision(quint8 decision) {
 	}
 	else if (decision == DEC_UNKOWN_ERROR) {
 		print_on_log("Unkown error in chassi");
+	}
+	else if (decision == DEC_START_LINE) {
+		print_on_log("Started linefollowing");
+		time_graph->start();
 	}
 }
 

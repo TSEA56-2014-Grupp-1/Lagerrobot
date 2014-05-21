@@ -14,21 +14,22 @@
 #include "automatic_steering.h"
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
+#include "../shared/packets.h"
 
 
 
-void disable_timer_interrupts()
+void disable_timer_interrupts(void)
 {
 	TIMSK0 &= ~(1 << OCIE0A);
 }
 
-void enable_timer_interrupts()
+void enable_timer_interrupts(void)
 {
 	TIMSK0 |= (1 << OCIE0A);
 }
 
 // ---------------INIT FUNCTIONS-----------------
-void timer_interrupt_init()
+void timer_interrupt_init(void)
 {
 	//enable timer interrupts for ocie0a
 	//TIMSK0 |= (1 << OCIE0A);
@@ -44,7 +45,7 @@ void timer_interrupt_init()
 	TCCR0B |= (1 << CS02 | 0 << CS01 | 1 << CS00);
 }
 
-void start_button_init()
+void start_button_init(void)
 {
 	PCICR |= (1 << PCIE1); // enable PCINT1
 	PCMSK1 |= (1 << PCINT8); // enable Pin 1 on PCINT1
@@ -52,7 +53,7 @@ void start_button_init()
 
 //-------------- RFID FUNCTIONS-------------
 
-void read_rfid()
+void read_rfid(void)
 {
 	uint16_t timeout_counter = 0;
 	uint8_t status_code = 1;
@@ -68,43 +69,7 @@ void read_rfid()
 	}
 }
 
-//XXX: Not in use?
-uint16_t request_RFID_tag()
-{
-	uint16_t tag;
-	//XXX: Callback 6 does not exist in sensor.
-	bus_request(BUS_ADDRESS_SENSOR, 6, 0, &tag);
-	return tag;
-}
-
-void disable_rfid_reader()
-{
-	uint16_t timeout_counter = 0;
-	uint8_t status_code = 1;
-	while (timeout_counter < 100 && status_code != 0)
-	{
-		status_code = bus_transmit(BUS_ADDRESS_SENSOR, 7, 0);
-		++timeout_counter;
-	}
-}
-
-void enable_rfid_reader()
-{
-	uint16_t timeout_counter = 0;
-	uint8_t status_code = 1;
-	while (timeout_counter < 100 && status_code != 0)
-	{
-		status_code = bus_transmit(BUS_ADDRESS_SENSOR, 8, 0);
-		++timeout_counter;
-	}
-	if (status_code != 0)
-	{
-		////display(0,"TO enable read");
-		////display(1,"SC: %d", status_code);
-	}
-}
-
-void set_sensor_to_linefollowing()
+void set_sensor_to_linefollowing(void)
 {
 	uint16_t timeout_counter = 0;
 	uint8_t status_code = 1;
@@ -156,7 +121,7 @@ void put_down_to_arm(uint16_t arm_action_trans)
 }
 
 uint16_t got_steering_request(uint8_t id, uint16_t metadata) {
-	return (uint16_t)steering_wheel;
+	return get_steering_wheel();
 }
 
 uint8_t is_station(uint8_t station_data)
@@ -233,7 +198,7 @@ uint8_t is_pickup_station(uint8_t id)
 	return (id % 2 == 0);
 }
 
-uint8_t skip_station()
+uint8_t skip_station(void)
 {
 	uint8_t next_id = 0;
 	if (lap_finished == 0)
@@ -276,14 +241,13 @@ void update_station_list(uint8_t station_id)
 
 void drive(int8_t curr_error)
 {
-	pd_update(curr_error);
-	//accelerator = STEERING_MAX_SPEED; // Is now an inargument to update_steering instead of global
-	steering_wheel = control;
-	update_steering(STEERING_MAX_SPEED);
+	// Update steering with new PD value
+	update_steering(pd_update(curr_error), STEERING_MAX_SPEED);
+
 	enable_timer_interrupts();
 }
 
-void clear_station_list()
+void clear_station_list(void)
 {
 	uint8_t i = 0;
 	for (i = 0; i < 18; ++i)
@@ -299,6 +263,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	disable_timer_interrupts();
 	uint16_t line_data = 0;
+	//line_data = 0x100 + 127;
 	line_data = request_line_data();
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
@@ -329,7 +294,7 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	}
 }
 
-uint16_t request_line_data()
+uint16_t request_line_data(void)
 {
 	uint8_t timeout_counter = 0;
 	uint8_t status_code = 1;
@@ -462,6 +427,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 			if (!is_mission_complete()) {
 				drive_to_next();
 			}
+			break;
 		case 2: // Arm did not find an object to pick up
 			decision_to_pc(9);
 			carrying_rfid = 0;
@@ -492,7 +458,7 @@ void control_line_following(uint8_t id, uint16_t data) {
 	}
 }
 
-uint8_t is_mission_complete()
+uint8_t is_mission_complete(void)
 {
 	if (lap_finished == 0)
 		return 0;
@@ -509,7 +475,7 @@ uint8_t is_mission_complete()
 /**
  *	Initiate linefollowing to the next station
  */
-void drive_to_next()
+void drive_to_next(void)
 {
 	scan_count = 0; // reset the scan counter
 	set_sensor_to_linefollowing();
@@ -524,6 +490,7 @@ ISR(PCINT1_vect)
 {
 	if (PINB & 1) {
 		disable_timer_interrupts();
+		decision_to_pc(DEC_START_LINE);
 		display(0, "start button");
 		display(1, "pressed");
 		drive_to_next();
@@ -589,7 +556,7 @@ void emergency_stop( uint8_t id, uint16_t status) {
 	}
 	else {
 		can_start = 0;
-		update_steering(0);
+		update_steering(0,0);
 		TWCR &= ~(1 << TWEA | 1 << TWIE);
 		TWCR |= (1 << TWINT);
 		disable_timer_interrupts();
