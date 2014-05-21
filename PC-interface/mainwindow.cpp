@@ -204,7 +204,17 @@ void MainWindow::on_pushButton_start_line_clicked()
 	}
 	else {
 		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_START);
-		time_graph->start();
+        times_mass.clear();
+        times_steering.clear();
+        times_range_1.clear();
+        times_range_2.clear();
+
+        value_mass.clear();
+        value_steering.clear();
+        value_range_1.clear();
+        value_range_2.clear();
+
+        time_graph->start();
 		timer_com->start();
 		start_time = new QTime(QTime::currentTime());
 	}

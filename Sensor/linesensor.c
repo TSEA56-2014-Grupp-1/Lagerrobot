@@ -58,9 +58,9 @@ uint16_t pickup_iterator = 0;
 /*
  *	Send center of mass and station data to chassi.
  */
-/*uint16_t send_line_data(uint8_t id, uint16_t metadata)
+uint16_t send_line_data(uint8_t id, uint16_t metadata)
 {
-	ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
+	//ADCSRA &= ~(1 << ADIE); // disable ADC-interrupt
 	station_type chassi_output = 1;
 	if(pickup_station == Left)
 		chassi_output = Left;
@@ -71,7 +71,7 @@ uint16_t pickup_iterator = 0;
 
 	line_init();
 	return (((uint16_t)(chassi_output) << 8) | line_weight);
-}*/
+}
 
 /*
  *	@brief Set the tape reference to new value.
@@ -108,13 +108,14 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
 }
 
 /*
- *	@brief Formats the output to accomodate the chassi and transmits it on the bus.
+ *	@brief Formats the output to accommodate the chassis and transmits it on the bus.
  *
  *	@param id Bus id for the function, unused.
- *	@param metadata Metadata from the bus, unesed.
+ *	@param metadata Metadata from the bus, unused.
  *
  *	@return High byte: Station data. Low byte: Center of mass of the line.
  */
+
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 	// Disable ADC interrupts
 
@@ -143,7 +144,7 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
  */
 void line_init(){
 	linesensor_channel = 0;
-	ADCSRA = 0b10001111;
+	ADCSRA = 0b10000111;
 	DDRB = 0b11111111;
 	ADMUX = (1 << ADLAR);
 
