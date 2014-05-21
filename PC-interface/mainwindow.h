@@ -25,6 +25,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+     QTime *time_graph = new QTime();
 
     void print_on_log(QString);
 
@@ -136,7 +137,6 @@ private:
     QTimer *timer_com = new QTimer(); //When timer_com i started for the first time, start_time has to be set to current time.
     QTimer *timer_graph = new QTimer();
 
-    QTime *time_graph = new QTime();
     QTime *start_time;
 
     bluetooth* port = NULL;

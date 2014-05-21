@@ -15,7 +15,6 @@
 	#define F_CPU 18432000UL
 #endif
 
-
 #define COMM 0
 #define SENS 1
 #define ARM 2
@@ -60,4 +59,5 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata);
  * @param unit The identifier of the module whose page is to be cleared.
  */
 void clear_message(uint8_t unit, uint8_t line_number);
+
 #endif /* COMMUNICATION_H_ */
