@@ -30,6 +30,8 @@ char message_map_line1[4][17];
  */
 char message_map_line2[4][17];
 
+uint8_t stop_sent;
+
 /**
  * Identifier of the unit that is currently being displayed.
  */
