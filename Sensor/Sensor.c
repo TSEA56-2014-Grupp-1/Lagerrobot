@@ -20,6 +20,7 @@ uint8_t sensor_task = 5;
 
 uint8_t broadcast_line_data;
 
+void dummy(uint8_t data, uint16_t metadata) { return;}
 
 void timer_init() {
 	// Set number of counts until TIMER1_COMPA_vect is triggered
@@ -69,6 +70,7 @@ int main(void)
 
 	line_init();
 
+	//bus_register_receive(0, dummy);
 	bus_register_receive(2, calibrate_linesensor);
 	bus_register_response(3, return_linesensor);
 	bus_register_response(4, return_line_weight);

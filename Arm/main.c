@@ -20,8 +20,8 @@
 
 /**
  *	Flag that sets whether we may continue startup procedure or not. Set by
- *	communication unit once PC-interface connection is established. Data = 1
- *	means reset, data = 0 means can start.
+ *	communication unit once PC-interface connection is established. Data = 0
+ *	means reset, data = 1 means can start.
  */
 uint8_t can_start = 0;
 
@@ -29,12 +29,13 @@ uint8_t can_start = 0;
  *	Handle emergency stop and startup procedures from communication unit
  */
 void emergency_handler(uint8_t callback_id, uint16_t data) {
-	if (data == 0) {
+	if (data == 1) {
 		can_start = 1;
 	} else {
 		// Cease all arm movement
 		arm_stop();
-
+		TWCR &= ~(1 << TWEN | 1 << TWIE);
+		TWCR |= (1 << TWINT);
 		// Trigger restart after 1 second and wait for it to happen
 		wdt_enable(WDTO_1S);
 		for (;;) { }
@@ -275,10 +276,14 @@ void predefined_positions(uint8_t id, uint16_t data) {
 	}
 }
 
+void dummy(uint8_t data, uint16_t metadata) { return;}
+
 int main(void) {
 	// Disable watchdog reset timer to prevent continious resets
 	wdt_disable();
-
+	MCUSR = 0;
+	can_start = 0;
+	
 	uint8_t status;
 	arm_coordinate current_position;
 
@@ -305,15 +310,17 @@ int main(void) {
 	bus_register_receive(12, object_return);
 	bus_register_receive(13, predefined_positions);
 
-	// Wait for servos to power on before setting initial parameters
-	_delay_ms(100);
-	arm_init();
+	
 
 	// Wait for communication unit to say we can continue initialising
 	/*while (!can_start) {
 		// Delay is needed when looping flags such as this
 		_delay_us(1);
 	}*/
+	
+	// Wait for servos to power on before setting initial parameters
+	_delay_ms(100);
+	arm_init();
 
 	_delay_ms(1000);
 

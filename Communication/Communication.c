@@ -17,6 +17,8 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
+
+
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
 		lcd_rotation_counter = 0;
@@ -25,6 +27,13 @@ ISR(TIMER1_OVF_vect) {
 	else
         ++lcd_rotation_counter;
 
+}
+
+ISR(TIMER3_OVF_vect) {
+	if (!stop_sent) {
+		bus_transmit(0,0,0);
+		stop_sent = 1;
+	}
 }
 
 /**
@@ -134,7 +143,11 @@ void init(){
 
 	TIMSK1 = (1 << TOIE1);
 	TCCR1A = 0x00; // normal mode
-	TCCR1B = 0b00000010; // normal mode, max prescaler;
+	TCCR1B = 0b00000010;
+	
+	TIMSK3 = (1 << TOIE3);
+	TCCR3A = 0x00; 
+	TCCR3B = 0b00000100;
 
 	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;
