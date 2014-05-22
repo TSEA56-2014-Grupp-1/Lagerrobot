@@ -19,6 +19,7 @@
 #define PKT_SPOOFED_TRANSMIT	14	//		bus transmit packets(1-4) (address, id, metadata_h, metadata_l)
 #define PKT_CALIBRATION_DATA    15  //      calibration value (1)
 #define PKT_LINE_WEIGHT         16  //      line weight (1)
+#define PKT_HEARTBEAT			17
 
 /*	commands (in packets)	|	cmd_id	  |	command data					*/
 #define CMD_ARM_MOVE			0	//		coordinate(1) [x = 0, y = 1, angle = 2], direction(2) [1=up, 0=down], start/stop(3) [start = 1, stop = 0]

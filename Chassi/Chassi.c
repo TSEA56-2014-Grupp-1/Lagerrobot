@@ -7,6 +7,7 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "Chassi.h"
 #include "automatic_steering.h"
 #include "engine_control.h"
@@ -15,7 +16,7 @@
 #include "../shared/LCD_interface.h"
 #include "../shared/packets.h"
 
-
+void dummy(uint8_t data, uint16_t metadata) { return;}
 
 void disable_timer_interrupts(void)
 {
@@ -204,12 +205,12 @@ uint8_t skip_station(void)
 		return 0;
 	else if (station_count < number_of_stations)
 	{
-		next_id = station_list[++station_count];
+		next_id = station_list[station_count++];
 	}
 	else if (station_count == number_of_stations)
 	{
 		next_id = station_list[0];
-		station_count = 0;
+		station_count = 1;
 	}
 	if ((carrying_rfid == 0 && is_pickup_station(next_id)) || station_match_with_carrying(next_id))
 	{
@@ -233,8 +234,7 @@ void update_station_list(uint8_t station_id)
 	}
 	else
 	{
-		station_list[station_count] = station_id;
-		++station_count;
+		station_list[station_count++] = station_id;
 	}
 }
 
@@ -302,7 +302,6 @@ uint16_t request_line_data(void)
 	{
 		status_code = bus_request(BUS_ADDRESS_SENSOR, 11, 0, &data);
 		++timeout_counter;
-
 	}
 	if (status_code != 0)
 	{
@@ -322,11 +321,12 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	{
 		stop_wheels();
 		display_station_and_rfid(station_data, station_id);
+		scan_count = 0; // reset the scan counter
 		rfid_to_pc(station_id);
 		update_station_list(station_id);
 		command_to_arm(station_data, station_id);
 	}
-	else if (station_id == 0 && scan_count < 10) // still no id found, drive forward
+	else if (station_id == 0 && scan_count < 18) // No id found, drive forward
 	{
 		drive_left_wheels(1, 130);
 		drive_right_wheels(1, 130);
@@ -334,7 +334,7 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 		_delay_ms(5);
 		read_rfid();
 	}
-	else if (station_id == 0 && scan_count < 30) // no id found, start backing
+	else if (station_id == 0 && scan_count < 35) // Still no id found, start backing
 	{
 		drive_left_wheels(0, 130);
 		drive_right_wheels(0, 130);
@@ -365,19 +365,19 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 		display(1, "handled");
 		decision_to_pc(5);
 		drive_to_next();
+		if (!is_mission_complete()) {
+			drive_to_next();
+		}
 	}
 	else if(match == 1 && (station_data == 0)) // match with carrying and station to the right
 	{
 		decision_to_pc(2);
 		put_down_to_arm(1);	// 1 = put down object to the right
-	//arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
 	}
 	else if(match == 1 && (station_data == 2)) // match with carrying and station to the left
 	{
 		decision_to_pc(3);
 		put_down_to_arm(0); // 0 = put down object to the left
-	//arm_is_done(0,1); // XXX for debugging, skipping waiting for arm
-
 	}
 	else if (carrying_rfid != 0 || pickup_station == 0) // Carrying object or not a pickupstation
 	{
@@ -389,14 +389,12 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 		carrying_rfid = station_tag;
 		decision_to_pc(0);
 		pickup_to_arm(1); // 1 = pick up to the right
-	//arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
 	}
 	else if (station_data == 2 && pickup_station == 1) // Not carrying and pickup station left
 	{
 		carrying_rfid = station_tag;
 		decision_to_pc(1);
 		pickup_to_arm(0); // 0 = pick up to the left
-	//arm_is_done(0,0); // XXX for debugging, skipping waiting for arm
 	}
 	else
 	{
@@ -436,6 +434,9 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 			break;
 		case 3: // Arm found object but failed to pick it up
 			decision_to_pc(11);
+			
+			display(0, "failed to");
+			display(1, "pick up");
 			break;
 		default:
 			decision_to_pc(10); // 10 = unkown error
@@ -476,7 +477,6 @@ uint8_t is_mission_complete(void)
  */
 void drive_to_next(void)
 {
-	scan_count = 0; // reset the scan counter
 	set_sensor_to_linefollowing();
 	_delay_ms(50);
 	enable_timer_interrupts();
@@ -490,16 +490,41 @@ ISR(PCINT1_vect)
 	if (PINB & 1) {
 		disable_timer_interrupts();
 		decision_to_pc(DEC_START_LINE);
-		display(0, "start button");
-		display(1, "pressed");
+		display(0, "Mission");
+		display(1, "Start");
 		drive_to_next();
+	}
+}
+
+uint8_t can_start;
+
+/**
+ *	Handle emergency stop and startup procedures from communication unit
+ */
+void emergency_handler(uint8_t callback_id, uint16_t data) {
+	if (data == 1) {
+		can_start = 1;
+	} else {
+		// Cease all movement
+		disable_timer_interrupts();
+		stop_wheels();
+		
+		
+		TWCR &= ~(1 << TWEN | 1 << TWIE);
+		TWCR |= (1 << TWINT);
+		// Trigger restart after 1 second and wait for it to happen
+		wdt_enable(WDTO_1S);
+		for (;;) { }
 	}
 }
 
 
 int main(void)
 {
-
+	wdt_disable();
+	MCUSR = 0;
+	
+	can_start = 0;
 	bus_init(BUS_ADDRESS_CHASSIS);
 	_delay_ms(100);
 	engine_init();
@@ -512,7 +537,8 @@ int main(void)
 	lap_finished = 0;
 	number_of_stations = 0;
 	station_count = 0;
-
+	
+	bus_register_receive(0, emergency_handler);
 	// bus_register_receive(1, receive_line_data);
 	bus_register_receive(2, arm_is_done);
 	bus_register_receive(3, control_line_following);
@@ -523,6 +549,13 @@ int main(void)
 	bus_register_receive(12, engine_set_kd);
 
 	sei();
+	
+	
+	/*while (!can_start) {
+		// Delay is needed when looping flags such as this
+		_delay_us(1);
+	}*/
+	
 	start_button_init();
 	timer_interrupt_init();
 

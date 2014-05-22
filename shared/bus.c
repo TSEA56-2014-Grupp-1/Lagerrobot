@@ -84,7 +84,6 @@ uint8_t bus_start(void) {
 			sei();
 		case 0xf8:
 		default:
-			PORTA ^= 1 << PORTA3;
 			// Catastrophic failure, retry
 			return bus_start();
 	}

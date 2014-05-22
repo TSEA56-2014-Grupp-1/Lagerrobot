@@ -100,6 +100,10 @@ void bluetooth::process_packet()
         window->print_on_log(QString::number(parameters[0], 16).append(" ")
                                 .append(QString::number(parameters[1], 16)));
         break;
+    case PKT_HEARTBEAT:
+        lost_heartbeats = 0;
+        window->enable_buttons();
+        break;
 
     }
 }
