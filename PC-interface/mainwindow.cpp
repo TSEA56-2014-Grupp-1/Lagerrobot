@@ -28,6 +28,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
+    timer_heartbeat->setInterval(200);
+    connect(timer_heartbeat, SIGNAL(timeout()), this, SLOT(send_heartbeat()));
+
     timer_com->setInterval(100);
     connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
     ui->lcdTimer->setDigitCount(10);
@@ -138,6 +141,8 @@ void MainWindow::connect_to_port(QString name) {
     if(port->open_port()) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
+
+        timer_heartbeat->start();
 
         times_mass.clear();
         times_steering.clear();
@@ -391,6 +396,21 @@ void MainWindow::enable_buttons() {
     ui->pushButton_stop->setEnabled(true);
     ui->transmit_button->setEnabled(true);
     ui->request_button->setEnabled(true);
+}
+
+void MainWindow::send_heartbeat()
+{
+    if (port != nullptr) {
+
+        if (port->lost_heartbeats > 10) {
+            print_on_log("No response from robot. Attempting to reconnect...");
+            disable_buttons();
+        }
+        port->send_packet(PKT_HEARTBEAT);
+        port->lost_heartbeats++;
+
+        timer_heartbeat->start();
+    }
 }
 
 /*

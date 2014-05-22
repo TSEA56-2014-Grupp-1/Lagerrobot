@@ -47,6 +47,9 @@ public:
 
     void add_range_data(quint8 sensor, quint16 new_data);
 
+    void disable_buttons();
+    void enable_buttons();
+
 private slots:
     void keyPressEvent(QKeyEvent *key_pressed);
 
@@ -83,6 +86,8 @@ private slots:
     void on_pushButton_calibrate_floor_clicked();
 
     void on_connect_action_triggered();
+
+    void send_heartbeat();
 
     void draw_graphs();
 
@@ -129,8 +134,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    void disable_buttons();
-    void enable_buttons();
+    QTimer *timer_heartbeat = new QTimer();
 
     void set_up_graphs();
 
