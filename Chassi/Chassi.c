@@ -14,7 +14,7 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 #include "../shared/packets.h"
-
+uint16_t counter = 0;
 
 
 void disable_timer_interrupts(void)
@@ -241,7 +241,6 @@ void drive(int8_t curr_error)
 {
 	// Update steering with new PD value
 	update_steering(pd_update(curr_error), STEERING_MAX_SPEED);
-
 	enable_timer_interrupts();
 }
 
@@ -253,6 +252,7 @@ void clear_station_list(void)
 		station_list[i] = 0;
 	}
 	station_count = 0;
+	
 }
 
 //----------------------------------Timer interrupt (Start of main program)----------------------------------------
@@ -265,7 +265,13 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	line_data = request_line_data();
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
-
+	/*
+	if (++counter >= 100)
+	{
+		display(0, "%s", curr_error);
+		counter = 0;
+	}
+	*/
 	// Determine if we're in manual mode or not
 	manual_control = PINA & PINA1;
 
@@ -274,11 +280,13 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		// Robot is not on station and linefollowing is on
 		drive(curr_error);
 	}
+	/*
 	else if (skip_station())
 	{
 		// Just continue if station should be skipped
 		drive(curr_error);
 	}
+	*/
 	else if (manual_control == 1)
 	{
 		// Stop wheels when in manual control mode
@@ -320,7 +328,7 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	{
 		stop_wheels();
 		display_station_and_rfid(station_data, station_id);
-		scan_count = 0; // reset the scan counter
+		//scan_count = 0; // reset the scan counter
 		rfid_to_pc(station_id);
 		update_station_list(station_id);
 		command_to_arm(station_data, station_id);
@@ -347,6 +355,7 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 		decision_to_pc(6);
 		display(0, "No tag ");
 		display(1, "found!");
+		//scan_count = 0;
 		if (lap_finished == 0)
 			clear_station_list();
 		drive_to_next();
@@ -453,6 +462,7 @@ void control_line_following(uint8_t id, uint16_t data) {
 	if (data) {
 		drive_to_next();
 	} else {
+		disable_timer_interrupts();
 		stop_wheels();
 	}
 }
@@ -477,6 +487,7 @@ uint8_t is_mission_complete(void)
 void drive_to_next(void)
 {
 	set_sensor_to_linefollowing();
+	scan_count = 0;
 	_delay_ms(50);
 	enable_timer_interrupts();
 }

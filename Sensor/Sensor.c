@@ -16,7 +16,7 @@
 #include "sidescanner.h"
 #include "distance_sensors.h"
 
-uint8_t sensor_task = 5;
+uint8_t sensor_task = 0;
 
 uint8_t broadcast_line_data;
 

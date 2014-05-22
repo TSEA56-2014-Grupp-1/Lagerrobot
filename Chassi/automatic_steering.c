@@ -45,6 +45,6 @@ int16_t pd_update(int8_t curr_error)
 void regulator_init(void)
 {
 	prev_error = 0;
-	proportional_gain = 200;
-	derivative_gain = 10;
+	proportional_gain = 180;
+	derivative_gain = 5;
 }
