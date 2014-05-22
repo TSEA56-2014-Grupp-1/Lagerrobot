@@ -169,6 +169,9 @@ void forward_line_data(uint8_t id, uint16_t data) {
 	}
 }
 
+void forward_calibration(uint8_t id, uint16_t data)	{
+	send_packet(PKT_CALIBRATION_DATA, 1,(uint8_t)data);
+}
 int main(void)
 {
 	init();
@@ -188,6 +191,7 @@ int main(void)
 	bus_register_receive(10, forward_range);
 	bus_register_receive(11, forward_line_data);
 	bus_register_receive(12, forward_line_data);
+	bus_register_receive(13, forward_calibration);
 
 
 	display(0, "Ouroborobot");
