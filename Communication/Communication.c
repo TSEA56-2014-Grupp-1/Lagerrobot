@@ -30,7 +30,7 @@ ISR(TIMER1_OVF_vect) {
 }
 
 ISR(TIMER3_OVF_vect) {
-	if (!stop_sent) {
+	if (has_connection && !stop_sent) {
 		bus_transmit(0,0,0);
 		stop_sent = 1;
 	}
@@ -144,10 +144,11 @@ void init(){
 	TIMSK1 = (1 << TOIE1);
 	TCCR1A = 0x00; // normal mode
 	TCCR1B = 0b00000010;
-	
+
 	TIMSK3 = (1 << TOIE3);
-	TCCR3A = 0x00; 
+	TCCR3A = 0x00;
 	TCCR3B = 0b00000100;
+	has_connection = 0;
 
 	lcd_next_sender = 0;
 	lcd_rotation_counter = 0;

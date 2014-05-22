@@ -18,9 +18,11 @@
 
 uint8_t process_heartbeat() {
 	TCNT3 = 0;
+	has_connection = 1;
 	send_packet(PKT_HEARTBEAT, 0);
 	stop_sent = 0;
-	return bus_transmit(0,0,1); // send all clear general call
+	//return bus_transmit(0,0,1); // send all clear general call
+	return 0;
 }
 
 uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
@@ -335,9 +337,9 @@ void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t pa
 	}
 	va_end(parameters);
 
-	TWCR &= ~(1 << TWEN || 1 << TWIE);
-	TWCR |= 1 << TWINT;
-	
+	//TWCR &= ~(1 << TWEN || 1 << TWIE);
+	//TWCR |= 1 << TWINT;
+
 	usart_write_byte(packet_id);
 	checksum += packet_id;
 
@@ -350,7 +352,7 @@ void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t pa
 	}
 
 	usart_write_byte(~checksum);
-	
-	TWCR |= (1 << TWEN || 1 << TWIE);
-	TWCR |= 1 << TWINT;
+
+	//TWCR |= (1 << TWEN || 1 << TWIE);
+	//TWCR |= 1 << TWINT;
 }

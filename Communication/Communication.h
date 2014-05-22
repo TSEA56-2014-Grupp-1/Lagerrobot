@@ -30,7 +30,15 @@ char message_map_line1[4][17];
  */
 char message_map_line2[4][17];
 
+/**
+ *	Remember if a stop signal was sent and prevent further ones until computer reconnects
+ */
 uint8_t stop_sent;
+
+/**
+ *	Remember if the computer has connected at all
+ */
+uint8_t has_connection;
 
 /**
  * Identifier of the unit that is currently being displayed.

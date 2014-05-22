@@ -87,31 +87,31 @@ int main(void)
 	timer_init();
 
 	sei();
-	
+
 	uint8_t i;
 	uint8_t status;
 	uint16_t sensor_tape = 0;
-	
+
 	while(1)
 	{
-		
+
 		switch (sensor_task)	{
 			case 0:
-				
+
 				TIMSK1 = 1 << OCIE1A; // enable broadcast triggering
-				
+
 				while (!(ADCSRA & (1 << ADIF)));
 				ADCSRA |= (1 << ADIF);
-			
+
 				update_linesensor_values();
 				pickup_station_detection();
-			
+
 				calculate_line_weight();
-			
+
 				if (broadcast_line_data) {
 					bus_transmit(
 					BUS_ADDRESS_COMMUNICATION, 11, return_line_weight(0, 0));
-					
+
 					for (i = 1; i < 11; i++) {
 					sensor_tape |= get_sensor_surface(i) << i;
 					}
@@ -119,7 +119,7 @@ int main(void)
 					bus_transmit(BUS_ADDRESS_COMMUNICATION, 12, sensor_tape);
 
 					broadcast_line_data = 0;
-				
+
 				}
 				break;
 			case 1:
@@ -153,6 +153,6 @@ int main(void)
 				TIMSK1 &= ~(1 << OCIE1A); // not in line following mode, don't trigger broadcasting.
 				break;
 		}
-		
+
 	}
 }

@@ -10,7 +10,7 @@
 /**
  *	Store previous error as set by pd_update()
  */
-uint8_t prev_error;
+int8_t prev_error;
 
 void engine_set_kp(uint8_t id, uint16_t kp_data)
 {
@@ -45,6 +45,6 @@ int16_t pd_update(int8_t curr_error)
 void regulator_init(void)
 {
 	prev_error = 0;
-	proportional_gain = 150;
-	derivative_gain = 5;
+	proportional_gain = 200;
+	derivative_gain = 10;
 }

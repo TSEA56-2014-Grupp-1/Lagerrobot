@@ -7,7 +7,6 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/wdt.h>
 #include "Chassi.h"
 #include "automatic_steering.h"
 #include "engine_control.h"
@@ -16,7 +15,7 @@
 #include "../shared/LCD_interface.h"
 #include "../shared/packets.h"
 
-void dummy(uint8_t data, uint16_t metadata) { return;}
+
 
 void disable_timer_interrupts(void)
 {
@@ -434,7 +433,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 			break;
 		case 3: // Arm found object but failed to pick it up
 			decision_to_pc(11);
-			
+
 			display(0, "failed to");
 			display(1, "pick up");
 			break;
@@ -496,35 +495,10 @@ ISR(PCINT1_vect)
 	}
 }
 
-uint8_t can_start;
-
-/**
- *	Handle emergency stop and startup procedures from communication unit
- */
-void emergency_handler(uint8_t callback_id, uint16_t data) {
-	if (data == 1) {
-		can_start = 1;
-	} else {
-		// Cease all movement
-		disable_timer_interrupts();
-		stop_wheels();
-		
-		
-		TWCR &= ~(1 << TWEN | 1 << TWIE);
-		TWCR |= (1 << TWINT);
-		// Trigger restart after 1 second and wait for it to happen
-		wdt_enable(WDTO_1S);
-		for (;;) { }
-	}
-}
-
 
 int main(void)
 {
-	wdt_disable();
-	MCUSR = 0;
-	
-	can_start = 0;
+
 	bus_init(BUS_ADDRESS_CHASSIS);
 	_delay_ms(100);
 	engine_init();
@@ -537,8 +511,7 @@ int main(void)
 	lap_finished = 0;
 	number_of_stations = 0;
 	station_count = 0;
-	
-	bus_register_receive(0, emergency_handler);
+
 	// bus_register_receive(1, receive_line_data);
 	bus_register_receive(2, arm_is_done);
 	bus_register_receive(3, control_line_following);
@@ -549,13 +522,6 @@ int main(void)
 	bus_register_receive(12, engine_set_kd);
 
 	sei();
-	
-	
-	/*while (!can_start) {
-		// Delay is needed when looping flags such as this
-		_delay_us(1);
-	}*/
-	
 	start_button_init();
 	timer_interrupt_init();
 
