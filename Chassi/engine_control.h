@@ -1,7 +1,7 @@
 #ifndef ENGINE_CONTROL_H_
 #define ENGINE_CONTROL_H_
 /**
- *	@file enigine_control.h
+ *	@file engine_control.h
  *	@author Karl Linderhed
  *
  *	Engine control code. Can individually control both sides of wheels.

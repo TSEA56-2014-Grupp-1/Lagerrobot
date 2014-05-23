@@ -1,5 +1,12 @@
 #ifndef PACKETS_H_
 #define PACKETS_H_
+/**
+ *	@file packets.h
+ *	@author Karl Linderhed
+ *
+ *	Constants for PC <-> robot communication. Different constants symbolize
+ *	different commands.
+ */
 
 /*	packets					|	packet_id | packet contents (byte numbers)			*/
 #define PKT_STOP				0	//		none
