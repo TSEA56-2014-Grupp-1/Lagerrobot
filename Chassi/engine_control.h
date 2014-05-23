@@ -1,32 +1,52 @@
-/*
- * engine_control.h
- *
- * Created: 2014-03-30 16:50:57
- *  Author: Lucas
- */
-
 #ifndef ENGINE_CONTROL_H_
 #define ENGINE_CONTROL_H_
+/**
+ *	@file enigine_control.h
+ *	@author Karl Linderhed
+ *
+ *	Engine control code. Can individually control both sides of wheels.
+ */
 
-#define F_CPU 16000000UL
+
+#ifndef F_CPU
+	#define F_CPU 16000000UL
+#endif
+
 #include <avr/io.h>
 #include <math.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
 #include <stdlib.h>
 
-// Constants controlling how much the accelerator and steering
-// increases or decreases with each control input.
+/**
+ *	Amount to increase speed for each step when controlling robot manually
+ */
 #define STEERING_THRUST_INCREASE 300
+
+/**
+ *	Amount to increase turn speed for each step when controlling robot manually
+ */
 #define STEERING_TURN_INCREASE 200
 
+/**
+ *	Maximum valid speed for steering and acceleration
+ */
 #define STEERING_MAX_SPEED 1999L
 
-#define CMD_STOP 0
-#define CMD_SPEED_UP 1
+
+/**
+ *	@name Commands for manual control
+ *
+ *	Available commands when controlling robot steering manually
+ *
+ *	@{
+ */
+#define CMD_STOP       0
+#define CMD_SPEED_UP   1
 #define CMD_SPEED_DOWN 2
-#define CMD_RIGHT 3
-#define CMD_LEFT 4
+#define CMD_RIGHT      3
+#define CMD_LEFT       4
+// @}
 
 /**
  * @brief Initializes the motor control.
@@ -71,8 +91,22 @@ void stop_wheels(void);
  */
 void update_steering(int16_t steering_wheel, uint16_t speed);
 
+/**
+ *	Return current steering wheel position set by update_steering() or by manually
+ *	controlling unit through engine_control_command() bus callback.
+ *
+ *	@return Current steering wheel position where negative values mean left turn
+ *	        and positive values mean right turn.
+ */
 int16_t get_steering_wheel(void);
 
+/**
+ *	Return current speed set by update_steering() or by manually controlling
+ *	unit through engine_control_command() bus callback.
+ *
+ *	@return Current speed where negative values mean backwards and positive
+ *	values mean forward.
+ */
 int16_t get_speed(void);
 
 #endif

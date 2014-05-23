@@ -13,7 +13,7 @@
 #include "../shared/numargs.h"
 #include "servo_memory.h"
 
-#if !defined(F_CPU)
+#ifndef F_CPU
 	#define F_CPU 16000000UL
 #endif
 
