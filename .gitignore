@@ -2,5 +2,5 @@
 *.hex
 *.eep
 *.pyc
-docs/
+*.pdf
 Arm/simulation/venv/

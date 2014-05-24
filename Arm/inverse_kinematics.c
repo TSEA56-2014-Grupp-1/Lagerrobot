@@ -39,7 +39,7 @@ arm_coordinate ik_calculate_coordinate(arm_joint_angles joint_angles) {
  *
  *	@param angle Arm's rotation angle in radians. 0 means arm is pointing
  *	             straight ahead. pi/2 means pointing to the left and -pi/2 means
- *	             pointing to the right. 0 ± n * pi are invalid angles.
+ *	             pointing to the right. 0 + n * pi are invalid angles.
  *
  *	@return Distance to edge in mm
  */
