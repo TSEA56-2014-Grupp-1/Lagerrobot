@@ -185,15 +185,15 @@ void calculate_line_weight()	{
 	cli();
 	uint32_t temp_line_weight = 0;
 	uint16_t tot_weight = 0;
-	uint16_t sensor_scale = 11;
-	uint8_t current_sensor = 0;
+	uint16_t sensor_scale = 9;
+	uint8_t current_sensor = 1;
 
-	while(current_sensor<=10)	{
+	while(current_sensor<=9)	{
 		tot_weight = tot_weight + sensor_values[current_sensor];
 		temp_line_weight = temp_line_weight + sensor_values[current_sensor] * sensor_scale;
 		current_sensor++;
-		if(current_sensor <= 10)
-			sensor_scale = sensor_scale + 256/11;
+		if(current_sensor <= 9)
+			sensor_scale = sensor_scale + 256/9;
 	}
 	if (is_tape_left() || is_tape_right())
 		line_weight = 127;
@@ -211,9 +211,9 @@ uint8_t get_tape_width()	{
 	uint8_t tape_width;
 	uint8_t current_sensor;
 	tape_width = 0;
-	current_sensor = 0;
+	current_sensor = 1;
 
-	while(current_sensor <=10)	{
+	while(current_sensor <=9)	{
 		tape_width = tape_width + get_sensor_surface(current_sensor);
 		current_sensor++;
 	}

@@ -372,7 +372,6 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 		display(0, "st allready");
 		display(1, "handled");
 		decision_to_pc(5);
-		drive_to_next();
 		if (!is_mission_complete()) {
 			drive_to_next();
 		}
@@ -433,16 +432,14 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 				drive_to_next();
 			}
 			break;
-		case 2: // Arm did not find an object to pick up
+		case 2: // Sensor did not find an object to pick up
 			decision_to_pc(9);
-			carrying_rfid = 0;
-
-			display(0, "arm found");
+			//carrying_rfid = 0;
+			display(0, "sensor found");
 			display(1, "nothing");
 			break;
-		case 3: // Arm found object but failed to pick it up
+		case 3: // Sensor found object but arm failed to pick it up
 			decision_to_pc(11);
-
 			display(0, "failed to");
 			display(1, "pick up");
 			break;
@@ -488,9 +485,10 @@ void drive_to_next(void)
 {
 	set_sensor_to_linefollowing();
 	scan_count = 0;
-	_delay_ms(50);
+	_delay_ms(100);
 	enable_timer_interrupts();
 }
+
 
 /**
  *	Handle start button press
