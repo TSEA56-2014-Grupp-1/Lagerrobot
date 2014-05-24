@@ -48,7 +48,7 @@ uint8_t number_of_stations;
  * @param station_data The station information to be checked. 0 or 2 indicates a station.
  * @return 1 if the information indicates a station, 0 otherwise.
  */
-uint8_t is_station(uint8_t station_data);
+//uint8_t is_station(uint8_t station_data);
 void clear_sensor(void);
 uint16_t request_rfid_tag(void);
 void arm_is_done(uint8_t id, uint16_t pickup_data);
@@ -65,15 +65,11 @@ void enable_timer_interrupts(void);
 void receive_line_data(uint8_t id, uint16_t line_data);
 uint16_t request_line_data(void);
 void drive_to_next(void);
-uint8_t station_is_handled(uint8_t tag);
 void decision_to_pc(uint8_t decision);
 void rfid_to_pc(uint8_t tag_id);
-uint8_t is_pickup_station(uint8_t id);
-uint8_t skip_station(void);
 void update_station_list(uint8_t station_id);
 void drive(int8_t curr_error);
-uint8_t is_mission_complete(void);
-void clear_station_list(void);
+void display_finished(void);
 
 void pickup_to_arm(uint16_t arm_action_trans);
 void put_down_to_arm(uint16_t arm_action_trans);

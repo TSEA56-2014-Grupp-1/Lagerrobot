@@ -160,6 +160,12 @@
     <Compile Include="Chassi.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="mission_control.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="mission_control.h">
+      <SubType>compile</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>

@@ -14,6 +14,9 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 #include "../shared/packets.h"
+#include "mission_control.h"
+
+uint8_t distance = 0;
 uint16_t counter = 0;
 
 
@@ -68,6 +71,17 @@ void read_rfid(void)
 	}
 }
 
+void rfid_to_pc(uint8_t tag_id)
+{
+	uint8_t timeout_counter = 0;
+	uint8_t status_code = 1;
+	while (timeout_counter < 100 && status_code != 0)
+	{
+		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 9, tag_id);
+		++timeout_counter;
+	}
+}
+
 void set_sensor_to_linefollowing(void)
 {
 	uint16_t timeout_counter = 0;
@@ -87,7 +101,6 @@ void set_sensor_to_linefollowing(void)
 
 void pickup_to_arm(uint16_t arm_action_trans)
 {
-
 		uint16_t timeout_counter = 0;
 		uint8_t status_code = 1;
 		while (timeout_counter < 100 && status_code != 0)
@@ -123,10 +136,6 @@ uint16_t got_steering_request(uint8_t id, uint16_t metadata) {
 	return get_steering_wheel();
 }
 
-uint8_t is_station(uint8_t station_data)
-{
-	return station_data == 0 || station_data == 2;
-}
 
 void display_station_and_rfid(uint8_t station_data, uint8_t tag)
 {
@@ -152,16 +161,9 @@ void display_station_and_rfid(uint8_t station_data, uint8_t tag)
 	}
 }
 
-
-uint8_t station_is_handled(uint8_t tag)
-{
-	uint8_t i;
-	for(i = 0; i <= 18; ++i)
-	{
-		if(handled_stations_list[i] == tag)
-			return 1;
-	}
-	return 0;
+void display_finished() {
+	display(0, "Mission");
+	display(1, "Complete!!");
 }
 
 uint8_t station_match_with_carrying(uint8_t current_station)
@@ -181,61 +183,7 @@ void decision_to_pc(uint8_t decision)
 
 }
 
-void rfid_to_pc(uint8_t tag_id)
-{
-	uint8_t timeout_counter = 0;
-	uint8_t status_code = 1;
-	while (timeout_counter < 100 && status_code != 0)
-	{
-		status_code = bus_transmit(BUS_ADDRESS_COMMUNICATION, 9, tag_id);
-		++timeout_counter;
-	}
-}
 
-uint8_t is_pickup_station(uint8_t id)
-{
-	return (id % 2 == 0);
-}
-
-uint8_t skip_station(void)
-{
-	uint8_t next_id = 0;
-	if (lap_finished == 0)
-		return 0;
-	else if (station_count < number_of_stations)
-	{
-		next_id = station_list[station_count++];
-	}
-	else if (station_count == number_of_stations)
-	{
-		next_id = station_list[0];
-		station_count = 1;
-	}
-	if ((carrying_rfid == 0 && is_pickup_station(next_id)) || station_match_with_carrying(next_id))
-	{
-		return 0;
-	}
-	else
-	{
-		return 1;
-	}
-}
-
-void update_station_list(uint8_t station_id)
-{
-	if(lap_finished == 1)
-		return;
-	else if (station_list[0] == station_id)
-	{
-		lap_finished = 1;
-		number_of_stations = station_count;
-		station_count = 1;
-	}
-	else
-	{
-		station_list[station_count++] = station_id;
-	}
-}
 
 void drive(int8_t curr_error)
 {
@@ -244,49 +192,29 @@ void drive(int8_t curr_error)
 	enable_timer_interrupts();
 }
 
-void clear_station_list(void)
-{
-	uint8_t i = 0;
-	for (i = 0; i < 18; ++i)
-	{
-		station_list[i] = 0;
-	}
-	station_count = 0;
-	
-}
-
 //----------------------------------Timer interrupt (Start of main program)----------------------------------------
 
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	disable_timer_interrupts();
 	uint16_t line_data = 0;
-	//line_data = 0x100 + 127;
 	line_data = request_line_data();
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
-	/*
-	if (++counter >= 100)
-	{
-		display(0, "%s", curr_error);
-		counter = 0;
-	}
-	*/
 	// Determine if we're in manual mode or not
 	manual_control = PINA & PINA1;
 
-	if (!is_station(station_data) && manual_control != 1)
+	if (!mc_is_station(station_data) && manual_control != 1)
 	{
 		// Robot is not on station and linefollowing is on
 		drive(curr_error);
 	}
-	/*
-	else if (skip_station())
+	else if (distance > 1)
 	{
 		// Just continue if station should be skipped
+		--distance;
 		drive(curr_error);
 	}
-	*/
 	else if (manual_control == 1)
 	{
 		// Stop wheels when in manual control mode
@@ -328,9 +256,9 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	{
 		stop_wheels();
 		display_station_and_rfid(station_data, station_id);
-		//scan_count = 0; // reset the scan counter
 		rfid_to_pc(station_id);
-		update_station_list(station_id);
+		//update_station_list(station_id);
+		mc_add_station(station_id);
 		command_to_arm(station_data, station_id);
 	}
 	else if (station_id == 0 && scan_count < 18) // No id found, drive forward
@@ -355,26 +283,26 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 		decision_to_pc(6);
 		display(0, "No tag ");
 		display(1, "found!");
-		//scan_count = 0;
-		if (lap_finished == 0)
-			clear_station_list();
+		mc_clear(); // Should this be done everytime?
 		drive_to_next();
 	}
 }
 
 void command_to_arm(uint8_t station_data, uint8_t station_tag)
 {
-	uint8_t match = station_match_with_carrying(station_tag);
-	uint8_t pickup_station = is_pickup_station(station_tag);
+	uint8_t match = mc_station_match_with_carrying(station_tag, carrying_rfid);
+	uint8_t pickup_station = mc_is_pickup_station(station_tag);
 
-	if (station_is_handled(station_tag))
+	if (mc_all_handled()) {
+		display_finished();
+	}
+	//if (station_is_handled(station_tag))
+	else if (mc_is_handled(station_tag))
 	{
 		display(0, "st allready");
 		display(1, "handled");
 		decision_to_pc(5);
-		if (!is_mission_complete()) {
-			drive_to_next();
-		}
+		drive_to_next();
 	}
 	else if(match == 1 && (station_data == 0)) // match with carrying and station to the right
 	{
@@ -417,24 +345,29 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 	switch (pickup_data) {
 		case 0: // Arm picked up object
 			decision_to_pc(7);
+			mc_find_distance(carrying_rfid, carrying_rfid + 1, &distance);
 			drive_to_next();
 			break;
 		case 1: // Arm put down an object
 			// Mark station as handled
-			handled_stations_list[handled_count++] = carrying_rfid;
-			handled_stations_list[handled_count++] = carrying_rfid + 1;
-
-			carrying_rfid = 0;
+			mc_handle_station(carrying_rfid);
+			mc_handle_station(++carrying_rfid);
 			decision_to_pc(8);
-
+			
+			uint8_t	next_pickup_id = 0;
 			// Check if all stations are handled
-			if (!is_mission_complete()) {
+			if (mc_all_handled())
+				display_finished();		
+			else if (!mc_find_next_pickup(carrying_rfid, &next_pickup_id))
+				mc_find_distance(carrying_rfid, next_pickup_id, &distance);		
+			else 
+			{
+				carrying_rfid = 0;
 				drive_to_next();
 			}
 			break;
 		case 2: // Sensor did not find an object to pick up
 			decision_to_pc(9);
-			//carrying_rfid = 0;
 			display(0, "sensor found");
 			display(1, "nothing");
 			break;
@@ -462,20 +395,6 @@ void control_line_following(uint8_t id, uint16_t data) {
 		disable_timer_interrupts();
 		stop_wheels();
 	}
-}
-
-uint8_t is_mission_complete(void)
-{
-	if (lap_finished == 0)
-		return 0;
-	else if(handled_count == number_of_stations)
-	{
-		display(0, "Mission");
-		display(1, "Complete!!");
-		return 1;
-	}
-	else
-		return 0;
 }
 
 /**

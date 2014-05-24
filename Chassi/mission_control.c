@@ -5,7 +5,9 @@
  *	Control functions for remembering station order and which ones are handled.
  */
 
-#include "mission_control.h";
+#include <avr/io.h>
+#include "mission_control.h"
+
 
 /**
  *	List of all stations where the first element is the first added station
@@ -27,6 +29,56 @@ uint8_t station_list_write_index = 0;
  */
 uint8_t station_cycled = 0;
 
+
+/**
+* Check if robot is on a station
+*/
+uint8_t mc_is_station(uint8_t station_data)
+{
+	return station_data == 0 || station_data == 2;
+}
+
+/**
+* Check if station matches with what robot is carrying
+*/
+uint8_t mc_station_match_with_carrying(uint8_t current_station, uint8_t carrying_rfid)
+{
+	return (carrying_rfid + 1 == current_station);
+}
+
+/**
+* Finds the next pickup station from where robot is now. Possible status codes are:
+*
+*	- 0 if the next pickup stations id was found
+*	- 1 if not
+*
+*/
+uint8_t mc_find_next_pickup(uint8_t station_id, uint8_t *next_pickup_id) {
+	uint8_t station_index_a = mc_find_station(station_id);
+	uint8_t id = 0;
+	uint8_t i;
+	for (i = station_index_a + 1; i != station_index_a; ++i)
+	{
+		mc_get_station_id(i, &id);
+		if (mc_is_pickup_station(id) && !mc_is_handled(id)) {
+			*next_pickup_id = id;
+			return 0;
+		}
+		else if (i >= MC_STATION_MAX)
+			i = 0;
+	}
+	return 1;	
+}
+
+
+/**
+* Check if station is a pickup station
+*/
+uint8_t mc_is_pickup_station(uint8_t station_id){
+		return (station_id % 2 == 0);
+}
+
+
 /**
  *	Clear all known data about stations
  */
@@ -36,7 +88,7 @@ void mc_clear() {
 
 	// Mark all stations unhandled
 	uint8_t i;
-	for (i = 0; i < station_list_write_index; i++) {
+	for (i = 0; i < MC_STATION_MAX; i++) {
 		station_list_handled[i] = 0;
 	}
 
@@ -66,7 +118,9 @@ uint8_t mc_add_station(uint8_t station_id) {
 
 	// If station is already known this is probably the end of the loop
 	if (mc_has_station(station_id)) {
-		if (mc_get_station(0) == station_id) {
+			uint8_t first_station = 0;
+			mc_get_station_id(0, &first_station);
+		if (first_station == station_id) {
 			station_cycled = 1;
 			return 0;
 		} else {
@@ -85,7 +139,7 @@ uint8_t mc_add_station(uint8_t station_id) {
  *
  *	@return 0 if station index was known, else 1
  */
-uint8_t mc_get_station(uint8_t station_index, uint8_t *station_id) {
+uint8_t mc_get_station_id(uint8_t station_index, uint8_t *station_id) {
 	if (station_index < station_list_write_index) {
 		*station_id = station_list[station_index];
 		return 0;
@@ -187,7 +241,7 @@ uint8_t mc_all_handled() {
  *	assuming robot is moving forward from A to B. If A is index 10 and B is index
  *	12 distance will be 2.
  */
-uint8_t mc_find_distance(uint8_t station_id_a, uint8_t station_id_b, uint8_t *station) {
+uint8_t mc_find_distance(uint8_t station_id_a, uint8_t station_id_b, uint8_t *distance) {
 	int8_t station_index_a = mc_find_station(station_id_a);
 	int8_t station_index_b = mc_find_station(station_id_b);
 
@@ -212,6 +266,6 @@ uint8_t mc_find_distance(uint8_t station_id_a, uint8_t station_id_b, uint8_t *st
 		station_index_b += station_list_write_index;
 	}
 
-	*station = station_index_b - station_index_a;
+	*distance = station_index_b - station_index_a;
 	return 0;
 }
