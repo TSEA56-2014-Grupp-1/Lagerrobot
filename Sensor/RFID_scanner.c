@@ -1,14 +1,15 @@
-/*
- * GccApplication3.c
+/**
+ *	@file RFID_scanner.c
+ *	@author Erik Nybom
  *
- * Created: 2014-04-03 11:13:39
- *  Author: Erik
+ *	Functions for reading RFID scanner data
  */
+#ifndef F_CPU
+	#define F_CPU 20000000UL
+#endif
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-
-#define F_CPU 20000000UL
 #include <util/delay.h>
 #include "RFID_scanner.h"
 #include "../shared/usart.h"
@@ -20,25 +21,30 @@
 uint8_t station_RFID[12];
 uint8_t prev_station = 0;
 
-
-void RFID_disable_reading(uint8_t id, uint16_t metadata)
-{
-//	PORTD |= (1 << PORTD2); // Disable reading
-}
-
-void RFID_enable_reading(uint8_t id, uint16_t metadata)
-{
-	usart_clear_buffer();
-	PORTD &= ~(1 << PORTD2); // Enable reading
-}
-
-void RFID_scanner_init()
+/**
+ *	Make RFID scanner ready for reading
+ */
+void RFID_scanner_init(void)
 {
 	DDRD = 0b00011100; // Set PD2 as Output XXX pd3 & pd4 for debugging
 	PORTD |= (1 << PORTD2); // Disable reading
 }
 
-uint8_t RFID_read_usart()
+/**
+ *	Read an RFID tag into the global variable station_RFID. This functions clears
+ *	USART buffer before requesting data. Possible status codes are:
+ *
+ *	- 0 if successful
+ *	- 1 if no tag was found
+ *	- 2 if no start byte was found
+ *	- 3 if start byte was invalid
+ *	- 4 if all data bytes weren't read
+ *	- 5 if no stop byte was found
+ *	- 6 if stop byte was invalid
+ *
+ *	@return Status code
+ */
+uint8_t RFID_read_usart(void)
 {
 	usart_clear_buffer();
 	PORTD &= ~(1 << PORTD2); // Enable reading
@@ -53,7 +59,7 @@ uint8_t RFID_read_usart()
 	// Check if answer was received
 	if (i == 25) {
 		PORTD |= (1 << PORTD2); // Disable reading
-		display(1, "%u", UCSR0B);
+		display(1, "%u", UCSR0B); // XXX: Remove this?
 		return 1;
 	}
 
@@ -87,10 +93,12 @@ uint8_t RFID_read_usart()
 	}
 
 	return 0;
-
 }
 
-void clear_station_RFID()
+/**
+ *	Reset station_RFID global
+ */
+void clear_station_RFID(void)
 {
 	uint8_t i = 0;
 	for (i = 0; i <= 11; ++i)
@@ -99,6 +107,11 @@ void clear_station_RFID()
 	}
 }
 
+/**
+ *	Send given station tag to chassi
+ *
+ *	@param station_tag ID of RFID card
+ */
 void send_rfid(uint8_t station_tag)
 {
 	uint8_t station_data = get_station_data();
@@ -112,7 +125,13 @@ void send_rfid(uint8_t station_tag)
 	}
 }
 
-
+/**
+ *	Compare data in global station_RFID with given reference array of tag data
+ *
+ *	@param curren_compare_RFID RFID tag as defined in rfid_tags.h
+ *
+ *	@return 1 if tags match, else 0
+ */
 uint8_t compare_RFID_arrays(const uint8_t current_compare_RFID[12])
 {
 	uint8_t i;
@@ -124,7 +143,12 @@ uint8_t compare_RFID_arrays(const uint8_t current_compare_RFID[12])
 	return 1;
 }
 
-uint8_t identify_station_RFID()
+/**
+ *	Identify the station currently in the station_RFID global
+ *
+ *	@return ID of station in station_RFID, or 0 if no match
+ */
+uint8_t identify_station_RFID(void)
 {
 	if (compare_RFID_arrays(RFID_B80))
 		return 80;

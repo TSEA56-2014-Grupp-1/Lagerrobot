@@ -75,8 +75,6 @@ int main(void)
 	bus_register_response(3, return_linesensor);
 	bus_register_response(4, return_line_weight);
 	bus_register_response(5, set_tape_reference);
-	bus_register_receive(7, RFID_disable_reading);
-	bus_register_receive(8, RFID_enable_reading);
 	bus_register_receive(9, set_task);
 	bus_register_receive(10, read_rfid);
 	bus_register_response(11, return_line_weight);
@@ -95,7 +93,7 @@ int main(void)
 	while(1)
 	{
 
-		switch (sensor_task)	{
+		switch (sensor_task) {
 			case 0:
 
 				TIMSK1 = 1 << OCIE1A; // enable broadcast triggering

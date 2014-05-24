@@ -1,10 +1,9 @@
-/*
- * Communication.c
+/**
+ *	@file Communication.c
+ *	@author Karl Linderhed
  *
- * Created: 2014-03-26 09:49:31
- *  Author: Karl
+ *	Processes commands to and from PC as well as controlling LCD display
  */
-#define ROTATE_INTERVAL 100
 
 #include "Communication.h"
 #include "LCD.h"
@@ -17,8 +16,9 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-
-
+/**
+ *	Rotate display between each unit
+ */
 ISR(TIMER1_OVF_vect) {
 	if(lcd_rotation_counter == ROTATE_INTERVAL) {
 		lcd_rotation_counter = 0;
@@ -29,9 +29,13 @@ ISR(TIMER1_OVF_vect) {
 
 }
 
+/**
+ *	Trigger stop signal to all units when timer 3 wraps around. This is happens
+ *	when the computer has been connected once and communication stops.
+ */
 ISR(TIMER3_OVF_vect) {
 	if (has_connection && !stop_sent) {
-		bus_transmit(0,0,0);
+		bus_transmit(0, 0, 0);
 		stop_sent = 1;
 	}
 }
@@ -47,30 +51,56 @@ void lcd_force_display_update(uint8_t module) {
 	lcd_next_sender = module;
 }
 
+/**
+ *	Receive character for line 1 for chassi page
+ */
 void lcd_chassi_line1(uint8_t id, uint16_t metadata) {
 	lcd_process_symbol(CHAS, 1, metadata);
 }
 
+/**
+ *	Receive character for line 2 for chassi page
+ */
 void lcd_chassi_line2(uint8_t id, uint16_t metadata) {
 	lcd_process_symbol(CHAS, 2, metadata);
 }
 
+/**
+ *	Receive character for line 1 for sensor page
+ */
 void lcd_sensor_line1(uint8_t id, uint16_t metadata) {
 	lcd_process_symbol(SENS, 1, metadata);
 }
 
+/**
+ *	Receive character for line 2 for sensor page
+ */
 void lcd_sensor_line2(uint8_t id, uint16_t metadata) {
 	lcd_process_symbol(SENS, 2, metadata);
 }
 
+/**
+ *	Receive character for line 1 for arm page
+ */
 void lcd_arm_line1(uint8_t id, uint16_t metadata) {
 	lcd_process_symbol(ARM, 1, metadata);
 }
 
+/**
+ *	Receive character for line 2 for arm page
+ */
 void lcd_arm_line2(uint8_t id, uint16_t metadata) {
 	lcd_process_symbol(ARM, 2, metadata);
 }
 
+/**
+ *	Convert character data sent over the bus to LCD data
+ *
+ *	@param module Module index (COMM, SENS, ARM or CHAS)
+ *	@param line_number 0 means first row, 1 means second row
+ *	@param metadata Bit 0-6 is ASCII code for symbol, bit 7-10 is character
+ *	                position in row
+ */
 void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) {
 	uint8_t position;
 	uint8_t symbol;
@@ -80,7 +110,7 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) 
 
 	// Check for null character. If null then the message is finished and the rest of the line should be cleared
 	// Otherwise simply fill the message map with the character
-	if (line_number == 1){
+	if (line_number == 1) {
 		if (symbol == 0x00) {
 			for (uint8_t i =  position; i < 16; ++i) {
 				message_map_line1[module][i] = 0x20;
@@ -91,7 +121,7 @@ void lcd_process_symbol(uint8_t module, uint8_t line_number, uint16_t metadata) 
 			message_map_line1[module][position] = symbol;
 		}
 	}
-	else if (line_number == 2){
+	else if (line_number == 2) {
 		if (symbol == 0x00) {
 			for (uint8_t i =  position; i < 16; ++i) {
 				message_map_line2[module][i] = 0x20;
@@ -135,7 +165,7 @@ void clear_message(uint8_t unit, uint8_t line_number) {
  * @details Sets up the ports for the display communication, the timers for
  * page rotation and clears the lcd variables and messages.
  */
-void init(){
+void init() {
 	DDRA = 0xff;
 	DDRB = 0xff;
 	PORTB = 0b00000000;
@@ -163,18 +193,30 @@ void init(){
 	clear_message(ARM, 1);
 }
 
+/**
+ *	Forward decisions from chassis to PC
+ */
 void forward_decision(uint8_t id, uint16_t data) {
 	send_packet(PKT_CHASSIS_DECISION, 1, (uint8_t)data);
 }
 
+/**
+ *	Forward RFID data from sensor unit to PC
+ */
 void forward_RFID(uint8_t id, uint16_t data) {
 	send_packet(PKT_RFID_DATA, 1, data);
 }
 
+/**
+ *	Forward side scanner data from sensor unit to PC
+ */
 void forward_range(uint8_t id, uint16_t data) { // MSB indicates which sensor is scanning
 	send_packet(PKT_RANGE_DATA, 3, (uint8_t) (data >> 10), (uint8_t) ((data & 0b01100000000) >> 8), (uint8_t) data);
 }
 
+/**
+ *	Forward line sensor data from sensor unit to PC
+ */
 void forward_line_data(uint8_t id, uint16_t data) {
 	if (id == 11) {
 		send_packet(PKT_LINE_WEIGHT, 1, (uint8_t)data);
@@ -183,9 +225,13 @@ void forward_line_data(uint8_t id, uint16_t data) {
 	}
 }
 
+/**
+ *	Forward calibration data from sensor unit to PC
+ */
 void forward_calibration(uint8_t id, uint16_t data)	{
 	send_packet(PKT_CALIBRATION_DATA, 1,(uint8_t)data);
 }
+
 int main(void)
 {
 	init();
@@ -215,8 +261,8 @@ int main(void)
 	char current_message_map2[17];
 	uint8_t lcd_current_sender;
 
-	while(1)
-	{
+	for (;;) {
+		// Wait for either display to rotate or data from computer
 		while(!lcd_rotation_flag && !usart_has_bytes());
 
 		if (lcd_rotation_flag) {
@@ -234,7 +280,6 @@ int main(void)
 			if (!lcd_rotation_flag)
 			lcd_next_sender = (lcd_next_sender + 1) % 4;
 		}
-
 		else {
 			process_packet();
 			usart_clear_buffer();
