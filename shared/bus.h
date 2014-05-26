@@ -1,5 +1,11 @@
 #ifndef BUS_H_
 #define BUS_H_
+/**
+ *	@file bus.h
+ *	@author Andreas Runfalk & Patrik Nyberg
+ *
+ *	Functions for intra processor communication over the two wire interface
+ */
 
 #define BUS_ADDRESS_CHASSIS 1
 #define BUS_ADDRESS_ARM 6

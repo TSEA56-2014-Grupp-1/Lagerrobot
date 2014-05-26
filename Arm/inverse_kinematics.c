@@ -39,7 +39,7 @@ arm_coordinate ik_calculate_coordinate(arm_joint_angles joint_angles) {
  *
  *	@param angle Arm's rotation angle in radians. 0 means arm is pointing
  *	             straight ahead. pi/2 means pointing to the left and -pi/2 means
- *	             pointing to the right. 0 ± n * pi are invalid angles.
+ *	             pointing to the right. 0 + n * pi are invalid angles.
  *
  *	@return Distance to edge in mm
  */
@@ -51,7 +51,7 @@ uint16_t ik_calculate_x_limit(float angle)
 /**
  *	Convert float angle in radians to servo angle for given joint.
  *
- *	@param id ID of joint to convert angle for
+ *	@param joint ID of joint to convert angle for
  *	@param angle Angle in radians where 0 is the reference angle
  *
  *	@return Value between 0 and 1024 depending on given joint ID and angle
@@ -80,7 +80,7 @@ uint16_t ik_joint_rad_to_angle(uint8_t joint, float angle) {
 /**
  *	Convert servo angle to float angle in radians for given joint.
  *
- *	@param id ID of joint to convert angle for
+ *	@param joint ID of joint to convert angle for
  *	@param angle Value between 0 and 1024
  *
  *	@return Angle in radians where 0 is the reference angle
@@ -141,7 +141,7 @@ arm_coordinate ik_find_p(arm_coordinate coord) {
  *	- 1 if P was unreachable
  *
  *	@param[in] coord Coordinates in mm for P
- *	@param[out] joint_angles Reference to an ::angles struct
+ *	@param[out] joint_angles Reference to an ::arm_angles struct
  *
  *	@return Status code
  */

@@ -7,7 +7,6 @@
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
-#include <avr/wdt.h>
 #include "Chassi.h"
 #include "automatic_steering.h"
 #include "engine_control.h"
@@ -15,8 +14,8 @@
 #include "../shared/bus.h"
 #include "../shared/LCD_interface.h"
 #include "../shared/packets.h"
+uint16_t counter = 0;
 
-void dummy(uint8_t data, uint16_t metadata) { return;}
 
 void disable_timer_interrupts(void)
 {
@@ -242,7 +241,6 @@ void drive(int8_t curr_error)
 {
 	// Update steering with new PD value
 	update_steering(pd_update(curr_error), STEERING_MAX_SPEED);
-
 	enable_timer_interrupts();
 }
 
@@ -254,6 +252,7 @@ void clear_station_list(void)
 		station_list[i] = 0;
 	}
 	station_count = 0;
+	
 }
 
 //----------------------------------Timer interrupt (Start of main program)----------------------------------------
@@ -266,7 +265,13 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	line_data = request_line_data();
 	int8_t curr_error = (uint8_t)(line_data) - 127;
 	uint8_t station_data = (uint8_t)(line_data >> 8);
-
+	/*
+	if (++counter >= 100)
+	{
+		display(0, "%s", curr_error);
+		counter = 0;
+	}
+	*/
 	// Determine if we're in manual mode or not
 	manual_control = PINA & PINA1;
 
@@ -275,11 +280,13 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 		// Robot is not on station and linefollowing is on
 		drive(curr_error);
 	}
+	/*
 	else if (skip_station())
 	{
 		// Just continue if station should be skipped
 		drive(curr_error);
 	}
+	*/
 	else if (manual_control == 1)
 	{
 		// Stop wheels when in manual control mode
@@ -321,7 +328,7 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	{
 		stop_wheels();
 		display_station_and_rfid(station_data, station_id);
-		scan_count = 0; // reset the scan counter
+		//scan_count = 0; // reset the scan counter
 		rfid_to_pc(station_id);
 		update_station_list(station_id);
 		command_to_arm(station_data, station_id);
@@ -348,6 +355,7 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 		decision_to_pc(6);
 		display(0, "No tag ");
 		display(1, "found!");
+		//scan_count = 0;
 		if (lap_finished == 0)
 			clear_station_list();
 		drive_to_next();
@@ -434,7 +442,7 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 			break;
 		case 3: // Arm found object but failed to pick it up
 			decision_to_pc(11);
-			
+
 			display(0, "failed to");
 			display(1, "pick up");
 			break;
@@ -454,6 +462,7 @@ void control_line_following(uint8_t id, uint16_t data) {
 	if (data) {
 		drive_to_next();
 	} else {
+		disable_timer_interrupts();
 		stop_wheels();
 	}
 }
@@ -478,6 +487,7 @@ uint8_t is_mission_complete(void)
 void drive_to_next(void)
 {
 	set_sensor_to_linefollowing();
+	scan_count = 0;
 	_delay_ms(50);
 	enable_timer_interrupts();
 }
@@ -496,35 +506,10 @@ ISR(PCINT1_vect)
 	}
 }
 
-uint8_t can_start;
-
-/**
- *	Handle emergency stop and startup procedures from communication unit
- */
-void emergency_handler(uint8_t callback_id, uint16_t data) {
-	if (data == 1) {
-		can_start = 1;
-	} else {
-		// Cease all movement
-		disable_timer_interrupts();
-		stop_wheels();
-		
-		
-		TWCR &= ~(1 << TWEN | 1 << TWIE);
-		TWCR |= (1 << TWINT);
-		// Trigger restart after 1 second and wait for it to happen
-		wdt_enable(WDTO_1S);
-		for (;;) { }
-	}
-}
-
 
 int main(void)
 {
-	wdt_disable();
-	MCUSR = 0;
-	
-	can_start = 0;
+
 	bus_init(BUS_ADDRESS_CHASSIS);
 	_delay_ms(100);
 	engine_init();
@@ -537,8 +522,7 @@ int main(void)
 	lap_finished = 0;
 	number_of_stations = 0;
 	station_count = 0;
-	
-	bus_register_receive(0, emergency_handler);
+
 	// bus_register_receive(1, receive_line_data);
 	bus_register_receive(2, arm_is_done);
 	bus_register_receive(3, control_line_following);
@@ -549,13 +533,6 @@ int main(void)
 	bus_register_receive(12, engine_set_kd);
 
 	sei();
-	
-	
-	/*while (!can_start) {
-		// Delay is needed when looping flags such as this
-		_delay_us(1);
-	}*/
-	
 	start_button_init();
 	timer_interrupt_init();
 

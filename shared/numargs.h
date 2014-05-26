@@ -1,6 +1,14 @@
 #ifndef NUMARGS_H_
 #define NUMARGS_H_
 /**
+ *	@file numargs.h
+ *	@author Andreas Runfalk
+ *
+ *	Useful macro for counting number of arguments passed to a variadic function
+ *	macro.
+ */
+
+/**
  *	Macro counting number of arguments given to NUMARGS. Mostly used in
  *	conjunction with `__VA_ARGS__`.
  *

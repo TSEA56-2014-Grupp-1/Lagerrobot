@@ -1,1 +1,6 @@
 *.bin
+*.hex
+*.eep
+*.pyc
+*.pdf
+Arm/simulation/venv/

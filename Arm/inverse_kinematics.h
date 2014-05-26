@@ -15,7 +15,7 @@
 
 #include "types.h"
 
-#if !defined(F_CPU)
+#ifndef F_CPU
 	#define F_CPU 16000000UL
 #endif
 
@@ -38,7 +38,7 @@
  *
  *	@{
  */
-#define ARM_JOINT_BASE_ORIGIN_OFFSET         511.0f
+#define ARM_JOINT_BASE_ORIGIN_OFFSET         513.0f
 #define ARM_JOINT_SHOULDER_ORIGIN_OFFSET     757.0f
 #define ARM_JOINT_ELBOW_ORIGIN_OFFSET        775.0f
 #define ARM_JOINT_WRIST_ORIGIN_OFFSET        497.0f

@@ -18,8 +18,6 @@
  *	Set tri-state buffer to write mode
  */
 void servo_enable_write(void) {
-	// XXX: Disable USART interrupts?
-
 	// Set tri-state buffer to write
 	PORTD |= 1 << PORTD2;
 
@@ -32,7 +30,6 @@ void servo_enable_write(void) {
  */
 void servo_enable_read(void) {
 	while (!usart_tx_complete());
-	// XXX: Restore USART interrupts
 
 	// Set tri-state buffer to read
 	PORTD &= ~(1 << PORTD2);
@@ -221,6 +218,7 @@ void vservo_send(
  *
  *	@param id Servo ID to write to
  *	@param instruction Instruction type
+ *	@param data_length Number of arguments passed after data length
  *	@param ... Parameters to send
  */
 void _servo_send(uint8_t id, uint8_t instruction, uint8_t data_length, ...) {
@@ -294,7 +292,7 @@ uint8_t servo_read_uint8(uint8_t id, uint8_t address, uint8_t *memory) {
 
 /**
  *	Read two bytes from a servo. The given address should be the low end of the
- *	of the integer, for instance #SERVO_PRESENT_LOAD_L.
+ *	of the integer, for instance SERVO_PRESENT_LOAD_L.
  *
  *	@param[in] id Servo ID to read from
  *	@param[in] address Memory address to start reading data from
@@ -354,7 +352,7 @@ uint8_t servo_write_uint8(uint8_t id, uint8_t address, uint8_t data) {
 
 /**
  *	Buffer two bytes to a servo. The given address should be the low end of the
- *	of the integer, for instance #SERVO_PRESENT_LOAD_L. Bit 0 through 7 will be
+ *	of the integer, for instance SERVO_PRESENT_LOAD_L. Bit 0 through 7 will be
  *	written to address and bit 8 through 15 to address + 1.
  *
  *	@param id Servo ID to write to
@@ -395,7 +393,7 @@ uint8_t _servo_reg_write(uint8_t id, uint8_t data_length, ...) {
 
 /**
  *	Write two bytes to a servo. The given address should be the low end of the
- *	of the integer, for instance #SERVO_PRESENT_LOAD_L. Bit 0 through 7 will be
+ *	of the integer, for instance SERVO_PRESENT_LOAD_L. Bit 0 through 7 will be
  *	written to address and bit 8 through 15 to address + 1.
  *
  *	@param id Servo ID to write to

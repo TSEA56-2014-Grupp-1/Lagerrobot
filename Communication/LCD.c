@@ -1,8 +1,8 @@
-/*
- * LCD.c
+/**
+ *	@file LCD.c
+ *	@author Karl Linderhed
  *
- * Created: 2014-03-25 17:29:08
- *  Author: Karl Linderhed
+ *	Functions for controlling LCD display
  */
 
 #include "LCD.h"

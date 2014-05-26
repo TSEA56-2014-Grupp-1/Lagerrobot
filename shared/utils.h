@@ -1,4 +1,7 @@
 /**
+ *	@file utils.h
+ *	@author Andreas Runfalk
+ *
  *	Collection of useful functions and macros
  */
 

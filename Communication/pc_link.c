@@ -1,9 +1,9 @@
-/*
-* bluetooth.c
-*
-* Created: 2014-04-01 15:35:48
-*  Author: Karl, Andreas & Patrik
-*/
+/**
+ *	@file pc_link.c
+ *	@author Andreas Runfalk, Karl Linderhed and Patrik Nyberg
+ *
+ *	For sending and receiving packets to and from PC
+ */
 
 #include "pc_link.h"
 #include "Communication.h"
@@ -16,13 +16,25 @@
 #include <stdarg.h>
 #include <util/delay.h>
 
+/**
+ *	Process heartbeat commands from PC. This prevents timer 3 from overflowing
+ *	by resetting it. If timer 3 overflows rest command is sent to chassi and arm
+ */
 uint8_t process_heartbeat() {
 	TCNT3 = 0;
+	has_connection = 1;
 	send_packet(PKT_HEARTBEAT, 0);
 	stop_sent = 0;
-	return bus_transmit(0,0,1); // send all clear general call
+
+	return 0;
 }
 
+/**
+ *	Process command from PC that's aimed for arm unit
+ *
+ *	@param data_length Number of bytes in data[]
+ *	@param data[] Command and data for it
+ */
 uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 	if (!data_length) {
 		return 1;
@@ -97,6 +109,12 @@ uint8_t process_arm_command(uint8_t data_length, uint8_t data[]) {
 	return 0;
 }
 
+/**
+ *	Process command from PC that's aimed for chassi unit
+ *
+ *	@param data_length Number of bytes in data[]
+ *	@param data[] Command and data for it
+ */
 uint8_t process_chassis_command(uint8_t data_length, uint8_t data[]) {
 	if (!data_length) {
 		return 1;
@@ -142,12 +160,17 @@ uint8_t process_chassis_command(uint8_t data_length, uint8_t data[]) {
 	return 0;
 }
 
+/**
+ *	Process command from PC that's aimed for calibration of sensor unit
+ *
+ *	@param data_length Number of bytes in data[]
+ *	@param data[] Command and data for it
+ */
 uint8_t process_calibration_command(uint8_t data_length, uint8_t data[]) {
 	if (!data_length) {
 		return 1;
 	}
 
-	// XXX: Prefix constants with CMD_?
 	switch (data[0]) {
 		case CAL_LINE:
 			if (data_length != 2) {
@@ -171,6 +194,12 @@ uint8_t process_calibration_command(uint8_t data_length, uint8_t data[]) {
 	return 0;
 }
 
+/**
+ *	Process data request for PC
+ *
+ *	@param data_length Number of bytes in data[]
+ *	@param data[] Command and data for it
+ */
 uint8_t process_packet_request(uint8_t data_length, uint8_t data[]) {
 	uint8_t line_values[11];
 	uint8_t flags;
@@ -223,6 +252,12 @@ uint8_t process_packet_request(uint8_t data_length, uint8_t data[]) {
 	return 0;
 }
 
+/**
+ *	Process command from PC that spoofs requests over the TWI
+ *
+ *	@param data_length Number of bytes in data[]
+ *	@param data[] Command and data for it
+ */
 uint8_t process_spoofed_request(uint8_t data_length, uint8_t data[]) {
 	uint16_t response;
 
@@ -243,6 +278,12 @@ uint8_t process_spoofed_request(uint8_t data_length, uint8_t data[]) {
 	return 0;
 }
 
+/**
+ *	Process command from PC that spoofs transmits over the TWI
+ *
+ *	@param data_length Number of bytes in data[]
+ *	@param data[] Command and data for it
+ */
 uint8_t process_spoofed_transmit(uint8_t data_length, uint8_t data[]) {
 	if (data_length != 4) {
 		return 1;
@@ -257,6 +298,18 @@ uint8_t process_spoofed_transmit(uint8_t data_length, uint8_t data[]) {
 	return 0;
 }
 
+/**
+ *	Process a data packet from the computer and dispatch appropriate process_*
+ *	function. Possible status codes are:
+ *
+ *	- 0 if successful
+ *	- 1 if failing to read packet ID
+ *	- 2 if failing to read packet length
+ *	- 3 if failing to read packet data
+ *	- 4 if failing to read checksum byte
+ *	- 5 if checksum is invalid
+ *	- 6 if unknown packet ID
+ */
 uint8_t process_packet(void) {
 	uint8_t packet_id;
 	uint8_t packet_length;
@@ -321,7 +374,13 @@ uint8_t process_packet(void) {
 	return 6;
 }
 
-
+/**
+ *	Send a packet to PC
+ *
+ *	@param packet_id Packet type to send
+ *	@param num_parameters Number of extra data to send with packet
+ *	@param ... Extra data
+ */
 void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t parameters[]) {
 	// TODO: Implement checksum calculation
 	uint8_t param_arr[num_parameters];
@@ -335,9 +394,9 @@ void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t pa
 	}
 	va_end(parameters);
 
-	TWCR &= ~(1 << TWEN || 1 << TWIE);
-	TWCR |= 1 << TWINT;
-	
+	//TWCR &= ~(1 << TWEN || 1 << TWIE);
+	//TWCR |= 1 << TWINT;
+
 	usart_write_byte(packet_id);
 	checksum += packet_id;
 
@@ -350,7 +409,7 @@ void send_packet(uint8_t packet_id, uint8_t num_parameters, ...) { // uint8_t pa
 	}
 
 	usart_write_byte(~checksum);
-	
-	TWCR |= (1 << TWEN || 1 << TWIE);
-	TWCR |= 1 << TWINT;
+
+	//TWCR |= (1 << TWEN || 1 << TWIE);
+	//TWCR |= 1 << TWINT;
 }

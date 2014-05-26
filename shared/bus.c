@@ -1,7 +1,8 @@
 /**
- *	Base library for bus communication
- *
+ *	@file bus.c
  *	@author Andreas Runfalk & Patrik Nyberg
+ *
+ *	Functions for intra processor communication over the two wire interface
  */
 
 #include <avr/io.h>
@@ -33,11 +34,8 @@ void (*receive_callbacks[64])(uint8_t, uint16_t) = {0};
  *	@param address 7-bit address to listen to
  */
 void bus_init(uint8_t address) {
-	// Modify bus frequency
-	// 18200000/(16+2*TWBR*(4^TWSR prescaler)) = 8.8 kHz (testing shows 15.5kHz ...)
-	// http://www.avrbeginners.net/architecture/twi/twi.html
+	// Bus speed, approximately 70 kHz
 	TWBR = 0x80;
-	//TWBR = 0x0D; // Works good (~192kHz)
 
 	// Enable internal pull-up for SDA and SCL
 	PORTC |= 0x03;

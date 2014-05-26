@@ -1,8 +1,8 @@
-/*
- * linesensor.c
+/**
+ *	@file linesensor.c
+ *	@author Karl Linderhed and Philip Nilsson
  *
- * Created: 2014-03-27 09:08:16
- *  Author: Karl & Philip
+ *	Functions for reading and interpreting line sensor data
  */
 
 #include <avr/io.h>
@@ -10,52 +10,55 @@
 #include "linesensor.h"
 #include "../shared/bus.h"
 
-//Defining different datatypes
+/**
+ *	Type of surface under line sensor
+ */
 typedef uint8_t surface_type;
 enum {Floor, Tape};
 
-/*
- *	variable type used when handling stations, either station to the left, no station or to the right
+/**
+ *	Variable type used when handling stations, either station to the left, no
+ *	station or to the right
  */
 typedef uint8_t station_type;
 enum station_type {Left, No, Right};
 
-/*
+/**
  * Is set to wheter we are at a pickupstation or not, and where the station is.
  */
 station_type pickup_station = No;
 
-/*
+/**
  * The next sensor to be updated.
  */
 uint8_t linesensor_channel;
 
-/*
+/**
  * Holds the values of individual sensors.
  */
 uint8_t sensor_values[11] = {0,0,0,0,0,0,0,0,0,0,0};
 
-/*
+/**
  * The center of mass of the line.
  */
 uint8_t line_weight = 127;
 
-/*
+/**
  * Variable used in the pickup station detection
  */
 uint8_t previous_pickup_station = No;
 
-/*
+/**
  * Determines what is percieved as tape and floor. Set in linesensor_calibration().
  */
 uint8_t tape_reference = 150;
 
-/*
+/**
  * Used as a delay in pickup_staton_detection()
  */
 uint16_t pickup_iterator = 0;
 
-/*
+/**
  *	Send center of mass and station data to chassi.
  */
 uint16_t send_line_data(uint8_t id, uint16_t metadata)
@@ -73,23 +76,27 @@ uint16_t send_line_data(uint8_t id, uint16_t metadata)
 	return (((uint16_t)(chassi_output) << 8) | line_weight);
 }
 
-/*
+/**
  *	@brief Set the tape reference to new value.
  *
  *	@param id Bus id of the function, unused.
  *	@param input_tape_reference The new value of tape_reference.
  */
 uint16_t set_tape_reference(uint8_t id, uint16_t input_tape_reference)	{
+	// XXX: This is never called anywhere?
 	tape_reference = input_tape_reference;
 	return 0;
 }
 
+/**
+ *	Return current pickup station status
+ */
 uint8_t get_station_data()
 {
 	return pickup_station;
 }
 
-/*
+/**
  *	@brief Will return the values of a pair of sensors, 0 - 5.
  *
  *	@param id Bus id of the function, unused.
@@ -107,7 +114,7 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
 
 }
 
-/*
+/**
  *	@brief Formats the output to accommodate the chassis and transmits it on the bus.
  *
  *	@param id Bus id for the function, unused.
@@ -115,7 +122,6 @@ uint16_t return_linesensor(uint8_t id, uint16_t sensor_pair)	{
  *
  *	@return High byte: Station data. Low byte: Center of mass of the line.
  */
-
 uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 	// Disable ADC interrupts
 
@@ -139,7 +145,7 @@ uint16_t return_line_weight(uint8_t id, uint16_t metadata)	{
 	return (((uint16_t)(chassi_output) << 8) | current_line_weight);
 }
 
-/*
+/**
  *	@brief Set up ADC and direction ports for the linesensor.
  */
 void line_init(){
@@ -152,7 +158,7 @@ void line_init(){
 	ADCSRA |= (1 << ADSC);
 }
 
-/*
+/**
  *	@brief Saves the current value of ADCH in sensor_values.
  */
 void update_linesensor_values() {
@@ -164,7 +170,7 @@ void update_linesensor_values() {
 	ADCSRA |= (1 << ADSC);
 }
 
-/*
+/**
  *	@brief Check if the current sensor has tape or floor under itself.
  *
  *	@param sensor_id Sensor to check.
@@ -178,7 +184,7 @@ surface_type get_sensor_surface(uint8_t sensor_id)	{
 		return Floor;
 }
 
-/*
+/**
  *	@brief Calculate the center of mass of the tape, will save the result in the global line_weight.
  */
 void calculate_line_weight()	{
@@ -202,7 +208,7 @@ void calculate_line_weight()	{
 	sei();
 }
 
-/*
+/**
  *	@breif Returns the width of the tape.
  *
  *	@return The width of the tape, will be integer between 0 and 11.
@@ -220,7 +226,7 @@ uint8_t get_tape_width()	{
 	return tape_width;
 }
 
-/*
+/**
  *	@brief Check if there is tape to mark a pickupstation right.
  *
  *	@return 1 if the 4 sensors furthest to the right has tape underneath, otherwise 0.
@@ -237,7 +243,7 @@ uint8_t is_tape_right()	{
 		return 0;
 }
 
-/*
+/**
  *	@brief Check if there is tape to mark a pickupstation left.
  *
  *	@return 1 if the 4 sensors furthest to the left has tape underneath, otherwise 0.
@@ -254,7 +260,7 @@ uint8_t is_tape_left()	{
 		return 0;
 }
 
-/*
+/**
  *	@brief Check if there is a pickupstation or not.
  *	@detailed Will check if there is tape on either side, if there is a iterator (pickup_iterator) will start counting down.
  *		If there is tape on the opposite side on any of these iterations, it will be considered a crossing and start over.
@@ -300,7 +306,7 @@ void pickup_station_detection() {
 	sei();
 }
 
-/*
+/**
  *	@brief Updates the linesensor, calculates line weight and detects pickup stations.
  */
 void update_linesensor()	{
@@ -309,7 +315,7 @@ void update_linesensor()	{
 	pickup_station_detection();
 }
 
-/*
+/**
  *	@brief Setup ADC for calibration-routine.
  */
 void init_linesensor_calibration()	{
@@ -319,7 +325,7 @@ void init_linesensor_calibration()	{
 	DDRB = 0b11111111;
 }
 
-/*
+/**
  *	@brief Read 10 values from one sensor, will return the average.
  *
  *	@param sensor_id ID of the sensor.
@@ -338,7 +344,7 @@ uint8_t line_read_sensor(uint8_t sensor_id) {
 	return (uint8_t)(sensor_references / 10);
 }
 
-/*
+/**
  *	@brief Calibrate the tape reference.
  *
  *	@param id Bus id of the function, unused.
@@ -366,7 +372,7 @@ void calibrate_linesensor(uint8_t id, uint16_t metadata)	{
 	sei();
 }
 
-/*
+/**
  *	@brief Clears the pickupstation data.
  */
 void clear_pickupstation() {

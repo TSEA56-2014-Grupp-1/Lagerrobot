@@ -1,0 +1,88 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+
+\usepackage{doxygen}
+\usepackage[hidelinks=true, bookmarks=true]{hyperref}
+\usepackage{epstopdf}
+\usepackage{gensymb}
+\usepackage{float}
+\usepackage{mathtools}
+\usepackage{setspace}
+\usepackage{tabularx}
+\usepackage{appendix}
+\usepackage{svg}
+
+\title{Kandidatprojektsrapport}
+\input{LIPS.tex}
+
+\usepackage{sectsty}
+\allsectionsfont{\sffamily}
+
+\usepackage{titlesec}
+\titlespacing{\section}{0pt}{30pt}{10pt}
+\frenchspacing
+
+
+\renewcommand{\thepage}{\roman{page}}
+
+\newcommand{\LIPSartaltermin}{VT14}
+\newcommand{\LIPSkursnamn}{TSEA56 Elektronik kandidatprojekt}
+
+\newcommand{\LIPSprojekttitel}{Lagerrobot}
+
+\newcommand{\LIPSprojektgrupp}{Grupp 1}
+\newcommand{\LIPSgruppepost}{tsea56-2014-grupp-1@googlegroups.com}
+\newcommand{\LIPSdokumentansvarig}{Koddokumentation}
+
+\newcommand{\LIPSkund}{ISY, Linköpings universitet, 581\,83 Linköping}
+\newcommand{\LIPSkundkontakt}{Tomas Svensson, 013-28 13 68, tomass@isy.liu.se}
+\newcommand{\LIPSkursansvarig}{Tomas Svensson, 013-28 13 68, 3B:528, tomass@isy.liu.se}
+\newcommand{\LIPShandledare}{Anders Nilsson, 3B:512, 013-28 26 35, anders.p.nilsson@liu.se}
+
+
+\newcommand{\LIPSdokumenttyp}{Koddokumentation}
+\newcommand{\LIPSredaktor}{Andreas Runfalk}
+
+\newcommand{\LIPSversion}{1.0}
+\newcommand{\LIPSdatum}{\dagensdatum}
+
+\newcommand{\LIPSgranskare}{}
+\newcommand{\LIPSgranskatdatum}{}
+\newcommand{\LIPSgodkannare}{}
+\newcommand{\LIPSgodkantdatum}{}
+
+\begin{document}
+
+\LIPStitelsida
+
+%% Argument till \LIPSgruppmedlem: namn, roll i gruppen, telefonnummer, epost
+\begin{LIPSprojektidentitet}
+  \LIPSgruppmedlem{Karl Linderhed}{Projektledare (PL)}{073-679 59 59}{karli315@student.liu.se}
+  \LIPSgruppmedlem{Patrik Nyberg}{Dokumentansvarig (DOK)}{073 -049 59 90}{patny205@student.liu.se}
+  \LIPSgruppmedlem{Johan Lind}{}{070-897 58 24}{johli887@student.liu.se}
+  \LIPSgruppmedlem{Erik Nybom}{}{070-022 47 85}{eriny778@student.liu.se}
+  \LIPSgruppmedlem{Andreas Runfalk}{}{070-564 23 79}{andru411@student.liu.se}
+  \LIPSgruppmedlem{Philip Nilsson}{}{073-528 48 86}{phini326@student.liu.se}
+  \LIPSgruppmedlem{Lucas Nilsson}{}{073-059 42 94}{lucni395@student.liu.se}
+\end{LIPSprojektidentitet}
+
+
+\renewcommand*\contentsname{Innehåll}
+\begin{spacing}{0.5}
+\tableofcontents{}
+\end{spacing}
+\newpage
+
+%% Argument till \LIPSversionsinfo: versionsnummer, datum, ändringar, utfört av, granskat av
+%\addcontentsline{toc}{section}{Dokumenthistorik}
+\begin{LIPSdokumenthistorik}
+  \LIPSversionsinfo{1.0}{2014-05-24}{Ursprunglig version}{AR}{Alla gruppmedlemmar}
+\end{LIPSdokumenthistorik}
+\newpage
+
+\renewcommand{\thepage}{\arabic{page}}
+\setcounter{page}{1}
+
+\newpage
+
+\end{document}

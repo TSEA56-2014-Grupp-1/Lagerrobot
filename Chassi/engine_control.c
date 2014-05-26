@@ -1,9 +1,9 @@
-/*
-* engine_control.c
-*
-* Created: 2014-03-27 10:59:57
-*  Author: Erik
-*/
+/**
+ *	@file engine_control.c
+ *	@author Karl Linderhed
+ *
+ *	Engine control code. Can individually control both sides of wheels.
+ */
 
 #include "engine_control.h"
 #include "Chassi.h"
