@@ -376,6 +376,20 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>Spoof pickup</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="text">
+        <string>Spoof dropoff</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pushButton_start_position_arm">
        <property name="text">
         <string>Startläge</string>

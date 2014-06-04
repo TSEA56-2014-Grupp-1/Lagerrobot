@@ -28,8 +28,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->listWidget_log->setFocusPolicy(Qt::ClickFocus);
 
-    timer_heartbeat->setInterval(200);
-    connect(timer_heartbeat, SIGNAL(timeout()), this, SLOT(send_heartbeat()));
+//    timer_heartbeat->setInterval(200);
+//    connect(timer_heartbeat, SIGNAL(timeout()), this, SLOT(send_heartbeat()));
 
     timer_com->setInterval(100);
     connect(timer_com, SIGNAL(timeout()), this, SLOT(add_to_lcdtimer()));
@@ -77,7 +77,7 @@ void MainWindow::keyPressEvent(QKeyEvent *key_pressed) {
         on_pushButton_right_pressed();
     }
     else if (key_pressed->key() == Qt::Key_Escape) {
-        on_pushButton_stop_pressed();
+		on_pushButton_stop_pressed();
     }
 	else if (key_pressed->key() == Qt::Key_Z) {
 		on_pushButton_base_left_pressed();
@@ -142,7 +142,7 @@ void MainWindow::connect_to_port(QString name) {
         print_on_log("Bluetooth connected succesfully.");
         enable_buttons();
 
-        timer_heartbeat->start();
+	   // timer_heartbeat->start();
 
         times_mass.clear();
         times_steering.clear();
@@ -232,6 +232,7 @@ void MainWindow::on_pushButton_stop_line_clicked()
 	}
 	else {
 		port->send_packet(PKT_CHASSIS_COMMAND, 1, CMD_CHASSIS_STOP);
+		on_pushButton_stop_pressed();
 	}
 }
 
@@ -944,5 +945,25 @@ void MainWindow::on_pushButton_pickup_left_clicked()
 	}
 	else {
 		port->send_packet(PKT_ARM_COMMAND, 2, CMD_ARM_PREDEFINED_POS, 2);
+	}
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_SPOOFED_TRANSMIT, 4, 1, 2, 0, 0);
+	}
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+	if (port == NULL) {
+		print_on_log("No port to send to.");
+	}
+	else {
+		port->send_packet(PKT_SPOOFED_TRANSMIT, 4, 1, 2, 0, 0);
 	}
 }
