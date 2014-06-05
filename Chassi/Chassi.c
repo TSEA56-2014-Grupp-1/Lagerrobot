@@ -16,12 +16,17 @@
 #include "../shared/packets.h"
 uint16_t counter = 0;
 
-
+/**
+ *	To stop asking for line data
+ */
 void disable_timer_interrupts(void)
 {
 	TIMSK0 &= ~(1 << OCIE0A);
 }
 
+/**
+ *	To stat asking for line data
+ */
 void enable_timer_interrupts(void)
 {
 	TIMSK0 |= (1 << OCIE0A);
@@ -31,7 +36,6 @@ void enable_timer_interrupts(void)
 void timer_interrupt_init(void)
 {
 	//enable timer interrupts for ocie0a
-	//TIMSK0 |= (1 << OCIE0A);
 	TIFR0 |= (1 << OCF0A);
 
 	// interrupt frequency 30hz --- or 60hz according to bus-reads with OCR0A set to 0xFF?? 0x80 --> double compared to 0xFF
@@ -51,7 +55,9 @@ void start_button_init(void)
 }
 
 //-------------- RFID FUNCTIONS-------------
-
+/**
+ *	In order to identify station
+ */
 void read_rfid(void)
 {
 	uint16_t timeout_counter = 0;
@@ -68,6 +74,9 @@ void read_rfid(void)
 	}
 }
 
+/**
+ * Change sensor task so it's set correct when asking for line data
+ */
 void set_sensor_to_linefollowing(void)
 {
 	uint16_t timeout_counter = 0;
@@ -84,7 +93,11 @@ void set_sensor_to_linefollowing(void)
 	}
 }
 
-
+/**
+ * To pickup object
+ *
+ *	@param arm_action_trans Which side object is on
+ */
 void pickup_to_arm(uint16_t arm_action_trans)
 {
 
@@ -102,6 +115,11 @@ void pickup_to_arm(uint16_t arm_action_trans)
 		}
 }
 
+/**
+ * To put down objects
+ *
+ *	@param arm_action_trans Which side to put down
+ */
 void put_down_to_arm(uint16_t arm_action_trans)
 {
 
@@ -119,14 +137,18 @@ void put_down_to_arm(uint16_t arm_action_trans)
 	}
 }
 
-uint16_t got_steering_request(uint8_t id, uint16_t metadata) {
-	return get_steering_wheel();
-}
 
+/**
+ * @brief Checks if provided station information indicates a station.
+ *
+ * @param station_data The station information to be checked. 0 or 2 indicates a station.
+ * @return 1 if the information indicates a station, 0 otherwise.
+ */
 uint8_t is_station(uint8_t station_data)
 {
 	return station_data == 0 || station_data == 2;
 }
+
 
 void display_station_and_rfid(uint8_t station_data, uint8_t tag)
 {
@@ -152,7 +174,12 @@ void display_station_and_rfid(uint8_t station_data, uint8_t tag)
 	}
 }
 
-
+/**
+ * To know if station is handled
+ *
+ * @param tag The tag sensor has read on station
+ * @return 1 if station is allready handled, 0 otherwise
+ */
 uint8_t station_is_handled(uint8_t tag)
 {
 	uint8_t i;
@@ -164,11 +191,35 @@ uint8_t station_is_handled(uint8_t tag)
 	return 0;
 }
 
+/**
+ * To know if it's the station to put down objects on
+ *
+ * @param current_station The station robot has stopped on
+ * @return 1 if current_station is next after carrying_rfid
+ */
 uint8_t station_match_with_carrying(uint8_t current_station)
 {
 	return (carrying_rfid + 1 == current_station);
 }
 
+/**
+ * To know what decision robot is taking by looking at PC
+ *
+ * @param decision as follows:
+ * 0    Station to the right
+ * 1	Station to the left
+ * 2	Putting down object to the right
+ * 3	Putting down object to the left
+ * 4	ID did not match object
+ * 5	Station is already handeld
+ * 6	No ID was found
+ * 7	Arm has picked up an object
+ * 8	Arm has put down the object
+ * 9	Object was not found by arm
+ * 10	An unkown error has occured
+ * 11   Arm failed pickup
+ * 12	Started linefollowing
+ */
 void decision_to_pc(uint8_t decision)
 {
 	uint8_t timeout_counter = 0;
@@ -181,6 +232,11 @@ void decision_to_pc(uint8_t decision)
 
 }
 
+/**
+ * To know what id robot has read
+ *
+ * @param tag_id The stations id
+ */
 void rfid_to_pc(uint8_t tag_id)
 {
 	uint8_t timeout_counter = 0;
@@ -192,35 +248,22 @@ void rfid_to_pc(uint8_t tag_id)
 	}
 }
 
+/**
+ * To know if it's a pickúp station or put down station
+ *
+ * @param id The station robot has stopped on
+ * @return 1 if id is a pickup station
+ */
 uint8_t is_pickup_station(uint8_t id)
 {
 	return (id % 2 == 0);
 }
 
-uint8_t skip_station(void)
-{
-	uint8_t next_id = 0;
-	if (lap_finished == 0)
-		return 0;
-	else if (station_count < number_of_stations)
-	{
-		next_id = station_list[station_count++];
-	}
-	else if (station_count == number_of_stations)
-	{
-		next_id = station_list[0];
-		station_count = 1;
-	}
-	if ((carrying_rfid == 0 && is_pickup_station(next_id)) || station_match_with_carrying(next_id))
-	{
-		return 0;
-	}
-	else
-	{
-		return 1;
-	}
-}
-
+/**
+ * To keep track of what stations robot has visited
+ *
+ * @param station_id The station robot has stopped on
+ */
 void update_station_list(uint8_t station_id)
 {
 	if(lap_finished == 1)
@@ -237,6 +280,11 @@ void update_station_list(uint8_t station_id)
 	}
 }
 
+/**
+ * To be able to follow the line
+ *
+ * @param curr_error The error from the line
+ */
 void drive(int8_t curr_error)
 {
 	// Update steering with new PD value
@@ -244,6 +292,9 @@ void drive(int8_t curr_error)
 	enable_timer_interrupts();
 }
 
+/**
+ * If the order has been scrambled or robot failed to read rfid
+ */
 void clear_station_list(void)
 {
 	uint8_t i = 0;
@@ -256,7 +307,9 @@ void clear_station_list(void)
 }
 
 //----------------------------------Timer interrupt (Start of main program)----------------------------------------
-
+/**
+ * Update the linefollowing or stop at station
+ */
 ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 {
 	disable_timer_interrupts();
@@ -300,6 +353,13 @@ ISR(TIMER0_COMPA_vect) // Timer interrupt to update steering
 	}
 }
 
+/**
+ * @brief Requests line data from the sensor unit.
+ * @details Performs a bus request to the sensor unit for data on the center
+ * of mass and station information.
+ * @return The data returned by the Sensor unit. High byte contains station information,
+ * low byte contains the value of the center of mass for the line sensor.
+ */
 uint16_t request_line_data(void)
 {
 	uint8_t timeout_counter = 0;
@@ -310,16 +370,14 @@ uint16_t request_line_data(void)
 		status_code = bus_request(BUS_ADDRESS_SENSOR, 11, 0, &data);
 		++timeout_counter;
 	}
-	if (status_code != 0)
-	{
-		//display(0,"TO req line");
-		//display(1,"SC: %d", status_code);
-	}
-
 	return data;
 }
 
-// Sensor calls RFID_done as a response to read_rfid
+/**
+ * Sensor calls RFID_done as a response to read_rfid to take action
+ *
+ * @param id_and_station The station robot has stopped on and which side it is on
+ */
 void RFID_done(uint8_t id, uint16_t id_and_station)
 {
 	uint8_t station_id = (uint8_t)(id_and_station);
@@ -328,7 +386,6 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	{
 		stop_wheels();
 		display_station_and_rfid(station_data, station_id);
-		//scan_count = 0; // reset the scan counter
 		rfid_to_pc(station_id);
 		update_station_list(station_id);
 		command_to_arm(station_data, station_id);
@@ -362,6 +419,12 @@ void RFID_done(uint8_t id, uint16_t id_and_station)
 	}
 }
 
+/**
+ * Decide what decision to be sent to arm
+ * 
+ * @param station_data What side station is on
+ * @param station_tag The id of the station the robot is on
+ */
 void command_to_arm(uint8_t station_data, uint8_t station_tag)
 {
 	uint8_t match = station_match_with_carrying(station_tag);
@@ -412,7 +475,18 @@ void command_to_arm(uint8_t station_data, uint8_t station_tag)
 	}
 }
 
-// Arm calls to arm_is_done as a response to send_to_arm
+
+/**
+ * Arm calls to arm_is_done as a response to send_to_arm
+ *
+ * @param id The station robot has stopped on
+ *
+ * @param pickup_data A value for what arm did
+ * 0 = Arm picked up object
+ * 1 = Arm put down an object
+ * 2 = Arm did not find an object to pick up
+ * 3 = Arm found object but failed to pick it up
+ */
 void arm_is_done(uint8_t id, uint16_t pickup_data)
 {
 	switch (pickup_data) {
@@ -456,7 +530,12 @@ void arm_is_done(uint8_t id, uint16_t pickup_data)
 }
 
 /**
- *	Start and stop line following
+ *	Start and stop line following from the computer
+ *
+ *@param data:
+ * 1 = follow line
+ *
+ *0 = stop following line
  */
 void control_line_following(uint8_t id, uint16_t data) {
 	if (data) {
@@ -467,6 +546,10 @@ void control_line_following(uint8_t id, uint16_t data) {
 	}
 }
 
+/**
+ *	To know if robot is done with all the stations
+ * @return 1 if mission is complete
+ */
 uint8_t is_mission_complete(void)
 {
 	if (lap_finished == 0)
@@ -527,7 +610,6 @@ int main(void)
 	bus_register_receive(2, arm_is_done);
 	bus_register_receive(3, control_line_following);
 	bus_register_receive(4, RFID_done);
-	bus_register_response(5, got_steering_request);
 	bus_register_receive(8, engine_control_command);
 	bus_register_receive(11, engine_set_kp);
 	bus_register_receive(12, engine_set_kd);
